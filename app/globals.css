@@ -1,26 +1,299 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Mediterranea Dark Elegant Palette */
+  --white: #ffffff;
+  --white-90: rgba(255, 255, 255, 0.9);
+  --white-70: rgba(255, 255, 255, 0.7);
+  --white-50: rgba(255, 255, 255, 0.5);
+  --white-30: rgba(255, 255, 255, 0.3);
+  --white-10: rgba(255, 255, 255, 0.1);
+
+  /* Dark backgrounds */
+  --dark-900: #181818;
+  --dark-800: #1e1e1e;
+  --dark-700: #232323;
+  --dark-600: #2a2a2a;
+  --dark-500: #333333;
+
+  /* Warm grays for backoffice */
+  --ivory: #faf9f7;
+  --warm-gray-100: #f5f4f2;
+  --warm-gray-300: #d6d3ce;
+  --warm-gray-600: #6b6560;
+  --charcoal: #2d2a26;
+
+  /* Accent colors */
+  --gold: #c9a96e;
+  --gold-light: #d4bc8a;
+  --gold-dark: #b08d4f;
+
+  /* Semantic colors for dark theme */
+  --background: var(--dark-900);
+  --foreground: var(--white);
+  --muted: var(--dark-700);
+  --muted-foreground: var(--white-50);
+  --border: var(--white-10);
+  --accent: var(--gold);
+  --accent-dark: var(--gold-dark);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-white: var(--white);
+  --color-white-90: var(--white-90);
+  --color-white-70: var(--white-70);
+  --color-white-50: var(--white-50);
+  --color-white-30: var(--white-30);
+  --color-white-10: var(--white-10);
+  --color-dark-900: var(--dark-900);
+  --color-dark-800: var(--dark-800);
+  --color-dark-700: var(--dark-700);
+  --color-dark-600: var(--dark-600);
+  --color-dark-500: var(--dark-500);
+  --color-ivory: var(--ivory);
+  --color-warm-gray-100: var(--warm-gray-100);
+  --color-warm-gray-300: var(--warm-gray-300);
+  --color-warm-gray-600: var(--warm-gray-600);
+  --color-charcoal: var(--charcoal);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --font-sans: var(--font-jost), system-ui, sans-serif;
+  --font-serif: var(--font-marcellus), Georgia, serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-marcellus), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+
+/* Utility class for serif font */
+.font-serif {
+  font-family: var(--font-marcellus), Georgia, serif;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-800);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dark-500);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dark-600);
+}
+
+/* Elegant underline animation */
+.elegant-underline {
+  position: relative;
+}
+
+.elegant-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+
+.elegant-underline:hover::after,
+.elegant-underline-active::after {
+  width: 100%;
+}
+
+/* ============================
+   Animations & Effects
+   ============================ */
+
+/* Gold shimmer text effect */
+.hero-gold-shimmer {
+  background: linear-gradient(
+    120deg,
+    var(--gold-dark) 0%,
+    var(--gold) 20%,
+    var(--gold-light) 40%,
+    #e8d5a3 50%,
+    var(--gold-light) 60%,
+    var(--gold) 80%,
+    var(--gold-dark) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer 8s linear infinite;
+}
+
+@keyframes text-shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Floating decorative elements */
+@keyframes float-up {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-24px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes float-down {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(16px);
+    opacity: 0.5;
+  }
+}
+
+.animate-float-up {
+  animation: float-up 7s ease-in-out infinite;
+}
+
+.animate-float-down {
+  animation: float-down 9s ease-in-out infinite;
+}
+
+/* Slow pulse for subtle elements */
+@keyframes pulse-gentle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 3s ease-in-out infinite;
+}
+
+/* Drifting atmospheric glow */
+@keyframes glow-drift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 10px) scale(0.97);
+  }
+}
+
+.animate-glow-drift {
+  animation: glow-drift 15s ease-in-out infinite;
+}
+
+/* Card hover shine sweep */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201, 169, 110, 0.04),
+    transparent
+  );
+  transition: left 0.7s ease;
+  pointer-events: none;
+}
+
+.card-shine:hover::after {
+  left: 100%;
+}
+
+/* Gold top accent line on cards */
+.card-gold-line {
+  position: relative;
+}
+
+.card-gold-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 2;
+}
+
+.card-gold-line:hover::before {
+  opacity: 1;
+}
+
+/* Grain texture overlay */
+.grain-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Section divider with gold lines */
+.section-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  height: 1px;
+  width: 64px;
+}
+
+.section-divider::before {
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+
+.section-divider::after {
+  background: linear-gradient(to left, transparent, var(--gold));
 }

@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Services: Public read (active only)
+    match /services/{serviceId} {
+      allow read: if resource.data.isActive == true;
+      allow write: if isAdmin();
+    }
+
+    // Appointments: Public create, admin read/update/delete
+    match /appointments/{appointmentId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Admins: Only admin can read
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+    }
+
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+  }
+}
