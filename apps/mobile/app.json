@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Mediterranea Skin Lab",
+    "slug": "mediterranea-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "mediterranea",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mediterraneaskinlab.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#181818"
+      },
+      "package": "com.mediterraneaskinlab.app"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
