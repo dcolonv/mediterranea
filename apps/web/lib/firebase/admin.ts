@@ -18,8 +18,10 @@ function getAdminApp(): App {
   });
 }
 
-const adminApp = getAdminApp();
-const adminAuth = getAuth(adminApp);
-const adminDb = getFirestore(adminApp);
+export function getAdminAuth() {
+  return getAuth(getAdminApp());
+}
 
-export { adminApp, adminAuth, adminDb };
+export function getAdminDb() {
+  return getFirestore(getAdminApp());
+}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAppointment, getAppointments, getAvailableSlots } from '@/actions/appointments';
-import { adminAuth } from '@/lib/firebase/admin';
+import { getAdminAuth } from '@/lib/firebase/admin';
 import type { AppointmentStatus } from '@mediterranea/shared/types';
 
 const corsHeaders = {
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
+    await getAdminAuth().verifyIdToken(authHeader.split('Bearer ')[1]);
   } catch {
     return NextResponse.json({ error: 'Invalid token' }, { status: 401, headers: corsHeaders });
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateAppointmentStatus, deleteAppointment } from '@/actions/appointments';
-import { adminAuth } from '@/lib/firebase/admin';
+import { getAdminAuth } from '@/lib/firebase/admin';
 import type { AppointmentStatus } from '@mediterranea/shared/types';
 
 const corsHeaders = {
@@ -14,7 +14,7 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   if (!authHeader?.startsWith('Bearer ')) return false;
 
   try {
-    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
+    await getAdminAuth().verifyIdToken(authHeader.split('Bearer ')[1]);
     return true;
   } catch {
     return false;

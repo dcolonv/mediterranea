@@ -2,7 +2,7 @@
 
 import { collection, addDoc, Timestamp, query, getDocs, doc, updateDoc, deleteDoc, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { adminDb } from '@/lib/firebase/admin';
+import { getAdminDb } from '@/lib/firebase/admin';
 import { appointmentSchema, type AppointmentFormData } from '@mediterranea/shared/validations';
 import { SERVICES_SEED, BUSINESS_HOURS, TIME_SLOTS } from '@mediterranea/shared/constants';
 import type { Appointment, AppointmentStatus } from '@mediterranea/shared/types';
@@ -36,7 +36,7 @@ export async function getAvailableSlots(date: string, serviceDuration: number) {
     });
 
     // Fetch existing appointments for this date using admin SDK
-    const appointmentsRef = adminDb.collection('appointments');
+    const appointmentsRef = getAdminDb().collection('appointments');
     const snapshot = await appointmentsRef
       .where('appointmentDate', '==', date)
       .where('status', 'in', ['pending', 'confirmed'])
