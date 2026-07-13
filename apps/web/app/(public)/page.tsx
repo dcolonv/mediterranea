@@ -12,8 +12,8 @@ export default function ComingSoonPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_80%_90%,rgba(201,169,110,0.04),transparent)]" />
 
       {/* Floating vertical accent lines */}
-      <div className="absolute top-[15%] left-[8%] w-0.5 h-40 bg-gradient-to-b from-transparent via-gold/40 to-transparent" />
-      <div className="absolute bottom-[20%] right-[10%] w-0.5 h-32 bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+      <div className="hidden md:block absolute top-[15%] left-[8%] w-0.5 h-40 bg-gradient-to-b from-transparent via-gold/40 to-transparent" />
+      <div className="hidden md:block absolute bottom-[20%] right-[10%] w-0.5 h-32 bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
 
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-2xl w-full px-6 text-center py-12">
@@ -30,7 +30,7 @@ export default function ComingSoonPage() {
         </div>
 
         {/* Decorative line + label */}
-        <div className="flex items-center justify-center gap-6 mb-6">
+        <div className="flex items-center justify-center gap-3 md:gap-6 mb-6">
           <span className="h-0.5 w-16 bg-gradient-to-r from-transparent to-gold" />
           <span className="text-xs tracking-[0.4em] text-gold uppercase font-semibold">
             Opening Soon
