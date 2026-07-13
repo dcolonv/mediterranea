@@ -13,10 +13,10 @@ export function Footer() {
           <div className="md:col-span-1">
             <Link href="/">
               <Image
-                src="/logo_dark.svg"
-                alt="Mediterranea Skin Lab"
-                width={180}
-                height={50}
+                src="/logo_light.png"
+                alt="Mediterránea Face Studio"
+                width={160}
+                height={72}
               />
             </Link>
           </div>
@@ -105,7 +105,7 @@ export function Footer() {
         <div className="mt-16 pt-8 border-t border-white-10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-xs text-white-30 tracking-wider">
-              &copy; {currentYear} Mediterranea Skin Lab. All rights reserved.
+              &copy; {currentYear} Mediterránea Face Studio. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a

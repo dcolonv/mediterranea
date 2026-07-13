@@ -77,7 +77,7 @@ export function Hero() {
               }`}
             >
               Experience the art of Mediterranean skincare at our exclusive
-              clinic. Where ancient traditions meet modern science to reveal your
+              face studio. Where science meets personalized care to reveal your
               skin&apos;s true beauty.
             </p>
 
@@ -119,7 +119,7 @@ export function Hero() {
             <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] overflow-hidden">
               <Image
                 src="/hero-clinic.png"
-                alt="Mediterranea Skin Lab — Treatment room"
+                alt="Mediterránea Face Studio — Treatment room"
                 fill
                 priority
                 className="object-cover"

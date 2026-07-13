@@ -136,7 +136,7 @@ export function AppointmentForm() {
           Appointment Requested
         </h2>
         <p className="text-white-50 max-w-md mx-auto">
-          Thank you for booking with Mediterranea Skin Lab. We&apos;ll contact
+          Thank you for booking with Mediterránea Face Studio. We&apos;ll contact
           you shortly to confirm your appointment.
         </p>
         <Button

@@ -84,5 +84,5 @@ export const CONTACT_INFO = {
   address: 'Avenida Juan Sebastian Elcano, 143',
   city: 'El Palo, Malaga, Spain',
   phone: '+34 602 643 543',
-  email: 'info@mediterraneaskinlab.com',
+  email: 'info@mediterraneafacestudio.com',
 };

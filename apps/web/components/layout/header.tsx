@@ -95,10 +95,10 @@ export function Header() {
           {/* Logo */}
           <Link href="/">
             <Image
-              src="/logo_dark.svg"
-              alt="Mediterranea Skin Lab"
-              width={180}
-              height={50}
+              src="/logo_light.png"
+              alt="Mediterránea Face Studio"
+              width={120}
+              height={54}
               priority
             />
           </Link>

@@ -1,8 +1,8 @@
 import { AppointmentForm } from '@/components/appointments';
 
 export const metadata = {
-  title: 'Book an Appointment | Mediterranea Skin Lab',
-  description: 'Schedule your skincare appointment at Mediterranea Skin Lab.',
+  title: 'Book an Appointment | Mediterránea Face Studio',
+  description: 'Schedule your skincare appointment at Mediterránea Face Studio.',
 };
 
 export default function AppointmentsPage() {

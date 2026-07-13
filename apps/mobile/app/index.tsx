@@ -35,7 +35,7 @@ export default function ServicesScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Mediterranea Skin Lab</Text>
+      <Text style={styles.title}>Mediterránea Face Studio</Text>
       <Text style={styles.subtitle}>Our Services</Text>
 
       <FlatList

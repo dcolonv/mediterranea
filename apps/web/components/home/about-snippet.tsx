@@ -67,7 +67,7 @@ export function AboutSnippet() {
               <div className="relative overflow-hidden aspect-[3/4]">
                 <Image
                   src="https://mediterraneaskinlab.com/_assets/media/67861646c5268c0c091abd657b2b17b3.jpg"
-                  alt="Dr. Mariana, founder of Mediterranea Skin Lab"
+                  alt="Dr. Mariana, founder of Mediterránea Face Studio"
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -95,10 +95,10 @@ export function AboutSnippet() {
             </ScrollReveal>
             <ScrollReveal delay={200}>
               <p className="text-lg text-white-50 leading-relaxed mb-8 font-light">
-                Hi, I&apos;m Dr. Mariana, the founder of Mediterranea Skin Lab. I
+                Hi, I&apos;m Dr. Mariana, the founder of Mediterránea Face Studio. I
                 hold a doctorate in pharmacy and have always been fascinated by
                 the connection between skin health and overall well-being.
-                Skin Lab was born from a desire to offer results-driven facial
+                Mediterránea was born from a desire to offer results-driven facial
                 treatments rooted in dermatological science&mdash;yet delivered
                 with warmth, care, and presence.
               </p>
@@ -107,7 +107,7 @@ export function AboutSnippet() {
               <p className="text-lg text-white-50 leading-relaxed font-light">
                 I believe beauty is not about covering up, but about uncovering
                 your natural radiance through knowledge, balance, and gentle
-                care. Each treatment at Skin Lab is customized to your
+                care. Each treatment at Mediterránea is customized to your
                 skin&apos;s unique needs, using clinically backed products and
                 the latest in facial technology.
               </p>

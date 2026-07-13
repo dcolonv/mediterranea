@@ -32,7 +32,7 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.brand}>Mediterranea</Text>
-        <Text style={styles.brandSub}>Skin Lab</Text>
+        <Text style={styles.brandSub}>Face Studio</Text>
       </View>
 
       <View style={styles.card}>

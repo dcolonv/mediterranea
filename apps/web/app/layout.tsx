@@ -18,7 +18,7 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
-  title: 'Mediterranea Skin Lab | Skincare Clinic',
+  title: 'Mediterránea Face Studio | Facial Treatments & Skincare',
   description:
     'Experience the art of Mediterranean skincare. Expert facials, treatments, and personalized care.',
 };

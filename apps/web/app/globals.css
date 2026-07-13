@@ -5,20 +5,30 @@ html {
 }
 
 :root {
-  /* Mediterranea Dark Elegant Palette */
-  --white: #ffffff;
-  --white-90: rgba(255, 255, 255, 0.9);
-  --white-70: rgba(255, 255, 255, 0.7);
-  --white-50: rgba(255, 255, 255, 0.5);
-  --white-30: rgba(255, 255, 255, 0.3);
-  --white-10: rgba(255, 255, 255, 0.1);
+  /* Mediterránea "Sandy Serenity" Light Palette.
+     NOTE: the white / dark / gold token names are legacy from the previous
+     dark theme and kept to avoid churning every component class. Their VALUES
+     are now the light palette:
+       - white tokens = dark warm-brown INK (primary/secondary text, borders)
+       - dark tokens  = light SAND surfaces (page + elevated backgrounds)
+       - gold tokens  = warm MOCHA accent
+     Palette swatches: #9B8C82 #B7A99D #C2B8B0 #D1CBC5 #DADADD
+     (dark ink + mocha accent derived from the same hue family for legibility) */
 
-  /* Dark backgrounds */
-  --dark-900: #181818;
-  --dark-800: #1e1e1e;
-  --dark-700: #232323;
-  --dark-600: #2a2a2a;
-  --dark-500: #333333;
+  /* Ink — dark warm brown text on sand (legacy "white-*") */
+  --white: #46403a;
+  --white-90: rgba(70, 64, 58, 0.92);
+  --white-70: rgba(70, 64, 58, 0.70);
+  --white-50: rgba(70, 64, 58, 0.52);
+  --white-30: rgba(70, 64, 58, 0.32);
+  --white-10: rgba(70, 64, 58, 0.12);
+
+  /* Sand surfaces, lightest → deepest (legacy "dark-*") */
+  --dark-900: #dbd5ce;
+  --dark-800: #d1cbc5;
+  --dark-700: #c7c0b8;
+  --dark-600: #c2b8b0;
+  --dark-500: #b7a99d;
 
   /* Warm grays for backoffice */
   --ivory: #faf9f7;
@@ -27,12 +37,13 @@ html {
   --warm-gray-600: #6b6560;
   --charcoal: #2d2a26;
 
-  /* Accent colors */
-  --gold: #c9a96e;
-  --gold-light: #d4bc8a;
-  --gold-dark: #b08d4f;
+  /* Golden accent — deepened slightly so it stays legible on light sand
+     (the original pale #c9a96e is kept as the "light" step) */
+  --gold: #b28f52;
+  --gold-light: #c9a96e;
+  --gold-dark: #8f6f38;
 
-  /* Semantic colors for dark theme */
+  /* Semantic colors for light theme */
   --background: var(--dark-900);
   --foreground: var(--white);
   --muted: var(--dark-700);
@@ -231,7 +242,7 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(201, 169, 110, 0.04),
+    rgba(201, 169, 110, 0.08),
     transparent
   );
   transition: left 0.7s ease;

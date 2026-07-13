@@ -12,22 +12,18 @@ export default function ComingSoonPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_80%_90%,rgba(201,169,110,0.04),transparent)]" />
 
       {/* Floating vertical accent lines */}
-      <div className="absolute top-[15%] left-[8%] w-px h-40 bg-gradient-to-b from-transparent via-gold/20 to-transparent" />
-      <div className="absolute bottom-[20%] right-[10%] w-px h-32 bg-gradient-to-b from-transparent via-gold/15 to-transparent" />
-
-      {/* Horizontal atmosphere lines */}
-      <div className="absolute top-[25%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/[0.06] to-transparent" />
-      <div className="absolute bottom-[25%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/[0.06] to-transparent" />
+      <div className="absolute top-[15%] left-[8%] w-0.5 h-40 bg-gradient-to-b from-transparent via-gold/40 to-transparent" />
+      <div className="absolute bottom-[20%] right-[10%] w-0.5 h-32 bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
 
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-2xl w-full px-6 text-center py-12">
         {/* Logo */}
         <div className="mb-10">
           <Image
-            src="/logo_dark.svg"
-            alt="Mediterranea Skin Lab"
-            width={220}
-            height={60}
+            src="/logo_light.png"
+            alt="Mediterránea Face Studio"
+            width={280}
+            height={126}
             className="mx-auto"
             priority
           />
@@ -35,11 +31,11 @@ export default function ComingSoonPage() {
 
         {/* Decorative line + label */}
         <div className="flex items-center justify-center gap-6 mb-6">
-          <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-          <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
+          <span className="h-0.5 w-16 bg-gradient-to-r from-transparent to-gold" />
+          <span className="text-xs tracking-[0.4em] text-gold uppercase font-semibold">
             Opening Soon
           </span>
-          <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />
+          <span className="h-0.5 w-16 bg-gradient-to-l from-transparent to-gold" />
         </div>
 
         {/* Heading */}
@@ -49,15 +45,15 @@ export default function ComingSoonPage() {
 
         {/* Description */}
         <p className="mt-6 text-base sm:text-lg text-white-50 max-w-lg mx-auto leading-relaxed font-light">
-          We&apos;re preparing something extraordinary. Our skincare
-          clinic will be opening its doors soon.
+          We&apos;re preparing something extraordinary. Our face studio
+          will be opening its doors soon.
         </p>
 
         {/* Divider */}
         <div className="mt-10 mb-10 flex items-center justify-center gap-4">
-          <span className="h-px w-12 bg-gold/20" />
-          <span className="w-1.5 h-1.5 rotate-45 border border-gold/30" />
-          <span className="h-px w-12 bg-gold/20" />
+          <span className="h-0.5 w-12 bg-gold/50" />
+          <span className="w-2 h-2 rotate-45 bg-gold" />
+          <span className="h-0.5 w-12 bg-gold/50" />
         </div>
 
         {/* Contact info */}

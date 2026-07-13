@@ -58,7 +58,7 @@ export default function LoginPage() {
               Mediterranea
             </span>
             <span className="block text-[10px] tracking-[0.3em] text-white-50 uppercase mt-1">
-              Skin Lab
+              Face Studio
             </span>
           </Link>
         </div>
