@@ -1,9 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Services: Public read (active only)
+    // Services: Public read (active only), admin reads all + writes
     match /services/{serviceId} {
-      allow read: if resource.data.isActive == true;
+      allow read: if resource.data.isActive == true || isAdmin();
       allow write: if isAdmin();
     }
 
@@ -11,6 +11,28 @@ service cloud.firestore {
     match /appointments/{appointmentId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
+    }
+
+    // Customers: Admin only
+    match /customers/{customerId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Staff: public can read active staff (for booking); admin writes
+    match /staff/{staffId} {
+      allow read: if resource.data.active == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Rooms: Admin only (internal resource)
+    match /rooms/{roomId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Studio settings: public read (business hours + policy for booking), admin write
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // Admins: Only admin can read

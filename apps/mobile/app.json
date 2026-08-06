@@ -9,13 +9,13 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mediterraneaskinlab.app"
+      "bundleIdentifier": "com.mediterraneafacestudio.app"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#181818"
       },
-      "package": "com.mediterraneaskinlab.app"
+      "package": "com.mediterraneafacestudio.app"
     },
     "plugins": [
       "expo-router"

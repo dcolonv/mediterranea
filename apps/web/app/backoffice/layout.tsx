@@ -66,7 +66,43 @@ export default function BackofficeLayout({
                   href="/backoffice"
                   className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
                 >
-                  Appointments
+                  Dashboard
+                </Link>
+                <Link
+                  href="/backoffice/calendar"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Calendar
+                </Link>
+                <Link
+                  href="/backoffice/clients"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Clients
+                </Link>
+                <Link
+                  href="/backoffice/services"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Services
+                </Link>
+                <Link
+                  href="/backoffice/staff"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Staff
+                </Link>
+                <Link
+                  href="/backoffice/rooms"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Rooms
+                </Link>
+                <Link
+                  href="/backoffice/settings"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Settings
                 </Link>
               </nav>
             </div>

@@ -89,7 +89,7 @@ export function Hero() {
                   : 'opacity-0 translate-y-6'
               }`}
             >
-              <Link href="/appointments">
+              <Link href="/init/book">
                 <Button variant="elegant" size="lg">
                   Book Appointment
                 </Button>

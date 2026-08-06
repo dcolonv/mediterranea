@@ -1,5 +1,15 @@
 import { initFirebase } from '@mediterranea/shared/firebase/config';
-import { getAuth } from 'firebase/auth';
+import { initializeAuth, getAuth, type Auth, type Persistence } from 'firebase/auth';
+import * as firebaseAuth from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// getReactNativePersistence ships in the React Native build of firebase/auth but
+// is missing from the published TypeScript types; access it through a typed cast.
+const getReactNativePersistence = (
+  firebaseAuth as unknown as {
+    getReactNativePersistence: (storage: unknown) => Persistence;
+  }
+).getReactNativePersistence;
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -11,6 +21,17 @@ const firebaseConfig = {
 };
 
 const app = initFirebase(firebaseConfig);
-const auth = getAuth(app);
+
+// Persist auth state across app restarts via AsyncStorage. initializeAuth can
+// only run once per app, so on Fast Refresh (module re-evaluation) fall back to
+// the already-initialized instance.
+let auth: Auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+} catch {
+  auth = getAuth(app);
+}
 
 export { app, auth };

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAppointment, getAppointments, getAvailableSlots } from '@/actions/appointments';
-import { getAdminAuth } from '@/lib/firebase/admin';
+import { verifyAdminToken } from '@/lib/firebase/admin';
 import type { AppointmentStatus } from '@mediterranea/shared/types';
 
 const corsHeaders = {
@@ -33,15 +33,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Admin-only: list appointments
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
+  if (!(await verifyAdminToken(request.headers.get('Authorization')))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders });
-  }
-
-  try {
-    await getAdminAuth().verifyIdToken(authHeader.split('Bearer ')[1]);
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401, headers: corsHeaders });
   }
 
   const status = searchParams.get('status') as AppointmentStatus | null;

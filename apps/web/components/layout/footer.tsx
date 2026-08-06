@@ -53,7 +53,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/appointments"
+                  href="/init/book"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   Book Appointment

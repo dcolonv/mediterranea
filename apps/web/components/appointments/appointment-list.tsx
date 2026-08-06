@@ -64,11 +64,17 @@ export function AppointmentList() {
       { next: 'cancelled', label: 'Cancel' },
     ],
     confirmed: [
-      { next: 'completed', label: 'Complete' },
+      { next: 'checked-in', label: 'Check In' },
+      { next: 'no-show', label: 'No-show' },
       { next: 'cancelled', label: 'Cancel' },
+    ],
+    'checked-in': [
+      { next: 'completed', label: 'Complete' },
+      { next: 'no-show', label: 'No-show' },
     ],
     completed: [],
     cancelled: [],
+    'no-show': [],
   };
 
   if (loading) {
