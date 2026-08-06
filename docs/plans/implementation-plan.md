@@ -115,7 +115,7 @@ Enablers with no screen of their own; Phase 1 can't start without them.
 - [x] Booking confirmation (email + SMS) _(fired from the create choke point — online, walk-in, and agent bookings)_
 - [x] Appointment reminders (scheduled) _(`GET /api/cron/reminders`, day-before, CRON_SECRET-gated; needs a scheduler wired — Vercel Cron / Cloud Scheduler)_
 - [x] Cancellation notices _(fired from admin, customer, and agent cancellation paths)_
-- [ ] Staff push notifications — new bookings, cancellations _(needs FCM device tokens; with mobile)_
+- [x] Staff push notifications — new bookings, cancellations _(Expo push: mobile registers device tokens, backend sends via Expo Push API on booking/cancellation)_
 - [x] Mobile: today's schedule as the default screen _(Appointments tab is now a day view defaulting to today)_
 - [x] Mobile: calendar quick view (day / week) _(week strip + day list, prev/next week, tap a day)_
 - [x] Mobile: quick walk-in booking _(`appointments/new`: service → practitioner → date → live times → client; server resolves staff/room)_
@@ -223,10 +223,10 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ## Cross-cutting foundations (built once, used across phases)
 
-- [ ] Notifications dispatch layer (Resend + Twilio + push) with scheduled reminders — _stood up in 1c_
+- [x] Notifications dispatch layer (Resend + Twilio + push) with scheduled reminders — _built in 1c (dormant without keys; reminders need a scheduler)_
 - [ ] Media: Firebase Storage for before/after photos, role-scoped rules, signed URLs — _Phase 2_
 - [ ] Payments: Stripe as system of record; webhook reconciliation — _Phase 3_
-- [ ] Privacy: per-collection Firestore rules by role _(in place)_; GDPR export/delete tooling — _Phase 2_
+- [x] Privacy: per-collection Firestore rules by role _(in place)_; GDPR export/delete tooling _(built in Phase 2)_
 - [ ] Quality: CI typecheck + build gates; an idempotent seed/migration script per data-model change
 
 ---
