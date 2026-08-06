@@ -173,6 +173,20 @@ export interface StudioSettings {
   updatedAt?: Timestamp;
 }
 
+export type PhotoType = 'before' | 'after';
+
+/** A client before/after photo; the image bytes live in Firebase Storage. */
+export interface ClientPhoto {
+  id: string;
+  customerId: string;
+  appointmentId?: string;
+  type: PhotoType;
+  /** Path within the Storage bucket. */
+  storagePath: string;
+  caption?: string;
+  createdAt: Timestamp;
+}
+
 export interface Admin {
   email: string;
   createdAt: Timestamp;

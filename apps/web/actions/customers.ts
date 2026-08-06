@@ -283,6 +283,10 @@ export async function hardDeleteCustomer(customerId: string) {
     batch.delete(db.collection(COLLECTION).doc(customerId));
     await batch.commit();
 
+    // Also erase their photos from Storage + metadata (GDPR).
+    const { purgeCustomerPhotos } = await import('@/actions/photos');
+    await purgeCustomerPhotos(customerId);
+
     return { success: true as const, appointmentsDeleted: ids.size };
   } catch (error) {
     console.error('Error erasing customer:', error);

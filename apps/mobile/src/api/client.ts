@@ -242,6 +242,50 @@ export async function deleteCustomer(token: string, id: string): Promise<void> {
   });
 }
 
+// ── Client photos (before / after) ──────────────────────────────────────────────
+
+export interface ClientPhotoDTO {
+  id: string;
+  customerId: string;
+  type: 'before' | 'after';
+  caption: string;
+  url: string;
+  createdAt: string | null;
+}
+
+export async function fetchClientPhotos(token: string, customerId: string): Promise<ClientPhotoDTO[]> {
+  const result = await apiFetch<{ photos: ClientPhotoDTO[] }>(
+    `/api/photos?customerId=${encodeURIComponent(customerId)}`,
+    { headers: authHeaders(token) }
+  );
+  return result.photos;
+}
+
+export async function uploadClientPhoto(
+  token: string,
+  input: {
+    customerId: string;
+    type: 'before' | 'after';
+    caption?: string;
+    base64: string;
+    contentType?: string;
+  }
+): Promise<string> {
+  const result = await apiFetch<{ data: { id: string } }>('/api/photos', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(input),
+  });
+  return result.data.id;
+}
+
+export async function deleteClientPhoto(token: string, id: string): Promise<void> {
+  await apiFetch(`/api/photos?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  });
+}
+
 // ── Push notifications ──────────────────────────────────────────────────────────
 
 export async function registerPushToken(token: string, expoToken: string): Promise<void> {

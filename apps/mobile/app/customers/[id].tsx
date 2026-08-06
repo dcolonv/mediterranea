@@ -5,6 +5,7 @@ import { useAuth } from '@/src/providers/auth-provider';
 import { fetchCustomer, deleteCustomer } from '@/src/api/client';
 import { colors, spacing, radius, STATUS_STYLES } from '@/src/theme';
 import { Card, Button, Badge, Loading, ErrorState, SectionLabel } from '@/src/components/ui';
+import { ClientPhotos } from '@/src/components/client-photos';
 import { initials, formatDate, formatTime } from '@/src/format';
 import type { Customer, Appointment } from '@mediterranea/shared/types';
 
@@ -100,6 +101,11 @@ export default function CustomerDetailScreen() {
           </Card>
         </>
       ) : null}
+
+      <SectionLabel>Before &amp; after photos</SectionLabel>
+      <View style={styles.section}>
+        <ClientPhotos customerId={id} getToken={getToken} />
+      </View>
 
       <SectionLabel>Appointment history</SectionLabel>
       {appointments.length === 0 ? (

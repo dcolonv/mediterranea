@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// All client media (before/after photos) is accessed exclusively through the
+// server (Admin SDK for writes, short-lived signed URLs for reads), so direct
+// client access to the bucket is denied. The Admin SDK bypasses these rules.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

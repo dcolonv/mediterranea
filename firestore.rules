@@ -29,6 +29,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Client photos metadata: server-only (Admin SDK). No direct client access.
+    match /photos/{photoId} {
+      allow read, write: if false;
+    }
+
     // Studio settings: public read (business hours + policy for booking), admin write
     match /settings/{docId} {
       allow read: if true;

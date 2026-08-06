@@ -15,6 +15,7 @@ import {
   hardDeleteCustomer,
 } from '@/actions/customers';
 import { formatPrice } from '@mediterranea/shared/utils';
+import { PhotosPanel } from '@/components/clients/photos-panel';
 import type { Customer, Appointment } from '@mediterranea/shared/types';
 import type { CustomerFormData } from '@mediterranea/shared/validations';
 
@@ -396,6 +397,9 @@ export function BackofficeClients() {
             </dl>
           </div>
         )}
+
+        {/* Before & after photos */}
+        <PhotosPanel customerId={active.id} />
 
         {/* History */}
         <div className="mt-8">
