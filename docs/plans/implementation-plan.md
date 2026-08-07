@@ -176,7 +176,7 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 - [x] GDPR consent management _(marketing opt-in + versioned treatment consent stored per customer)_
 - [x] Backoffice: view intake forms _(client detail shows skin profile, intake, consent; "manage" = edit still customer-side)_
 - [x] Backoffice: GDPR export + hard-delete a client's data _(export to JSON + erase customer & all their appointments; photos N/A until added)_
-- [x] Before/after photos — capture (mobile camera + library) + storage (Firebase Storage) _(Admin SDK upload, signed download URLs; before/after grid on web + mobile; purged on GDPR erase)_
+- [x] Before/after photos — capture (mobile camera + library) + storage (AWS S3) _(server-side upload, presigned read URLs; before/after grid on web + mobile; purged on GDPR erase)_
 - [x] Backoffice client detail: before/after photos, total spend
 - [ ] Treatment recipes — editor (steps, timings, products, device settings, contraindications, aftercare)
 - [ ] Mobile: per-treatment recipe cheat sheet
@@ -224,7 +224,7 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 ## Cross-cutting foundations (built once, used across phases)
 
 - [x] Notifications dispatch layer (Resend + Twilio + push) with scheduled reminders — _built in 1c (dormant without keys; reminders need a scheduler)_
-- [x] Media: Firebase Storage for before/after photos, deny-all bucket rules, signed URLs _(Phase 2; all access via Admin SDK)_
+- [x] Media: AWS S3 for before/after photos, private objects, presigned read URLs _(Phase 2; all access server-side)_
 - [ ] Payments: Stripe as system of record; webhook reconciliation — _Phase 3_
 - [x] Privacy: per-collection Firestore rules by role _(in place)_; GDPR export/delete tooling _(built in Phase 2)_
 - [ ] Quality: CI typecheck + build gates; an idempotent seed/migration script per data-model change

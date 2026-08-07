@@ -2,12 +2,13 @@
 
 import { randomUUID } from 'crypto';
 import { Timestamp } from 'firebase-admin/firestore';
-import { getAdminDb, getAdminBucket } from '@/lib/firebase/admin';
+import { getAdminDb } from '@/lib/firebase/admin';
+import { putObject, getSignedReadUrl, deleteObject } from '@/lib/storage/s3';
 import type { PhotoType } from '@mediterranea/shared/types';
 
 const COLLECTION = 'photos';
 const MAX_BYTES = 12 * 1024 * 1024; // 12 MB
-const SIGNED_URL_TTL_MS = 60 * 60 * 1000; // 1 hour
+const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
 
 export interface PhotoDTO {
   id: string;
@@ -48,11 +49,7 @@ export async function uploadPhotoBytes(input: {
   try {
     const id = randomUUID();
     const storagePath = `clients/${input.customerId}/${id}.${extForType(input.contentType)}`;
-    await getAdminBucket().file(storagePath).save(input.bytes, {
-      contentType: input.contentType,
-      resumable: false,
-      metadata: { cacheControl: 'private, max-age=3600' },
-    });
+    await putObject(storagePath, input.bytes, input.contentType);
 
     await getAdminDb().collection(COLLECTION).doc(id).set({
       customerId: input.customerId,
@@ -91,18 +88,13 @@ export async function listClientPhotos(
 ): Promise<{ success: true; photos: PhotoDTO[] } | { success: false; error: string }> {
   try {
     const snap = await getAdminDb().collection(COLLECTION).where('customerId', '==', customerId).get();
-    const bucket = getAdminBucket();
 
     const photos = await Promise.all(
       snap.docs.map(async (d) => {
         const data = d.data();
         let url = '';
         try {
-          const [signed] = await bucket.file(data.storagePath).getSignedUrl({
-            action: 'read',
-            expires: Date.now() + SIGNED_URL_TTL_MS,
-          });
-          url = signed;
+          url = await getSignedReadUrl(data.storagePath, SIGNED_URL_TTL_SECONDS);
         } catch (e) {
           console.error('Failed to sign URL for', data.storagePath, e);
         }
@@ -134,10 +126,7 @@ export async function deleteClientPhoto(id: string) {
     if (!doc.exists) return { success: false as const, error: 'Photo not found.' };
     const path = doc.data()!.storagePath as string;
 
-    await getAdminBucket()
-      .file(path)
-      .delete()
-      .catch((e) => console.error('Storage delete failed (continuing):', e));
+    await deleteObject(path).catch((e) => console.error('S3 delete failed (continuing):', e));
     await db.collection(COLLECTION).doc(id).delete();
     return { success: true as const };
   } catch (error) {
@@ -150,10 +139,9 @@ export async function deleteClientPhoto(id: string) {
 export async function purgeCustomerPhotos(customerId: string) {
   try {
     const snap = await getAdminDb().collection(COLLECTION).where('customerId', '==', customerId).get();
-    const bucket = getAdminBucket();
     await Promise.allSettled(
       snap.docs.map(async (d) => {
-        await bucket.file(d.data().storagePath).delete().catch(() => {});
+        await deleteObject(d.data().storagePath).catch(() => {});
         await d.ref.delete();
       })
     );

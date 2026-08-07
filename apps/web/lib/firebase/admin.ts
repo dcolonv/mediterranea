@@ -1,7 +1,6 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
 
 function getAdminApp(): App {
   if (getApps().length > 0) {
@@ -25,14 +24,6 @@ export function getAdminAuth() {
 
 export function getAdminDb() {
   return getFirestore(getAdminApp());
-}
-
-/** The Storage bucket used for client media (before/after photos). */
-export function getAdminBucket() {
-  const name =
-    process.env.FIREBASE_ADMIN_STORAGE_BUCKET ||
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-  return getStorage(getAdminApp()).bucket(name);
 }
 
 /**
