@@ -10,8 +10,8 @@ const OPTIONS: { locale: Locale; flag: string; label: string }[] = [
 
 export function LanguageToggle({
   className = '',
-  // Default is the coming-soon size (mobile reduced 25%); the nav passes its own.
-  sizeClass = 'text-[1.6875rem] sm:text-[2.75rem]',
+  // Default is the coming-soon size; the nav passes its own.
+  sizeClass = 'text-[1.265rem] sm:text-[2.0625rem]',
 }: {
   className?: string;
   sizeClass?: string;
