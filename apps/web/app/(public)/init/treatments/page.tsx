@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Treatments | Mediterránea Face Studio',
-  description: 'Explore our facials and advanced skincare treatments.',
+  description: 'Explore our facials and advanced facial treatments.',
 };
 
 function ServiceCard({ service }: { service: PublicService }) {
@@ -63,7 +63,7 @@ export default async function TreatmentsPage() {
           </div>
           <h1 className="font-serif text-4xl tracking-wide text-white sm:text-5xl">Treatments</h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-white-50">
-            Facials and advanced skincare, tailored to your skin.
+            Facials and advanced facial treatments, tailored to your skin.
           </p>
         </div>
 

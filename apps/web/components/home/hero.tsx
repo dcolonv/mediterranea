@@ -49,7 +49,7 @@ export function Hero() {
               <div className="flex items-center justify-center lg:justify-start gap-6">
                 <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
                 <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
-                  Premium Skincare
+                  Premium Facial Care
                 </span>
                 <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50 lg:hidden" />
               </div>
@@ -76,9 +76,9 @@ export function Hero() {
                   : 'opacity-0 translate-y-6'
               }`}
             >
-              Experience the art of Mediterranean skincare at our exclusive
-              face studio. Where science meets personalized care to reveal your
-              skin&apos;s true beauty.
+              Experience the art of Mediterranean facial treatments at our
+              exclusive face studio. Where science meets personalized care to
+              reveal your skin&apos;s true beauty.
             </p>
 
             {/* CTAs */}
