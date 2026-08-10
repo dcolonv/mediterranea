@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
+import { WhatsAppLink } from '@/components/whatsapp-link';
+import { CountdownTimer } from '@/components/home/countdown-timer';
 
 export default function ComingSoonPage() {
   return (
@@ -33,24 +35,30 @@ export default function ComingSoonPage() {
         <div className="flex items-center justify-center gap-3 md:gap-6 mb-6">
           <span className="h-0.5 w-16 bg-gradient-to-r from-transparent to-gold" />
           <span className="text-xs tracking-[0.4em] text-gold uppercase font-semibold">
-            Opening Soon
+            Grand Opening
           </span>
           <span className="h-0.5 w-16 bg-gradient-to-l from-transparent to-gold" />
         </div>
 
         {/* Heading */}
         <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl tracking-wide text-white leading-[1.1]">
-          Under Construction
+          Radiance Awaits
         </h1>
 
         {/* Description */}
         <p className="mt-6 text-base sm:text-lg text-white-50 max-w-lg mx-auto leading-relaxed font-light">
-          We&apos;re preparing something extraordinary. Our face studio
-          will be opening its doors soon.
+          Mediterránea Face Studio opens its doors on{' '}
+          <span className="text-white">September 8th, 2026</span> — a serene space where science
+          and Mediterranean care meet to reveal your skin&apos;s natural beauty.
         </p>
 
+        {/* Countdown */}
+        <div className="mt-12">
+          <CountdownTimer />
+        </div>
+
         {/* Divider */}
-        <div className="mt-10 mb-10 flex items-center justify-center gap-4">
+        <div className="mt-12 mb-10 flex items-center justify-center gap-4">
           <span className="h-0.5 w-12 bg-gold/50" />
           <span className="w-2 h-2 rotate-45 bg-gold" />
           <span className="h-0.5 w-12 bg-gold/50" />
@@ -59,12 +67,7 @@ export default function ComingSoonPage() {
         {/* Contact info */}
         <div className="space-y-3">
           <p className="text-sm text-white-50 font-light">
-            <a
-              href={`tel:${CONTACT_INFO.phone}`}
-              className="hover:text-gold transition-colors duration-300"
-            >
-              {CONTACT_INFO.phone}
-            </a>
+            <WhatsAppLink className="inline-flex items-center justify-center gap-2 hover:text-gold transition-colors duration-300" />
           </p>
           <p className="text-sm text-white-50 font-light">
             <a

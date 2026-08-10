@@ -1,10 +1,12 @@
 'use server';
 
-import { collection, addDoc, Timestamp, query, getDocs, doc, updateDoc, deleteDoc, orderBy, where } from 'firebase/firestore';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { Timestamp as AdminTimestamp, type Query } from 'firebase-admin/firestore';
 import { db } from '@/lib/firebase/config';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { appointmentSchema, type AppointmentFormData } from '@mediterranea/shared/validations';
 import { SERVICES_SEED, BUSINESS_HOURS, TIME_SLOTS } from '@mediterranea/shared/constants';
+import { upsertCustomerForAppointment } from '@/actions/customers';
 import type { Appointment, AppointmentStatus } from '@mediterranea/shared/types';
 
 type DayOfWeek = keyof typeof BUSINESS_HOURS;
@@ -39,7 +41,7 @@ export async function getAvailableSlots(date: string, serviceDuration: number) {
     const appointmentsRef = getAdminDb().collection('appointments');
     const snapshot = await appointmentsRef
       .where('appointmentDate', '==', date)
-      .where('status', 'in', ['pending', 'confirmed'])
+      .where('status', 'in', ['pending', 'confirmed', 'checked-in'])
       .get();
 
     // Build blocked time ranges from existing appointments
@@ -94,10 +96,19 @@ export async function createAppointment(data: AppointmentFormData) {
   }
 
   try {
+    // Link (or create) the customer record and refresh their rollups.
+    const customerId = await upsertCustomerForAppointment({
+      name: result.data.clientName,
+      email: result.data.clientEmail,
+      phone: result.data.clientPhone,
+      appointmentDate: result.data.appointmentDate,
+    });
+
     const now = Timestamp.now();
     const appointmentData = {
       ...result.data,
       notes: result.data.notes || '',
+      ...(customerId && { customerId }),
       status: 'pending' as AppointmentStatus,
       createdAt: now,
       updatedAt: now,
@@ -118,21 +129,21 @@ export async function getAppointments(filters?: {
   endDate?: string;
 }) {
   try {
-    let q = query(collection(db, 'appointments'), orderBy('appointmentDate', 'desc'));
+    // Admin SDK bypasses security rules (admin authorization is enforced at the
+    // API layer via verifyAdminToken).
+    let q: Query = getAdminDb().collection('appointments').orderBy('appointmentDate', 'desc');
 
     if (filters?.status) {
-      q = query(q, where('status', '==', filters.status));
+      q = q.where('status', '==', filters.status);
     }
-
     if (filters?.startDate) {
-      q = query(q, where('appointmentDate', '>=', filters.startDate));
+      q = q.where('appointmentDate', '>=', filters.startDate);
     }
-
     if (filters?.endDate) {
-      q = query(q, where('appointmentDate', '<=', filters.endDate));
+      q = q.where('appointmentDate', '<=', filters.endDate);
     }
 
-    const snapshot = await getDocs(q);
+    const snapshot = await q.get();
     const appointments: Appointment[] = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -150,11 +161,15 @@ export async function updateAppointmentStatus(
   status: AppointmentStatus
 ) {
   try {
-    const appointmentRef = doc(db, 'appointments', appointmentId);
-    await updateDoc(appointmentRef, {
+    await getAdminDb().collection('appointments').doc(appointmentId).update({
       status,
-      updatedAt: Timestamp.now(),
+      updatedAt: AdminTimestamp.now(),
     });
+
+    if (status === 'cancelled') {
+      const { notifyAppointmentCancelled } = await import('@/lib/notifications/dispatch');
+      await notifyAppointmentCancelled(appointmentId);
+    }
 
     return { success: true };
   } catch (error) {
@@ -163,9 +178,22 @@ export async function updateAppointmentStatus(
   }
 }
 
+export async function saveAppointmentNotes(appointmentId: string, notes: string) {
+  try {
+    await getAdminDb().collection('appointments').doc(appointmentId).update({
+      notes,
+      updatedAt: AdminTimestamp.now(),
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving appointment notes:', error);
+    return { success: false, error: 'Failed to save notes.' };
+  }
+}
+
 export async function deleteAppointment(appointmentId: string) {
   try {
-    await deleteDoc(doc(db, 'appointments', appointmentId));
+    await getAdminDb().collection('appointments').doc(appointmentId).delete();
     return { success: true };
   } catch (error) {
     console.error('Error deleting appointment:', error);

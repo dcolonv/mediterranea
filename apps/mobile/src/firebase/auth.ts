@@ -1,6 +1,7 @@
 import {
   GoogleAuthProvider,
   signInWithCredential,
+  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User,
@@ -11,6 +12,17 @@ import { auth } from './config';
 
 WebBrowser.maybeCompleteAuthSession();
 
+/** Whether Google OAuth client IDs are configured for this build. */
+export const GOOGLE_CONFIGURED = Boolean(
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
+    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
+);
+
+/**
+ * Google auth hook. Only call this from a component that renders exclusively
+ * when GOOGLE_CONFIGURED is true — useAuthRequest throws if no platform client
+ * id is provided.
+ */
 export function useGoogleAuth() {
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
@@ -18,6 +30,11 @@ export function useGoogleAuth() {
   });
 
   return { request, response, promptAsync };
+}
+
+export async function signInWithEmail(email: string, password: string): Promise<User> {
+  const result = await signInWithEmailAndPassword(auth, email.trim(), password);
+  return result.user;
 }
 
 export async function signInWithGoogleCredential(idToken: string): Promise<User> {

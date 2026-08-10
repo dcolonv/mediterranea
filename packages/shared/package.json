@@ -5,7 +5,7 @@
   "exports": {
     "./types": "./src/types/index.ts",
     "./constants": "./src/constants/index.ts",
-    "./validations": "./src/validations/appointment.ts",
+    "./validations": "./src/validations/index.ts",
     "./utils": "./src/utils.ts",
     "./firebase/config": "./src/firebase/config.ts"
   },

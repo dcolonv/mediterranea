@@ -89,7 +89,7 @@ export function Hero() {
                   : 'opacity-0 translate-y-6'
               }`}
             >
-              <Link href="/appointments">
+              <Link href="/init/book">
                 <Button variant="elegant" size="lg">
                   Book Appointment
                 </Button>
@@ -126,13 +126,8 @@ export function Hero() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
 
-              {/* Gradient overlays to blend into dark background */}
-              <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-transparent to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-dark-900/40 lg:to-dark-900/60" />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-dark-900/20" />
-
-              {/* Warm overlay to tie image into the dark/gold palette */}
-              <div className="absolute inset-0 bg-dark-900/10 mix-blend-multiply" />
+              {/* Minimal edge blend so the image reads as clearly as possible */}
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-900/15 via-transparent to-transparent" />
             </div>
           </div>
         </div>

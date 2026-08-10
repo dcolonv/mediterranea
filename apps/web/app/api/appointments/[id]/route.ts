@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateAppointmentStatus, deleteAppointment } from '@/actions/appointments';
-import { getAdminAuth } from '@/lib/firebase/admin';
+import {
+  updateAppointmentStatus,
+  deleteAppointment,
+  saveAppointmentNotes,
+} from '@/actions/appointments';
+import { verifyAdminToken } from '@/lib/firebase/admin';
 import type { AppointmentStatus } from '@mediterranea/shared/types';
 
 const corsHeaders = {
@@ -10,15 +14,7 @@ const corsHeaders = {
 };
 
 async function verifyAdmin(request: NextRequest): Promise<boolean> {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) return false;
-
-  try {
-    await getAdminAuth().verifyIdToken(authHeader.split('Bearer ')[1]);
-    return true;
-  } catch {
-    return false;
-  }
+  return Boolean(await verifyAdminToken(request.headers.get('Authorization')));
 }
 
 export async function OPTIONS() {
@@ -36,16 +32,27 @@ export async function PATCH(
   const { id } = await params;
 
   try {
-    const { status } = await request.json() as { status: AppointmentStatus };
+    const body = (await request.json()) as { status?: AppointmentStatus; notes?: string };
 
-    if (!status) {
-      return NextResponse.json({ error: 'Missing status' }, { status: 400, headers: corsHeaders });
+    if (body.status === undefined && body.notes === undefined) {
+      return NextResponse.json(
+        { error: 'Provide a status and/or notes.' },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const result = await updateAppointmentStatus(id, status);
+    if (body.status !== undefined) {
+      const result = await updateAppointmentStatus(id, body.status);
+      if (!result.success) {
+        return NextResponse.json({ error: result.error }, { status: 500, headers: corsHeaders });
+      }
+    }
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500, headers: corsHeaders });
+    if (body.notes !== undefined) {
+      const result = await saveAppointmentNotes(id, body.notes);
+      if (!result.success) {
+        return NextResponse.json({ error: result.error }, { status: 500, headers: corsHeaders });
+      }
     }
 
     return NextResponse.json({ success: true }, { headers: corsHeaders });

@@ -7,10 +7,10 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui';
 
 const NAV_SECTIONS = [
-  { id: 'home', label: 'Home', href: '/' },
-  { id: 'services', label: 'Services', href: '/#services' },
-  { id: 'about', label: 'About', href: '/#about' },
-  { id: 'contact', label: 'Contact', href: '/#contact' },
+  { id: 'home', label: 'Home', href: '/init' },
+  { id: 'services', label: 'Treatments', href: '/init/treatments' },
+  { id: 'about', label: 'About', href: '/init#about' },
+  { id: 'contact', label: 'Contact', href: '/init/contact' },
 ];
 
 export function Header() {
@@ -93,7 +93,7 @@ export function Header() {
       <nav className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex h-24 items-center justify-between">
           {/* Logo */}
-          <Link href="/">
+          <Link href="/init">
             <Image
               src="/logo_light.png"
               alt="Mediterránea Face Studio"
@@ -118,7 +118,13 @@ export function Header() {
                 {section.label}
               </Link>
             ))}
-            <Link href="/appointments">
+            <Link
+              href="/init/account"
+              className="elegant-underline text-sm tracking-widest uppercase text-white-70 transition-colors hover:text-white"
+            >
+              Account
+            </Link>
+            <Link href="/init/book">
               <Button variant="elegant" size="sm">
                 Book Now
               </Button>
@@ -174,7 +180,14 @@ export function Header() {
                   {section.label}
                 </Link>
               ))}
-              <Link href="/appointments" onClick={() => setMobileMenuOpen(false)}>
+              <Link
+                href="/init/account"
+                className="text-sm tracking-widest uppercase text-white-70 hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Account
+              </Link>
+              <Link href="/init/book" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="elegant" className="w-full">
                   Book Now
                 </Button>

@@ -115,7 +115,7 @@ export function ServicesOverview() {
         {/* CTA */}
         <ScrollReveal>
           <div className="text-center pt-4">
-            <Link href="/appointments">
+            <Link href="/init/book">
               <Button variant="elegant" size="lg">
                 Book Your Appointment
               </Button>

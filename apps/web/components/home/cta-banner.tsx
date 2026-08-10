@@ -25,7 +25,7 @@ export function CtaBanner() {
             rooted in dermatological science and tailored just for you.
           </p>
           <div className="mt-12">
-            <Link href="/appointments">
+            <Link href="/init/book">
               <Button variant="elegant" size="lg">
                 Begin Your Journey
               </Button>

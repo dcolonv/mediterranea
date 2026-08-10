@@ -15,18 +15,19 @@ html {
      Palette swatches: #9B8C82 #B7A99D #C2B8B0 #D1CBC5 #DADADD
      (dark ink + mocha accent derived from the same hue family for legibility) */
 
-  /* Ink — dark warm brown text on sand (legacy "white-*") */
-  --white: #46403a;
-  --white-90: rgba(70, 64, 58, 0.92);
-  --white-70: rgba(70, 64, 58, 0.70);
-  --white-50: rgba(70, 64, 58, 0.52);
-  --white-30: rgba(70, 64, 58, 0.32);
-  --white-10: rgba(70, 64, 58, 0.12);
+  /* Ink — dark warm brown text on sand (legacy "white-*").
+     Darkened base + higher alphas for contrast on the off-white background. */
+  --white: #34302b;
+  --white-90: rgba(52, 48, 43, 0.95);
+  --white-70: rgba(52, 48, 43, 0.82);
+  --white-50: rgba(52, 48, 43, 0.66);
+  --white-30: rgba(52, 48, 43, 0.46);
+  --white-10: rgba(52, 48, 43, 0.16);
 
   /* Sand surfaces, lightest → deepest (legacy "dark-*") */
-  --dark-900: #dbd5ce;
-  --dark-800: #d1cbc5;
-  --dark-700: #c7c0b8;
+  --dark-900: #fcfbf9;
+  --dark-800: #f3efe9;
+  --dark-700: #e9e3da;
   --dark-600: #c2b8b0;
   --dark-500: #b7a99d;
 

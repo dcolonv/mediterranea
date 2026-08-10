@@ -4,14 +4,21 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if the path is under /backoffice
+  // Backoffice (admin) area — requires the admin session cookie.
   if (pathname.startsWith('/backoffice')) {
-    // Check for session cookie
     const session = request.cookies.get('__session');
-
     if (!session) {
-      // Redirect to login if no session
       const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // Customer account area — requires the customer session cookie.
+  if (pathname.startsWith('/init/account')) {
+    const session = request.cookies.get('__customer');
+    if (!session) {
+      const loginUrl = new URL('/init/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
@@ -21,5 +28,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/backoffice/:path*'],
+  matcher: ['/backoffice/:path*', '/init/account/:path*'],
 };
