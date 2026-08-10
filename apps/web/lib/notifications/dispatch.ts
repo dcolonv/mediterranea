@@ -64,6 +64,8 @@ export async function notifyAppointmentCancelled(appointmentId: string): Promise
   try {
     const appt = await data.getAppointment(appointmentId);
     if (!appt) return;
+    // Offer the freed slot to matching waitlist entries (best-effort).
+    const { offerFreedSlot } = await import('@/actions/waitlist');
     await Promise.allSettled([
       deliver(appt, appointmentCancelled(await buildContext(appt))),
       sendStaffPush(
@@ -71,6 +73,7 @@ export async function notifyAppointmentCancelled(appointmentId: string): Promise
         `${appt.clientName} — ${appt.serviceName}, ${appt.appointmentDate} at ${appt.appointmentTime}`,
         { appointmentId: appt.id }
       ),
+      offerFreedSlot(appt),
     ]);
   } catch (error) {
     console.error('[notifications] notifyAppointmentCancelled failed:', error);

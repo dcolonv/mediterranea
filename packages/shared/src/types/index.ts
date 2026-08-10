@@ -213,6 +213,26 @@ export interface Review {
   updatedAt: Timestamp;
 }
 
+export type WaitlistStatus = 'waiting' | 'offered' | 'booked' | 'cancelled';
+
+export interface WaitlistEntry {
+  id: string;
+  serviceId: string;
+  serviceName: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  customerId?: string;
+  /** Preferred date (YYYY-MM-DD); empty means any date. */
+  preferredDate?: string;
+  /** Preferred practitioner; empty means any. */
+  staffId?: string;
+  notes?: string;
+  status: WaitlistStatus;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 export type PhotoType = 'before' | 'after';
 
 /** A client before/after photo; the image bytes live in Firebase Storage. */

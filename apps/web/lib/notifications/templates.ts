@@ -84,6 +84,22 @@ export function appointmentCancelled(ctx: NotificationContext): RenderedMessage 
   };
 }
 
+export function waitlistSlotOpened(ctx: NotificationContext): RenderedMessage {
+  const when = `${prettyDate(ctx.date)} at ${ctx.time}`;
+  return {
+    subject: `A spot just opened at ${STUDIO}`,
+    html: shell(
+      'A spot just opened',
+      `<p>Hi ${ctx.clientName},</p>
+       <p>Good news — a spot for <strong>${ctx.serviceName}</strong> has just opened up on
+       <strong>${when}</strong>.</p>
+       <p>Spots go quickly. To claim it, reply to this email or call us as soon as you can.</p>`
+    ),
+    text: `Hi ${ctx.clientName}, a spot for ${ctx.serviceName} just opened on ${when} at ${STUDIO}. Call ${CONTACT_INFO.phone} to claim it.`,
+    sms: `${STUDIO}: a spot for ${ctx.serviceName} opened ${when}. Call ${CONTACT_INFO.phone} to book — spots go fast!`,
+  };
+}
+
 export function appointmentReminder(ctx: NotificationContext): RenderedMessage {
   const summary = line(ctx);
   return {

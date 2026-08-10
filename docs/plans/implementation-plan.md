@@ -167,9 +167,10 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ---
 
-## Phase 2 — Records, consent & feedback
+## Phase 2 — Records, consent & feedback ✅
 
-**Records/consent/GDPR core delivered; photos, recipes, reviews & waitlist still to build.**
+**Complete** — records/consent/GDPR, before/after photos (S3), total spend, reviews
+(submit / moderate / display), treatment recipes (+ mobile cheat sheet), and waitlist.
 
 - [x] Intake / consultation form (skin type, allergies, medications, conditions, concerns) _(customer account `/init/account/profile`)_
 - [x] Digital consent capture _(typed-name signature + versioned consent + timestamp)_
@@ -183,7 +184,7 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 - [x] Reviews — submit after appointment _(customer account: rate + comment a completed appointment, one per appointment; server-guarded)_
 - [x] Reviews — display _(home-page Reviews section shows published reviews; hidden until any exist)_
 - [x] Reviews — moderation (publish / hide / delete) _(backoffice `/backoffice/reviews`; new reviews default to pending — pulled forward from Phase 4 so display is safe)_
-- [ ] Waitlist — add clients, auto-match on cancellation, offer slots
+- [x] Waitlist — add clients, auto-match on cancellation, offer slots _(backoffice `/backoffice/waitlist`; on cancellation, matching waiting entries are auto-notified (email/SMS) and marked offered)_
 
 ---
 

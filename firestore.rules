@@ -44,6 +44,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Waitlist: server-only (managed + matched via Admin SDK).
+    match /waitlist/{entryId} {
+      allow read, write: if false;
+    }
+
     // Studio settings: public read (business hours + policy for booking), admin write
     match /settings/{docId} {
       allow read: if true;

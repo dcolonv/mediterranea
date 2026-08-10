@@ -75,6 +75,12 @@ export default function BackofficeLayout({
                   Calendar
                 </Link>
                 <Link
+                  href="/backoffice/waitlist"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Waitlist
+                </Link>
+                <Link
                   href="/backoffice/clients"
                   className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
                 >
