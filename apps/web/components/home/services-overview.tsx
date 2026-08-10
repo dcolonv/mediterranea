@@ -1,8 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { ScrollReveal } from './scroll-reveal';
 import { SERVICES_SEED } from '@mediterranea/shared/constants';
 import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
+import { useLang } from '@/components/i18n/language-provider';
 
 function ServiceCard({
   service,
@@ -11,19 +14,22 @@ function ServiceCard({
   service: (typeof SERVICES_SEED)[number];
   delay: number;
 }) {
+  const { locale } = useLang();
+  const name = locale === 'es' ? service.nameEs : service.name;
+  const description = locale === 'es' ? service.descriptionEs : service.description;
   return (
     <ScrollReveal delay={delay} className="h-full">
       <div className="group card-shine card-gold-line border border-white-10 bg-dark-700/30 p-8 transition-all duration-500 hover:border-gold/30 hover:bg-dark-700/60 h-full flex flex-col">
         <div className="flex items-start justify-between mb-4">
           <h4 className="font-serif text-xl text-white group-hover:text-gold transition-colors duration-300">
-            {service.name}
+            {name}
           </h4>
           <span className="text-gold font-medium text-lg ml-4 shrink-0">
             {formatPrice(service.price)}
           </span>
         </div>
         <p className="text-sm text-white-50 leading-relaxed mb-6 font-light flex-1">
-          {service.description}
+          {description}
         </p>
         <div className="flex items-center text-xs text-white-30 tracking-wider uppercase">
           <svg
@@ -47,6 +53,7 @@ function ServiceCard({
 }
 
 export function ServicesOverview() {
+  const { dict } = useLang();
   const facials = SERVICES_SEED.filter((s) => s.category === 'facial');
   const treatments = SERVICES_SEED.filter((s) => s.category === 'treatment');
 
@@ -64,14 +71,14 @@ export function ServicesOverview() {
           <div className="text-center mb-24">
             <div className="section-divider mb-6">
               <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
-                What We Offer
+                {dict.services.eyebrow}
               </span>
             </div>
             <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl tracking-wide text-white">
-              Our Services
+              {dict.services.title}
             </h2>
             <p className="mt-8 text-lg text-white-50 max-w-2xl mx-auto font-light leading-relaxed">
-              Tailored facial treatments designed to enhance your natural beauty
+              {dict.services.subtitle}
             </p>
           </div>
         </ScrollReveal>
@@ -80,7 +87,7 @@ export function ServicesOverview() {
         <div className="mb-24">
           <ScrollReveal>
             <h3 className="font-serif text-2xl text-white mb-12 text-center sm:text-left tracking-wider">
-              Facial Treatments
+              {dict.services.facials}
             </h3>
           </ScrollReveal>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -98,7 +105,7 @@ export function ServicesOverview() {
         <div className="mb-20">
           <ScrollReveal>
             <h3 className="font-serif text-2xl text-white mb-12 text-center sm:text-left tracking-wider">
-              Advanced Treatments
+              {dict.services.advanced}
             </h3>
           </ScrollReveal>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -117,7 +124,7 @@ export function ServicesOverview() {
           <div className="text-center pt-4">
             <Link href="/init/book">
               <Button variant="elegant" size="lg">
-                Book Your Appointment
+                {dict.services.cta}
               </Button>
             </Link>
           </div>

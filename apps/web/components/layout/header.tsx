@@ -5,19 +5,22 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui';
+import { useLang } from '@/components/i18n/language-provider';
+import { LanguageToggle } from '@/components/i18n/language-toggle';
 
 const NAV_SECTIONS = [
-  { id: 'home', label: 'Home', href: '/init' },
-  { id: 'services', label: 'Treatments', href: '/init/treatments' },
-  { id: 'about', label: 'About', href: '/init#about' },
-  { id: 'contact', label: 'Contact', href: '/init/contact' },
-];
+  { id: 'home', key: 'home', href: '/init' },
+  { id: 'services', key: 'treatments', href: '/init/treatments' },
+  { id: 'about', key: 'about', href: '/init#about' },
+  { id: 'contact', key: 'contact', href: '/init/contact' },
+] as const;
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const pathname = usePathname();
+  const { dict } = useLang();
 
   // Track scroll position for header background
   useEffect(() => {
@@ -104,7 +107,7 @@ export function Header() {
           </Link>
 
           {/* Desktop navigation */}
-          <div className="hidden md:flex md:items-center md:gap-x-10">
+          <div className="hidden md:flex md:items-center md:gap-x-8">
             {NAV_SECTIONS.map((section) => (
               <Link
                 key={section.id}
@@ -115,18 +118,19 @@ export function Header() {
                     : 'text-white-70 hover:text-white'
                 }`}
               >
-                {section.label}
+                {dict.nav[section.key]}
               </Link>
             ))}
             <Link
               href="/init/account"
               className="elegant-underline text-sm tracking-widest uppercase text-white-70 transition-colors hover:text-white"
             >
-              Account
+              {dict.nav.account}
             </Link>
+            <LanguageToggle sizeClass="text-[1.6875rem] sm:text-[2.0625rem]" />
             <Link href="/init/book">
               <Button variant="elegant" size="sm">
-                Book Now
+                {dict.nav.bookNow}
               </Button>
             </Link>
           </div>
@@ -177,7 +181,7 @@ export function Header() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {section.label}
+                  {dict.nav[section.key]}
                 </Link>
               ))}
               <Link
@@ -185,11 +189,12 @@ export function Header() {
                 className="text-sm tracking-widest uppercase text-white-70 hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Account
+                {dict.nav.account}
               </Link>
+              <LanguageToggle sizeClass="text-[1.6875rem] sm:text-[2.0625rem]" />
               <Link href="/init/book" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="elegant" className="w-full">
-                  Book Now
+                  {dict.nav.bookNow}
                 </Button>
               </Link>
             </div>

@@ -1,9 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { CONTACT_INFO, BUSINESS_HOURS } from '@mediterranea/shared/constants';
 import { WhatsAppLink } from '@/components/whatsapp-link';
+import { useLang } from '@/components/i18n/language-provider';
 
 export function Footer() {
+  const { dict } = useLang();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -25,31 +29,31 @@ export function Footer() {
           {/* Quick Links */}
           <div>
             <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-gold mb-6">
-              Navigate
+              {dict.footer.navigate}
             </h3>
             <ul className="space-y-4">
               <li>
                 <Link
-                  href="/"
+                  href="/init"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
-                  Home
+                  {dict.footer.home}
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/#services"
+                  href="/init/treatments"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
-                  Services
+                  {dict.footer.services}
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/#about"
+                  href="/init#about"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
-                  About Us
+                  {dict.footer.about}
                 </Link>
               </li>
               <li>
@@ -57,7 +61,7 @@ export function Footer() {
                   href="/init/book"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
-                  Book Appointment
+                  {dict.footer.book}
                 </Link>
               </li>
             </ul>
@@ -66,7 +70,7 @@ export function Footer() {
           {/* Contact */}
           <div>
             <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-gold mb-6">
-              Contact
+              {dict.footer.contact}
             </h3>
             <ul className="space-y-4 text-sm text-white-50">
               <li>{CONTACT_INFO.address}</li>
@@ -83,20 +87,20 @@ export function Footer() {
           {/* Hours */}
           <div>
             <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-gold mb-6">
-              Hours
+              {dict.footer.hours}
             </h3>
             <ul className="space-y-4 text-sm text-white-50">
               <li className="flex justify-between">
-                <span>Mon - Fri</span>
+                <span>{dict.footer.monFri}</span>
                 <span>{BUSINESS_HOURS.monday?.open} - {BUSINESS_HOURS.monday?.close}</span>
               </li>
               <li className="flex justify-between">
-                <span>Saturday</span>
+                <span>{dict.footer.saturday}</span>
                 <span>{BUSINESS_HOURS.saturday?.open} - {BUSINESS_HOURS.saturday?.close}</span>
               </li>
               <li className="flex justify-between">
-                <span>Sunday</span>
-                <span>Closed</span>
+                <span>{dict.footer.sunday}</span>
+                <span>{dict.footer.closed}</span>
               </li>
             </ul>
           </div>
@@ -106,7 +110,7 @@ export function Footer() {
         <div className="mt-16 pt-8 border-t border-white-10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-xs text-white-30 tracking-wider">
-              &copy; {currentYear} Mediterránea Face Studio. All rights reserved.
+              {dict.footer.rights(currentYear)}
             </p>
             <div className="flex gap-6">
               <a

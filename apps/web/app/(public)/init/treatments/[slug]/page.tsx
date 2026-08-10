@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
 import { getBookingService } from '@/actions/public-booking';
+import { getServerDictionary } from '@/lib/i18n/server';
+import { serviceName, serviceDescription } from '@/lib/i18n/service';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -19,7 +23,10 @@ export default async function TreatmentDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const service = await getBookingService(slug);
+  const [service, { locale, dict }] = await Promise.all([
+    getBookingService(slug),
+    getServerDictionary(),
+  ]);
   if (!service) notFound();
 
   return (
@@ -29,7 +36,7 @@ export default async function TreatmentDetailPage({
           href="/init/treatments"
           className="text-sm text-white-50 transition-colors hover:text-white"
         >
-          ‹ All treatments
+          ‹ {dict.treatmentDetail.back}
         </Link>
 
         <div className="mt-8">
@@ -37,7 +44,7 @@ export default async function TreatmentDetailPage({
             {service.category}
           </span>
           <h1 className="mt-3 font-serif text-4xl tracking-wide text-white sm:text-5xl">
-            {service.name}
+            {serviceName(service, locale)}
           </h1>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-white-70">
@@ -51,13 +58,13 @@ export default async function TreatmentDetailPage({
           </div>
 
           <p className="mt-10 whitespace-pre-wrap text-lg font-light leading-relaxed text-white-70">
-            {service.description}
+            {serviceDescription(service, locale)}
           </p>
 
           <div className="mt-12 border-t border-white-10 pt-10">
             <Link href={`/init/book?service=${service.slug}`}>
               <Button variant="elegant" size="lg">
-                Book this treatment
+                {dict.treatmentDetail.book}
               </Button>
             </Link>
           </div>

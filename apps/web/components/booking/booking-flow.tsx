@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { Button, Input, Textarea } from '@/components/ui';
 import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
+import { useLang } from '@/components/i18n/language-provider';
+import { serviceName } from '@/lib/i18n/service';
 import {
   getBookingStaff,
   getBookingAvailability,
@@ -14,13 +17,6 @@ import {
 } from '@/actions/public-booking';
 
 type Step = 'service' | 'practitioner' | 'time' | 'details' | 'done';
-
-const STEPS: { key: Step; label: string }[] = [
-  { key: 'service', label: 'Treatment' },
-  { key: 'practitioner', label: 'Practitioner' },
-  { key: 'time', label: 'Date & time' },
-  { key: 'details', label: 'Your details' },
-];
 
 function addMinutes(time: string, minutes: number): string {
   const [h, m] = time.split(':').map(Number);
@@ -71,6 +67,17 @@ export function BookingFlow({
   policyText: string;
   prefill?: { name: string; email: string; phone: string } | null;
 }) {
+  const { locale, dict } = useLang();
+  const b = dict.booking;
+  const dfLocale = locale === 'es' ? es : undefined;
+
+  const STEPS: { key: Step; label: string }[] = [
+    { key: 'service', label: b.stepTreatment },
+    { key: 'practitioner', label: b.stepPractitioner },
+    { key: 'time', label: b.stepTime },
+    { key: 'details', label: b.stepDetails },
+  ];
+
   const [step, setStep] = useState<Step>(initialService ? 'practitioner' : 'service');
   const [service, setService] = useState<PublicService | null>(initialService);
 
@@ -92,6 +99,7 @@ export function BookingFlow({
   const [error, setError] = useState<string | null>(null);
 
   const staffName = (id: string) => staffList?.find((s) => s.id === id)?.name;
+  const svcName = (s: PublicService) => serviceName(s, locale);
 
   async function chooseService(s: PublicService) {
     setService(s);
@@ -139,7 +147,7 @@ export function BookingFlow({
   async function confirm() {
     if (!service || !time) return;
     if (!name.trim() || !email.trim() || !phone.trim()) {
-      setError('Please provide your name, email, and phone.');
+      setError(b.provideDetails);
       return;
     }
     setSubmitting(true);
@@ -175,23 +183,25 @@ export function BookingFlow({
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
           </svg>
         </div>
-        <h2 className="font-serif text-3xl text-white">You’re booked</h2>
+        <h2 className="font-serif text-3xl text-white">{b.booked}</h2>
         <p className="mt-4 text-white-70">
-          {service.name}
-          {staffName(staffId) ? ` with ${staffName(staffId)}` : ''}
+          {svcName(service)}
+          {staffName(staffId) ? ` ${b.with} ${staffName(staffId)}` : ''}
           <br />
-          {format(new Date(`${date}T00:00:00`), 'EEEE, MMMM d, yyyy')} at {time}
+          {format(new Date(`${date}T00:00:00`), 'EEEE, d MMMM yyyy', { locale: dfLocale })} {b.at} {time}
         </p>
         <p className="mt-3 text-sm text-white-50">
-          A confirmation will follow at {email}. We look forward to seeing you.
+          {b.confirmationPrefix}
+          {email}
+          {b.confirmationSuffix}
         </p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button
             variant="elegant"
-            onClick={() => downloadIcs({ service: service.name, date, time, durationMinutes })}
+            onClick={() => downloadIcs({ service: svcName(service), date, time, durationMinutes })}
           >
-            Add to calendar
+            {b.addToCalendar}
           </Button>
           <Button
             variant="ghost"
@@ -210,7 +220,7 @@ export function BookingFlow({
               setStep(initialService ? 'practitioner' : 'service');
             }}
           >
-            Book another
+            {b.bookAnother}
           </Button>
         </div>
 
@@ -247,9 +257,9 @@ export function BookingFlow({
         {/* Step: service */}
         {step === 'service' && (
           <div>
-            <h2 className="mb-8 font-serif text-2xl text-white">Choose a treatment</h2>
+            <h2 className="mb-8 font-serif text-2xl text-white">{b.chooseTreatment}</h2>
             {services.length === 0 ? (
-              <p className="text-white-50">No treatments are available to book right now.</p>
+              <p className="text-white-50">{b.noTreatments}</p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {services.map((s) => (
@@ -259,7 +269,7 @@ export function BookingFlow({
                     className="flex flex-col border border-white-10 p-5 text-left transition-colors hover:border-gold/40"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <span className="font-serif text-lg text-white">{s.name}</span>
+                      <span className="font-serif text-lg text-white">{svcName(s)}</span>
                       <span className="shrink-0 text-gold">{formatPrice(s.price)}</span>
                     </div>
                     <span className="mt-1 text-xs uppercase tracking-wider text-white-30">
@@ -275,17 +285,17 @@ export function BookingFlow({
         {/* Step: practitioner */}
         {step === 'practitioner' && service && (
           <div>
-            <h2 className="mb-2 font-serif text-2xl text-white">Choose a practitioner</h2>
+            <h2 className="mb-2 font-serif text-2xl text-white">{b.choosePractitioner}</h2>
             <p className="mb-8 text-sm text-white-50">
-              For <span className="text-white">{service.name}</span>.
+              {b.forService} <span className="text-white">{svcName(service)}</span>.
             </p>
             <div className="grid gap-3 sm:grid-cols-2" onMouseEnter={ensureStaffLoaded}>
               <button
                 onClick={() => choosePractitioner('')}
                 className="border border-white-10 p-5 text-left transition-colors hover:border-gold/40"
               >
-                <span className="font-serif text-lg text-white">Any available</span>
-                <span className="mt-1 block text-xs text-white-30">Fastest availability</span>
+                <span className="font-serif text-lg text-white">{b.anyAvailable}</span>
+                <span className="mt-1 block text-xs text-white-30">{b.fastest}</span>
               </button>
               {(staffList ?? []).map((s) => (
                 <button
@@ -306,7 +316,7 @@ export function BookingFlow({
                 disabled={Boolean(initialService)}
                 className={initialService ? 'opacity-0 pointer-events-none' : ''}
               >
-                ‹ Back
+                ‹ {b.back}
               </Button>
             </div>
           </div>
@@ -315,15 +325,15 @@ export function BookingFlow({
         {/* Step: time */}
         {step === 'time' && service && (
           <div>
-            <h2 className="mb-2 font-serif text-2xl text-white">Pick a date &amp; time</h2>
+            <h2 className="mb-2 font-serif text-2xl text-white">{b.pickDateTime}</h2>
             <p className="mb-8 text-sm text-white-50">
-              {service.name}
-              {staffName(staffId) ? ` · ${staffName(staffId)}` : ' · Any practitioner'}
+              {svcName(service)}
+              {staffName(staffId) ? ` · ${staffName(staffId)}` : ` · ${b.anyPractitioner}`}
             </p>
 
             <div className="flex flex-wrap items-end gap-3">
               <div className="w-full sm:w-auto">
-                <label className="mb-2 block text-sm font-medium tracking-wide text-white-70">Date</label>
+                <label className="mb-2 block text-sm font-medium tracking-wide text-white-70">{b.date}</label>
                 <input
                   type="date"
                   value={date}
@@ -336,12 +346,12 @@ export function BookingFlow({
                 />
               </div>
               <Button variant="outline" onClick={findTimes} disabled={!date || loadingTimes}>
-                {loadingTimes ? 'Finding…' : 'Find times'}
+                {loadingTimes ? b.finding : b.findTimes}
               </Button>
             </div>
 
             {times && times.length === 0 && (
-              <p className="mt-6 text-sm text-white-50">No open times on this date. Try another day.</p>
+              <p className="mt-6 text-sm text-white-50">{b.noTimes}</p>
             )}
             {times && times.length > 0 && (
               <div className="mt-6 flex flex-wrap gap-2">
@@ -362,7 +372,7 @@ export function BookingFlow({
 
             <div className="mt-8">
               <Button variant="ghost" size="sm" onClick={() => setStep('practitioner')}>
-                ‹ Back
+                ‹ {b.back}
               </Button>
             </div>
           </div>
@@ -371,22 +381,22 @@ export function BookingFlow({
         {/* Step: details */}
         {step === 'details' && service && (
           <div>
-            <h2 className="mb-2 font-serif text-2xl text-white">Your details</h2>
+            <h2 className="mb-2 font-serif text-2xl text-white">{b.yourDetails}</h2>
             <p className="mb-8 text-sm text-white-50">
-              {service.name}
+              {svcName(service)}
               {staffName(staffId) ? ` · ${staffName(staffId)}` : ''} ·{' '}
-              {format(new Date(`${date}T00:00:00`), 'MMM d')} at {time}
+              {format(new Date(`${date}T00:00:00`), 'd MMM', { locale: dfLocale })} {b.at} {time}
             </p>
 
             <div className="space-y-5">
-              <Input id="b-name" label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input id="b-name" label={b.fullName} value={name} onChange={(e) => setName(e.target.value)} />
               <div className="grid gap-5 sm:grid-cols-2">
-                <Input id="b-email" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                <Input id="b-phone" label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input id="b-email" label={b.email} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="b-phone" label={b.phone} value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
               <Textarea
                 id="b-notes"
-                label="Anything we should know? (optional)"
+                label={b.notes}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
@@ -399,10 +409,10 @@ export function BookingFlow({
 
             <div className="mt-8 flex items-center gap-3">
               <Button variant="elegant" onClick={confirm} disabled={submitting}>
-                {submitting ? 'Booking…' : 'Confirm booking'}
+                {submitting ? b.booking : b.confirm}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setStep('time')} disabled={submitting}>
-                ‹ Back
+                ‹ {b.back}
               </Button>
             </div>
           </div>

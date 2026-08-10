@@ -1,8 +1,12 @@
+'use client';
+
 import { CONTACT_INFO, BUSINESS_HOURS } from '@mediterranea/shared/constants';
 import { ScrollReveal } from './scroll-reveal';
 import { WhatsAppLink } from '@/components/whatsapp-link';
+import { useLang } from '@/components/i18n/language-provider';
 
 export function ContactSection() {
+  const { dict } = useLang();
   return (
     <section
       id="contact"
@@ -17,15 +21,14 @@ export function ContactSection() {
           <div className="text-center mb-24">
             <div className="section-divider mb-6">
               <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
-                Get In Touch
+                {dict.contactSection.eyebrow}
               </span>
             </div>
             <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl tracking-wide text-white">
-              Contact Us
+              {dict.contactSection.title}
             </h2>
             <p className="mt-8 text-lg text-white-50 max-w-2xl mx-auto font-light leading-relaxed">
-              We&apos;d love to hear from you. Reach out to schedule a
-              consultation or ask any questions.
+              {dict.contactSection.subtitle}
             </p>
           </div>
         </ScrollReveal>
@@ -56,7 +59,7 @@ export function ContactSection() {
                 </svg>
               </div>
               <h3 className="font-serif text-xl text-white mb-4 tracking-wide">
-                Location
+                {dict.contactSection.locationTitle}
               </h3>
               <p className="text-sm text-white-50 leading-relaxed font-light">
                 {CONTACT_INFO.address}
@@ -85,7 +88,7 @@ export function ContactSection() {
                 </svg>
               </div>
               <h3 className="font-serif text-xl text-white mb-4 tracking-wide">
-                Contact
+                {dict.contactSection.contactTitle}
               </h3>
               <p className="text-sm text-white-50 font-light">
                 <WhatsAppLink className="inline-flex items-center gap-2 hover:text-gold transition-colors duration-300" />
@@ -120,18 +123,18 @@ export function ContactSection() {
                 </svg>
               </div>
               <h3 className="font-serif text-xl text-white mb-4 tracking-wide">
-                Hours
+                {dict.contactSection.hoursTitle}
               </h3>
               <div className="text-sm text-white-50 space-y-2 font-light">
                 <p>
-                  Mon - Fri: {BUSINESS_HOURS.monday?.open} -{' '}
+                  {dict.contactSection.monFri}: {BUSINESS_HOURS.monday?.open} -{' '}
                   {BUSINESS_HOURS.monday?.close}
                 </p>
                 <p>
-                  Saturday: {BUSINESS_HOURS.saturday?.open} -{' '}
+                  {dict.contactSection.saturday}: {BUSINESS_HOURS.saturday?.open} -{' '}
                   {BUSINESS_HOURS.saturday?.close}
                 </p>
-                <p>Sunday: Closed</p>
+                <p>{dict.contactSection.sunday}: {dict.contactSection.closed}</p>
               </div>
             </div>
           </ScrollReveal>

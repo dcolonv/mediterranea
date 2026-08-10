@@ -2,12 +2,20 @@ import Image from 'next/image';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
 import { WhatsAppLink } from '@/components/whatsapp-link';
 import { CountdownTimer } from '@/components/home/countdown-timer';
+import { LanguageToggle } from '@/components/i18n/language-toggle';
+import { getServerDictionary } from '@/lib/i18n/server';
 
-export default function ComingSoonPage() {
+export default async function ComingSoonPage() {
+  const { dict } = await getServerDictionary();
   return (
     <section className="relative min-h-screen flex items-center justify-center grain-texture overflow-hidden">
       {/* Base background */}
       <div className="absolute inset-0 bg-dark-900" />
+
+      {/* Language toggle */}
+      <div className="absolute top-5 right-5 z-20">
+        <LanguageToggle />
+      </div>
 
       {/* Atmospheric gradient layers */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(201,169,110,0.08),transparent)]" />
@@ -35,21 +43,21 @@ export default function ComingSoonPage() {
         <div className="flex items-center justify-center gap-3 md:gap-6 mb-6">
           <span className="h-0.5 w-16 bg-gradient-to-r from-transparent to-gold" />
           <span className="text-xs tracking-[0.4em] text-gold uppercase font-semibold">
-            Grand Opening
+            {dict.comingSoon.eyebrow}
           </span>
           <span className="h-0.5 w-16 bg-gradient-to-l from-transparent to-gold" />
         </div>
 
         {/* Heading */}
         <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl tracking-wide text-white leading-[1.1]">
-          Radiance Awaits
+          {dict.comingSoon.heading}
         </h1>
 
         {/* Description */}
         <p className="mt-6 text-base sm:text-lg text-white-50 max-w-lg mx-auto leading-relaxed font-light">
-          Mediterránea Face Studio opens its doors on{' '}
-          <span className="text-white">September 8th, 2026</span> — a serene space where science
-          and Mediterranean care meet to reveal your skin&apos;s natural beauty.
+          {dict.comingSoon.descriptionPrefix}
+          <span className="text-white">{dict.comingSoon.date}</span>
+          {dict.comingSoon.descriptionSuffix}
         </p>
 
         {/* Countdown */}

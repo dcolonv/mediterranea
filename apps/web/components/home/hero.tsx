@@ -4,8 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
+import { useLang } from '@/components/i18n/language-provider';
 
 export function Hero() {
+  const { dict } = useLang();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export function Hero() {
               <div className="flex items-center justify-center lg:justify-start gap-6">
                 <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
                 <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
-                  Premium Facial Care
+                  {dict.hero.eyebrow}
                 </span>
                 <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50 lg:hidden" />
               </div>
@@ -63,9 +65,9 @@ export function Hero() {
                   : 'opacity-0 translate-y-8'
               }`}
             >
-              Discover Your
+              {dict.hero.headingLine1}
               <br />
-              <span className="hero-gold-shimmer">Natural Radiance</span>
+              <span className="hero-gold-shimmer">{dict.hero.headingLine2}</span>
             </h1>
 
             {/* Description */}
@@ -76,9 +78,7 @@ export function Hero() {
                   : 'opacity-0 translate-y-6'
               }`}
             >
-              Experience the art of Mediterranean facial treatments at our
-              exclusive face studio. Where science meets personalized care to
-              reveal your skin&apos;s true beauty.
+              {dict.hero.description}
             </p>
 
             {/* CTAs */}
@@ -91,14 +91,14 @@ export function Hero() {
             >
               <Link href="/init/book">
                 <Button variant="elegant" size="lg">
-                  Book Appointment
+                  {dict.hero.book}
                 </Button>
               </Link>
               <Link
                 href="#services"
                 className="elegant-underline text-sm tracking-[0.25em] text-white-50 hover:text-white transition-colors uppercase font-light"
               >
-                Explore Services
+                {dict.hero.explore}
               </Link>
             </div>
           </div>
