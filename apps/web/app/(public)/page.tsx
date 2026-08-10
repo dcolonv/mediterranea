@@ -49,7 +49,7 @@ export default async function ComingSoonPage() {
         </div>
 
         {/* Heading */}
-        <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl tracking-wide text-white leading-[1.2]">
+        <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl tracking-wide text-white leading-[1.2] whitespace-pre-line">
           {dict.comingSoon.heading}
         </h1>
 

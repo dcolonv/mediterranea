@@ -25,7 +25,7 @@ const en = {
   },
   comingSoon: {
     eyebrow: 'Grand Opening',
-    heading: 'A New Face Studio in East Málaga',
+    heading: 'A New Face Studio\nin East Málaga',
     descriptionPrefix: 'Mediterránea Face Studio opens on ',
     date: 'September 8th, 2026',
     descriptionSuffix: 'A space dedicated to personalized facial treatments.',
@@ -205,7 +205,7 @@ const es: typeof en = {
   },
   comingSoon: {
     eyebrow: 'Gran Apertura',
-    heading: 'Nuevo Estudio Facial en Málaga Este',
+    heading: 'Un Nuevo Estudio Facial\nen Málaga Este',
     descriptionPrefix: 'Mediterránea Face Studio abre el ',
     date: '8 de septiembre de 2026',
     descriptionSuffix: 'Un espacio dedicado a los tratamientos faciales personalizados.',
