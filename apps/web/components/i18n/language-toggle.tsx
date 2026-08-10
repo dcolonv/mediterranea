@@ -20,7 +20,7 @@ export function LanguageToggle({
 
   return (
     <div
-      className={`inline-flex items-center border border-white-20 ${className}`}
+      className={`inline-flex items-center ${className}`}
       role="group"
       aria-label="Language"
     >
@@ -34,8 +34,8 @@ export function LanguageToggle({
             aria-pressed={active}
             aria-label={opt.label}
             title={opt.label}
-            className={`px-2 py-1 leading-none transition-colors ${sizeClass} ${
-              active ? 'bg-gold/20' : 'opacity-50 hover:opacity-100'
+            className={`px-2 py-1 leading-none transition-opacity ${sizeClass} ${
+              active ? 'opacity-100' : 'opacity-40 hover:opacity-80'
             }`}
           >
             <span aria-hidden>{opt.flag}</span>
