@@ -1,5 +1,6 @@
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
 import { getPublicPolicy } from '@/actions/public-booking';
+import { WhatsAppLink } from '@/components/whatsapp-link';
 import type { Weekday } from '@mediterranea/shared/types';
 
 export const metadata = {
@@ -46,11 +47,9 @@ export default async function ContactPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wider text-white-30">Phone</dt>
+                <dt className="text-xs uppercase tracking-wider text-white-30">WhatsApp</dt>
                 <dd className="mt-1">
-                  <a href={`tel:${CONTACT_INFO.phone}`} className="text-gold hover:text-gold-light">
-                    {CONTACT_INFO.phone}
-                  </a>
+                  <WhatsAppLink className="inline-flex items-center gap-2 text-gold hover:text-gold-light" />
                 </dd>
               </div>
               <div>

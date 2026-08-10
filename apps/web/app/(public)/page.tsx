@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
+import { WhatsAppLink } from '@/components/whatsapp-link';
 
 export default function ComingSoonPage() {
   return (
@@ -59,12 +60,7 @@ export default function ComingSoonPage() {
         {/* Contact info */}
         <div className="space-y-3">
           <p className="text-sm text-white-50 font-light">
-            <a
-              href={`tel:${CONTACT_INFO.phone}`}
-              className="hover:text-gold transition-colors duration-300"
-            >
-              {CONTACT_INFO.phone}
-            </a>
+            <WhatsAppLink className="inline-flex items-center justify-center gap-2 hover:text-gold transition-colors duration-300" />
           </p>
           <p className="text-sm text-white-50 font-light">
             <a

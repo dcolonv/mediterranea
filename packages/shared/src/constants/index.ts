@@ -107,6 +107,9 @@ export const DEFAULT_STUDIO_SETTINGS = {
 /** Bump when the consent/privacy terms materially change. */
 export const CONSENT_VERSION = '2026-08-v1';
 
+/** Prefilled message when a customer taps the WhatsApp contact link. */
+export const WHATSAPP_MESSAGE = 'Hello, I need an appointment';
+
 export const CONTACT_INFO = {
   address: 'Avenida Juan Sebastian Elcano, 143',
   city: 'El Palo, Malaga, Spain',

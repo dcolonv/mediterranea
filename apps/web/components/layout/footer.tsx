@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { CONTACT_INFO, BUSINESS_HOURS } from '@mediterranea/shared/constants';
+import { WhatsAppLink } from '@/components/whatsapp-link';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -70,8 +71,8 @@ export function Footer() {
             <ul className="space-y-4 text-sm text-white-50">
               <li>{CONTACT_INFO.address}</li>
               <li>{CONTACT_INFO.city}</li>
-              <li className="hover:text-white transition-colors">
-                <a href={`tel:${CONTACT_INFO.phone}`}>{CONTACT_INFO.phone}</a>
+              <li>
+                <WhatsAppLink className="inline-flex items-center gap-2 hover:text-white transition-colors" />
               </li>
               <li className="hover:text-white transition-colors">
                 <a href={`mailto:${CONTACT_INFO.email}`}>{CONTACT_INFO.email}</a>

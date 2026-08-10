@@ -1,5 +1,6 @@
 import { CONTACT_INFO, BUSINESS_HOURS } from '@mediterranea/shared/constants';
 import { ScrollReveal } from './scroll-reveal';
+import { WhatsAppLink } from '@/components/whatsapp-link';
 
 export function ContactSection() {
   return (
@@ -87,12 +88,7 @@ export function ContactSection() {
                 Contact
               </h3>
               <p className="text-sm text-white-50 font-light">
-                <a
-                  href={`tel:${CONTACT_INFO.phone}`}
-                  className="hover:text-gold transition-colors duration-300"
-                >
-                  {CONTACT_INFO.phone}
-                </a>
+                <WhatsAppLink className="inline-flex items-center gap-2 hover:text-gold transition-colors duration-300" />
               </p>
               <p className="text-sm text-white-50 mt-2 font-light">
                 <a

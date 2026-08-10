@@ -13,6 +13,12 @@ export function formatDuration(minutes: number): string {
   return `${hours}h ${remainingMinutes}min`;
 }
 
+/** Build a WhatsApp click-to-chat URL with a prefilled message. */
+export function whatsappUrl(phone: string, message: string): string {
+  const digits = phone.replace(/\D/g, '');
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
+
 /**
  * Best-effort E.164 normalization for SMS delivery. Defaults to Spain (+34).
  * Returns null when the input clearly isn't a usable number, so callers can skip
