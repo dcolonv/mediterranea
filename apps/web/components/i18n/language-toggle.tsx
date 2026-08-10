@@ -3,38 +3,24 @@
 import { useLang } from './language-provider';
 import type { Locale } from '@/lib/i18n/config';
 
-const OPTIONS: { locale: Locale; flag: string; label: string }[] = [
-  { locale: 'en', flag: '🇬🇧', label: 'English' },
-  { locale: 'es', flag: '🇪🇸', label: 'Español' },
-];
+const FLAG: Record<Locale, string> = { en: '🇬🇧', es: '🇪🇸' };
 
 export function LanguageToggle({ className = '' }: { className?: string }) {
-  const { locale, setLocale } = useLang();
+  const { locale, dict, setLocale } = useLang();
+
+  // Single button showing the language you'll switch to.
+  const target: Locale = locale === 'en' ? 'es' : 'en';
+  const label = target === 'es' ? dict.lang.switchToSpanish : dict.lang.switchToEnglish;
 
   return (
-    <div
-      className={`inline-flex items-center border border-white-20 ${className}`}
-      role="group"
-      aria-label="Language"
+    <button
+      type="button"
+      onClick={() => setLocale(target)}
+      aria-label={label}
+      title={label}
+      className={`inline-flex items-center justify-center text-[2.25rem] sm:text-[2.75rem] leading-none transition-transform hover:scale-110 ${className}`}
     >
-      {OPTIONS.map((opt) => {
-        const active = opt.locale === locale;
-        return (
-          <button
-            key={opt.locale}
-            type="button"
-            onClick={() => setLocale(opt.locale)}
-            aria-pressed={active}
-            aria-label={opt.label}
-            title={opt.label}
-            className={`px-2 py-1 text-sm leading-none transition-colors ${
-              active ? 'bg-gold/20' : 'opacity-50 hover:opacity-100'
-            }`}
-          >
-            <span aria-hidden>{opt.flag}</span>
-          </button>
-        );
-      })}
-    </div>
+      <span aria-hidden>{FLAG[target]}</span>
+    </button>
   );
 }
