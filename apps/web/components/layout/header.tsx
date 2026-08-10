@@ -127,7 +127,7 @@ export function Header() {
             >
               {dict.nav.account}
             </Link>
-            <LanguageToggle />
+            <LanguageToggle sizeClass="text-[1.6875rem] sm:text-[2.0625rem]" />
             <Link href="/init/book">
               <Button variant="elegant" size="sm">
                 {dict.nav.bookNow}
@@ -191,7 +191,7 @@ export function Header() {
               >
                 {dict.nav.account}
               </Link>
-              <LanguageToggle />
+              <LanguageToggle sizeClass="text-[1.6875rem] sm:text-[2.0625rem]" />
               <Link href="/init/book" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="elegant" className="w-full">
                   {dict.nav.bookNow}
