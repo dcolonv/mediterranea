@@ -39,6 +39,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Treatment recipes: admin only (internal protocol; served via Admin SDK).
+    match /recipes/{serviceId} {
+      allow read, write: if isAdmin();
+    }
+
     // Studio settings: public read (business hours + policy for booking), admin write
     match /settings/{docId} {
       allow read: if true;

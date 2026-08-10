@@ -178,8 +178,8 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 - [x] Backoffice: GDPR export + hard-delete a client's data _(export to JSON + erase customer & all their appointments; photos N/A until added)_
 - [x] Before/after photos — capture (mobile camera + library) + storage (AWS S3) _(server-side upload, presigned read URLs; before/after grid on web + mobile; purged on GDPR erase)_
 - [x] Backoffice client detail: before/after photos, total spend
-- [ ] Treatment recipes — editor (steps, timings, products, device settings, contraindications, aftercare)
-- [ ] Mobile: per-treatment recipe cheat sheet
+- [x] Treatment recipes — editor (steps + timings, products, device settings, contraindications, aftercare) _(backoffice services → "Recipe"; stored per service)_
+- [x] Mobile: per-treatment recipe cheat sheet _(shown on the appointment detail — steps, products, device settings, contraindications, aftercare)_
 - [x] Reviews — submit after appointment _(customer account: rate + comment a completed appointment, one per appointment; server-guarded)_
 - [x] Reviews — display _(home-page Reviews section shows published reviews; hidden until any exist)_
 - [x] Reviews — moderation (publish / hide / delete) _(backoffice `/backoffice/reviews`; new reviews default to pending — pulled forward from Phase 4 so display is safe)_

@@ -177,6 +177,25 @@ export interface StudioSettings {
   updatedAt?: Timestamp;
 }
 
+export interface RecipeStep {
+  text: string;
+  /** Optional time for this step, in minutes. */
+  minutes?: number;
+}
+
+/** The standard protocol ("recipe") for a treatment. One per service (doc id = serviceId). */
+export interface Recipe {
+  serviceId: string;
+  steps: RecipeStep[];
+  /** Products used, one per line/entry. */
+  products: string[];
+  /** Device/machine settings notes. */
+  deviceSettings: string;
+  contraindications: string;
+  aftercare: string;
+  updatedAt: Timestamp;
+}
+
 export type ReviewStatus = 'pending' | 'published' | 'hidden';
 
 export interface Review {

@@ -286,6 +286,25 @@ export async function deleteClientPhoto(token: string, id: string): Promise<void
   });
 }
 
+// ── Treatment recipes ────────────────────────────────────────────────────────────
+
+export interface RecipeDTO {
+  serviceId: string;
+  steps: { text: string; minutes?: number }[];
+  products: string[];
+  deviceSettings: string;
+  contraindications: string;
+  aftercare: string;
+}
+
+export async function fetchRecipe(token: string, serviceId: string): Promise<RecipeDTO> {
+  const result = await apiFetch<{ recipe: RecipeDTO }>(
+    `/api/recipes?serviceId=${encodeURIComponent(serviceId)}`,
+    { headers: authHeaders(token) }
+  );
+  return result.recipe;
+}
+
 // ── Push notifications ──────────────────────────────────────────────────────────
 
 export async function registerPushToken(token: string, expoToken: string): Promise<void> {

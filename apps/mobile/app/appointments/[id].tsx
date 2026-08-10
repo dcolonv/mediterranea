@@ -10,6 +10,7 @@ import {
 } from '@/src/api/client';
 import { colors, spacing, radius, STATUS_STYLES, APPOINTMENT_STATUSES } from '@/src/theme';
 import { Card, Button, Badge, Field, Loading, ErrorState, SectionLabel } from '@/src/components/ui';
+import { TreatmentRecipe } from '@/src/components/treatment-recipe';
 import { formatDate, formatTime } from '@/src/format';
 import { formatDuration } from '@mediterranea/shared/utils';
 import type { Appointment, AppointmentStatus } from '@mediterranea/shared/types';
@@ -156,6 +157,11 @@ export default function AppointmentDetailScreen() {
           style={{ marginBottom: spacing.lg }}
         />
       ) : null}
+
+      <SectionLabel>Treatment recipe</SectionLabel>
+      <View style={{ marginBottom: spacing.lg }}>
+        <TreatmentRecipe serviceId={a.serviceId} getToken={getToken} />
+      </View>
 
       <SectionLabel>Status</SectionLabel>
       <View style={styles.statusGrid}>
