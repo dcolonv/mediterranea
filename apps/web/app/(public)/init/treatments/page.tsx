@@ -3,6 +3,9 @@ import { Button } from '@/components/ui';
 import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
 import { getBookingServices, type PublicService } from '@/actions/public-booking';
 
+// Reads live services via the Admin SDK — render on demand, not at build.
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Treatments | Mediterránea Face Studio',
   description: 'Explore our facials and advanced skincare treatments.',

@@ -3,6 +3,9 @@ import { getPublicPolicy } from '@/actions/public-booking';
 import { WhatsAppLink } from '@/components/whatsapp-link';
 import type { Weekday } from '@mediterranea/shared/types';
 
+// Reads live studio settings (hours) via the Admin SDK — render on demand, not at build.
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Contact & Hours | Mediterránea Face Studio',
   description: 'Find us, our opening hours, and how to get in touch.',
