@@ -5,8 +5,12 @@ export type ServiceCategory = 'facial' | 'treatment';
 export interface Service {
   id: string;
   name: string;
+  /** Optional Spanish name; falls back to `name` when unset. */
+  nameEs?: string;
   slug: string;
   description: string;
+  /** Optional Spanish description; falls back to `description` when unset. */
+  descriptionEs?: string;
   category: ServiceCategory;
   durationMinutes: number;
   price: number;

@@ -3,8 +3,10 @@ import type { ServiceCategory } from '../types';
 export const SERVICES_SEED = [
   {
     name: 'Deep Cleansing Facial',
+    nameEs: 'Limpieza Facial Profunda',
     slug: 'deep-cleansing',
     description: 'A thorough facial treatment that deeply cleanses pores, removes impurities, and leaves your skin refreshed and radiant.',
+    descriptionEs: 'Un tratamiento facial completo que limpia los poros en profundidad, elimina impurezas y deja tu piel fresca y radiante.',
     category: 'facial' as ServiceCategory,
     durationMinutes: 60,
     price: 85,
@@ -12,8 +14,10 @@ export const SERVICES_SEED = [
   },
   {
     name: 'Hydration Therapy',
+    nameEs: 'Terapia de Hidratación',
     slug: 'hydration-therapy',
     description: 'Intensive moisture treatment using premium serums and masks to restore your skin\'s natural hydration balance.',
+    descriptionEs: 'Tratamiento de hidratación intensiva con sérums y mascarillas premium para restaurar el equilibrio natural de tu piel.',
     category: 'facial' as ServiceCategory,
     durationMinutes: 75,
     price: 110,
@@ -21,8 +25,10 @@ export const SERVICES_SEED = [
   },
   {
     name: 'Anti-Aging Treatment',
+    nameEs: 'Tratamiento Antiedad',
     slug: 'anti-aging',
     description: 'Advanced treatment targeting fine lines and wrinkles, promoting collagen production for youthful, firm skin.',
+    descriptionEs: 'Tratamiento avanzado que actúa sobre líneas finas y arrugas, estimulando la producción de colágeno para una piel joven y firme.',
     category: 'facial' as ServiceCategory,
     durationMinutes: 90,
     price: 150,
@@ -30,8 +36,10 @@ export const SERVICES_SEED = [
   },
   {
     name: 'Chemical Peel',
+    nameEs: 'Peeling Químico',
     slug: 'chemical-peel',
     description: 'Professional-grade exfoliation treatment that reveals smoother, brighter skin by removing dead skin cells.',
+    descriptionEs: 'Tratamiento de exfoliación profesional que revela una piel más suave y luminosa al eliminar las células muertas.',
     category: 'treatment' as ServiceCategory,
     durationMinutes: 45,
     price: 120,
@@ -39,8 +47,10 @@ export const SERVICES_SEED = [
   },
   {
     name: 'Botox Treatment',
+    nameEs: 'Tratamiento con Bótox',
     slug: 'botox',
     description: 'Precision botulinum toxin injections to reduce dynamic wrinkles and achieve a naturally refreshed appearance.',
+    descriptionEs: 'Aplicación precisa de toxina botulínica para reducir las arrugas de expresión y lograr un aspecto naturalmente renovado.',
     category: 'treatment' as ServiceCategory,
     durationMinutes: 30,
     price: 250,
@@ -48,8 +58,10 @@ export const SERVICES_SEED = [
   },
   {
     name: 'Hyaluronic Acid Filler',
+    nameEs: 'Relleno de Ácido Hialurónico',
     slug: 'hyaluronic-filler',
     description: 'Dermal filler treatment to restore volume, enhance facial contours, and smooth deep wrinkles.',
+    descriptionEs: 'Tratamiento con relleno dérmico para restaurar volumen, realzar los contornos faciales y suavizar arrugas profundas.',
     category: 'treatment' as ServiceCategory,
     durationMinutes: 45,
     price: 350,

@@ -24,8 +24,10 @@ async function clientIp(): Promise<string> {
 export interface PublicService {
   id: string;
   name: string;
+  nameEs: string;
   slug: string;
   description: string;
+  descriptionEs: string;
   category: string;
   durationMinutes: number;
   price: number;
@@ -40,8 +42,10 @@ export interface PublicStaff {
 function toPublicService(s: {
   id: string;
   name: string;
+  nameEs?: string;
   slug: string;
   description: string;
+  descriptionEs?: string;
   category: string;
   durationMinutes: number;
   price: number;
@@ -49,8 +53,10 @@ function toPublicService(s: {
   return {
     id: s.id,
     name: s.name,
+    nameEs: s.nameEs ?? '',
     slug: s.slug,
     description: s.description,
+    descriptionEs: s.descriptionEs ?? '',
     category: s.category,
     durationMinutes: s.durationMinutes,
     price: s.price,

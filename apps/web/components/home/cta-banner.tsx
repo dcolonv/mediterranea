@@ -1,8 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { ScrollReveal } from './scroll-reveal';
+import { useLang } from '@/components/i18n/language-provider';
 
 export function CtaBanner() {
+  const { dict } = useLang();
   return (
     <section className="relative py-28 overflow-hidden">
       {/* Background */}
@@ -16,18 +20,18 @@ export function CtaBanner() {
       <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
         <ScrollReveal>
           <p className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white tracking-wide leading-[1.3]">
-            Science-backed facial care,
+            {dict.cta.line1}
             <br />
-            delivered with <span className="text-gold">warmth and care</span>
+            {dict.cta.line2Prefix}
+            <span className="text-gold">{dict.cta.line2Accent}</span>
           </p>
           <p className="mt-8 text-white-50 text-lg font-light max-w-xl mx-auto leading-relaxed">
-            Your skin is unique. Let us create a personalized treatment plan
-            rooted in dermatological science and tailored just for you.
+            {dict.cta.body}
           </p>
           <div className="mt-12">
             <Link href="/init/book">
               <Button variant="elegant" size="lg">
-                Begin Your Journey
+                {dict.cta.button}
               </Button>
             </Link>
           </div>

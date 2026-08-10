@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLang } from '@/components/i18n/language-provider';
 
 // Opening day: 8 September 2026, 09:00 Málaga time (CEST, UTC+2).
 const TARGET_MS = new Date('2026-09-08T09:00:00+02:00').getTime();
@@ -24,16 +25,17 @@ function calc(): Remaining {
   };
 }
 
-const UNITS: { key: keyof Omit<Remaining, 'done'>; label: string }[] = [
-  { key: 'days', label: 'Days' },
-  { key: 'hours', label: 'Hours' },
-  { key: 'minutes', label: 'Minutes' },
-  { key: 'seconds', label: 'Seconds' },
-];
-
 export function CountdownTimer() {
+  const { dict } = useLang();
   // Start null so the server and first client render match (no hydration flash).
   const [t, setT] = useState<Remaining | null>(null);
+
+  const UNITS: { key: keyof Omit<Remaining, 'done'>; label: string }[] = [
+    { key: 'days', label: dict.comingSoon.days },
+    { key: 'hours', label: dict.comingSoon.hours },
+    { key: 'minutes', label: dict.comingSoon.minutes },
+    { key: 'seconds', label: dict.comingSoon.seconds },
+  ];
 
   useEffect(() => {
     setT(calc());
@@ -42,9 +44,7 @@ export function CountdownTimer() {
   }, []);
 
   if (t?.done) {
-    return (
-      <p className="font-serif text-2xl text-gold sm:text-3xl">We&apos;re open — welcome.</p>
-    );
+    return <p className="font-serif text-2xl text-gold sm:text-3xl">{dict.comingSoon.open}</p>;
   }
 
   return (

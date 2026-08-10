@@ -16,8 +16,10 @@ import type { ServiceFormData } from '@mediterranea/shared/validations';
 
 interface FormState {
   name: string;
+  nameEs: string;
   slug: string;
   description: string;
+  descriptionEs: string;
   category: ServiceCategory;
   durationMinutes: string;
   price: string;
@@ -28,8 +30,10 @@ interface FormState {
 
 const EMPTY_FORM: FormState = {
   name: '',
+  nameEs: '',
   slug: '',
   description: '',
+  descriptionEs: '',
   category: 'facial',
   durationMinutes: '60',
   price: '0',
@@ -88,8 +92,10 @@ export function BackofficeServices() {
   function startEdit(svc: Service) {
     setForm({
       name: svc.name,
+      nameEs: svc.nameEs ?? '',
       slug: svc.slug,
       description: svc.description,
+      descriptionEs: svc.descriptionEs ?? '',
       category: svc.category,
       durationMinutes: String(svc.durationMinutes),
       price: String(svc.price),
@@ -134,8 +140,10 @@ export function BackofficeServices() {
 
     const payload: ServiceFormData = {
       name: form.name.trim(),
+      nameEs: form.nameEs.trim(),
       slug: form.slug.trim(),
       description: form.description.trim(),
+      descriptionEs: form.descriptionEs.trim(),
       category: form.category,
       durationMinutes: duration,
       price,
@@ -192,10 +200,17 @@ export function BackofficeServices() {
         <div className="space-y-5">
           <Input
             id="svc-name"
-            label="Name"
+            label="Name (English)"
             value={form.name}
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="Deep Cleansing Facial"
+          />
+          <Input
+            id="svc-name-es"
+            label="Name (Spanish) — optional"
+            value={form.nameEs}
+            onChange={(e) => setForm({ ...form, nameEs: e.target.value })}
+            placeholder="Limpieza Facial Profunda"
           />
           <Input
             id="svc-slug"
@@ -209,11 +224,19 @@ export function BackofficeServices() {
           />
           <Textarea
             id="svc-description"
-            label="Description"
+            label="Description (English)"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
             placeholder="What the treatment involves and who it's for…"
+          />
+          <Textarea
+            id="svc-description-es"
+            label="Description (Spanish) — optional"
+            value={form.descriptionEs}
+            onChange={(e) => setForm({ ...form, descriptionEs: e.target.value })}
+            rows={3}
+            placeholder="En qué consiste el tratamiento y para quién es…"
           />
 
           <div className="grid grid-cols-2 gap-4">
