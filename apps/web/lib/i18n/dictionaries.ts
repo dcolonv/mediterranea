@@ -25,11 +25,10 @@ const en = {
   },
   comingSoon: {
     eyebrow: 'Grand Opening',
-    heading: 'Radiance Awaits',
-    descriptionPrefix: 'Mediterránea Face Studio opens its doors on ',
+    heading: 'A New Face Studio in East Málaga',
+    descriptionPrefix: 'Mediterránea Face Studio opens on ',
     date: 'September 8th, 2026',
-    descriptionSuffix:
-      ' — a serene space where science and Mediterranean care meet to reveal your skin’s natural beauty.',
+    descriptionSuffix: ' — a space dedicated to personalized facial treatments.',
     days: 'Days',
     hours: 'Hours',
     minutes: 'Minutes',
@@ -193,16 +192,15 @@ const es: typeof en = {
   },
   comingSoon: {
     eyebrow: 'Gran Apertura',
-    heading: 'Tu Resplandor Te Espera',
-    descriptionPrefix: 'Mediterránea Face Studio abre sus puertas el ',
+    heading: 'Un Nuevo Estudio Facial en Málaga Este',
+    descriptionPrefix: 'Mediterránea Face Studio abre el ',
     date: '8 de septiembre de 2026',
-    descriptionSuffix:
-      ' — un espacio sereno donde la ciencia y el cuidado mediterráneo se unen para revelar la belleza natural de tu piel.',
+    descriptionSuffix: ' — un espacio dedicado a los tratamientos faciales personalizados.',
     days: 'Días',
     hours: 'Horas',
     minutes: 'Minutos',
     seconds: 'Segundos',
-    open: 'Ya estamos abiertas — bienvenida.',
+    open: 'Ya estamos abiertos — te esperamos.',
   },
   hero: {
     eyebrow: 'Cuidado Facial Premium',

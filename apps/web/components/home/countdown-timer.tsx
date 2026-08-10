@@ -48,15 +48,15 @@ export function CountdownTimer() {
   }
 
   return (
-    <div className="flex items-start justify-center gap-4 sm:gap-8">
+    <div className="flex items-start justify-center gap-3 sm:gap-6">
       {UNITS.map(({ key, label }) => (
         <div key={key} className="flex flex-col items-center">
-          <div className="min-w-[3.5rem] border border-white-10 bg-dark-800/60 px-3 py-4 sm:min-w-[5rem] sm:px-5 sm:py-6">
-            <span className="font-serif text-3xl tabular-nums text-white sm:text-5xl">
+          <div className="min-w-[2.75rem] border border-white-10 bg-dark-800/60 px-2.5 py-3 sm:min-w-[3.75rem] sm:px-4 sm:py-4">
+            <span className="font-serif text-2xl tabular-nums text-white sm:text-3xl">
               {t ? String(t[key]).padStart(2, '0') : '--'}
             </span>
           </div>
-          <span className="mt-3 text-[10px] uppercase tracking-[0.25em] text-gold/70 sm:text-xs">
+          <span className="mt-2.5 text-[9px] uppercase tracking-[0.25em] text-gold/70 sm:text-[11px]">
             {label}
           </span>
         </div>
