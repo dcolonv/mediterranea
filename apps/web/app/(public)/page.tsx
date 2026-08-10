@@ -57,6 +57,8 @@ export default async function ComingSoonPage() {
         <p className="mt-6 text-base sm:text-lg text-white-50 max-w-lg mx-auto leading-relaxed font-light">
           {dict.comingSoon.descriptionPrefix}
           <span className="text-white">{dict.comingSoon.date}</span>
+        </p>
+        <p className="mt-2 text-base sm:text-lg text-white-50 max-w-lg mx-auto leading-relaxed font-light">
           {dict.comingSoon.descriptionSuffix}
         </p>
 
