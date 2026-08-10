@@ -16,7 +16,7 @@ export function CtaBanner() {
       <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
         <ScrollReveal>
           <p className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white tracking-wide leading-[1.3]">
-            Science-backed skincare,
+            Science-backed facial care,
             <br />
             delivered with <span className="text-gold">warmth and care</span>
           </p>

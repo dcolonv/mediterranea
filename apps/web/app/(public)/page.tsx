@@ -5,7 +5,7 @@ import { CountdownTimer } from '@/components/home/countdown-timer';
 
 export default function ComingSoonPage() {
   return (
-    <section className="relative h-screen flex items-center justify-center grain-texture overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center grain-texture overflow-hidden">
       {/* Base background */}
       <div className="absolute inset-0 bg-dark-900" />
 

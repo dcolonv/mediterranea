@@ -71,7 +71,7 @@ export function ServicesOverview() {
               Our Services
             </h2>
             <p className="mt-8 text-lg text-white-50 max-w-2xl mx-auto font-light leading-relaxed">
-              Tailored skincare solutions designed to enhance your natural beauty
+              Tailored facial treatments designed to enhance your natural beauty
             </p>
           </div>
         </ScrollReveal>

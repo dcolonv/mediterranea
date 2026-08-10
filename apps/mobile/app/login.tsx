@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/providers/auth-provider';
 import { signInWithEmail, GOOGLE_CONFIGURED } from '@/src/firebase/auth';
@@ -65,12 +65,17 @@ export default function LoginScreen() {
   const deniedAccess = Boolean(user && !isAdmin && !adminCheckFailed);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.inner}>
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.inner}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.header}>
             <Text style={styles.brand}>Mediterránea</Text>
             <Text style={styles.brandSub}>Face Studio</Text>
@@ -139,7 +144,7 @@ export default function LoginScreen() {
               </>
             )}
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -148,7 +153,12 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
-  inner: { flex: 1, justifyContent: 'center', paddingHorizontal: spacing.xl },
+  inner: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xxl,
+  },
   header: { alignItems: 'center', marginBottom: spacing.xxl },
   brand: { fontSize: 30, fontWeight: '400', color: colors.ink, letterSpacing: 2 },
   brandSub: {
