@@ -177,6 +177,23 @@ export interface StudioSettings {
   updatedAt?: Timestamp;
 }
 
+export type ReviewStatus = 'pending' | 'published' | 'hidden';
+
+export interface Review {
+  id: string;
+  customerId: string;
+  appointmentId: string;
+  /** Public display name (first name shown on the site). */
+  authorName: string;
+  serviceName: string;
+  /** 1–5 stars. */
+  rating: number;
+  comment: string;
+  status: ReviewStatus;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 export type PhotoType = 'before' | 'after';
 
 /** A client before/after photo; the image bytes live in Firebase Storage. */

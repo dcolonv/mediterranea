@@ -180,8 +180,9 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 - [x] Backoffice client detail: before/after photos, total spend
 - [ ] Treatment recipes — editor (steps, timings, products, device settings, contraindications, aftercare)
 - [ ] Mobile: per-treatment recipe cheat sheet
-- [ ] Reviews — submit after appointment
-- [ ] Reviews — display
+- [x] Reviews — submit after appointment _(customer account: rate + comment a completed appointment, one per appointment; server-guarded)_
+- [x] Reviews — display _(home-page Reviews section shows published reviews; hidden until any exist)_
+- [x] Reviews — moderation (publish / hide / delete) _(backoffice `/backoffice/reviews`; new reviews default to pending — pulled forward from Phase 4 so display is safe)_
 - [ ] Waitlist — add clients, auto-match on cancellation, offer slots
 
 ---
@@ -206,7 +207,7 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 - [ ] Campaigns — segmentation, email/SMS campaigns, win-back
 - [ ] Loyalty — rules configuration
 - [ ] Loyalty — customer balance and redemption
-- [ ] Reviews moderation — approve / hide / publish
+- [x] Reviews moderation — approve / hide / publish _(built in Phase 2 at `/backoffice/reviews`)_
 - [ ] Blog CMS — create / edit / publish, SEO
 - [ ] Public blog / skincare tips
 

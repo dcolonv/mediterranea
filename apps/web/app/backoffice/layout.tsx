@@ -99,6 +99,12 @@ export default function BackofficeLayout({
                   Rooms
                 </Link>
                 <Link
+                  href="/backoffice/reviews"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Reviews
+                </Link>
+                <Link
                   href="/backoffice/settings"
                   className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
                 >

@@ -164,6 +164,19 @@ const en = {
     switchToSpanish: 'Ver en español',
     switchToEnglish: 'View in English',
   },
+  reviews: {
+    sectionEyebrow: 'What Clients Say',
+    sectionTitle: 'Reviews',
+    empty: 'Be the first to share your experience.',
+    leaveReview: 'Leave a review',
+    yourRating: 'Your rating',
+    comment: 'Your comment (optional)',
+    submit: 'Submit review',
+    submitting: 'Submitting…',
+    thanks: 'Thank you for your review!',
+    reviewed: 'Reviewed',
+    cancel: 'Cancel',
+  },
 };
 
 // Spanish translation — same shape as `en`.
@@ -330,6 +343,19 @@ const es: typeof en = {
   lang: {
     switchToSpanish: 'Ver en español',
     switchToEnglish: 'View in English',
+  },
+  reviews: {
+    sectionEyebrow: 'Lo Que Dicen Nuestros Clientes',
+    sectionTitle: 'Opiniones',
+    empty: 'Sé el primero en compartir tu experiencia.',
+    leaveReview: 'Deja tu opinión',
+    yourRating: 'Tu valoración',
+    comment: 'Tu comentario (opcional)',
+    submit: 'Enviar opinión',
+    submitting: 'Enviando…',
+    thanks: '¡Gracias por tu opinión!',
+    reviewed: 'Valorado',
+    cancel: 'Cancelar',
   },
 };
 

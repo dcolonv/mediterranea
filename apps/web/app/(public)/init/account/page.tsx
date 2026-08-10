@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { getCurrentCustomer } from '@/lib/auth/customer';
 import { getMyAppointments } from '@/actions/account';
+import { getMyReviewedAppointmentIds } from '@/actions/reviews';
 import { AccountAppointments } from '@/components/account/account-appointments';
 import { SignOutButton } from '@/components/account/sign-out-button';
 
@@ -14,7 +15,10 @@ export default async function AccountPage() {
   const customer = await getCurrentCustomer();
   if (!customer) redirect('/init/login');
 
-  const appts = await getMyAppointments();
+  const [appts, reviewedIds] = await Promise.all([
+    getMyAppointments(),
+    getMyReviewedAppointmentIds(),
+  ]);
   const upcoming = appts.success ? appts.upcoming : [];
   const past = appts.success ? appts.past : [];
 
@@ -43,7 +47,7 @@ export default async function AccountPage() {
           </div>
         </div>
 
-        <AccountAppointments initialUpcoming={upcoming} initialPast={past} />
+        <AccountAppointments initialUpcoming={upcoming} initialPast={past} reviewedIds={reviewedIds} />
       </div>
     </section>
   );
