@@ -3,31 +3,45 @@
 import { useLang } from './language-provider';
 import type { Locale } from '@/lib/i18n/config';
 
-const FLAG: Record<Locale, string> = { en: '🇬🇧', es: '🇪🇸' };
+const OPTIONS: { locale: Locale; flag: string; label: string }[] = [
+  { locale: 'en', flag: '🇬🇧', label: 'English' },
+  { locale: 'es', flag: '🇪🇸', label: 'Español' },
+];
 
 export function LanguageToggle({
   className = '',
-  // Default is the coming-soon size; the nav passes a 25%-smaller class.
-  sizeClass = 'text-[2.25rem] sm:text-[2.75rem]',
+  // Default is the coming-soon size (mobile reduced 25%); the nav passes its own.
+  sizeClass = 'text-[1.6875rem] sm:text-[2.75rem]',
 }: {
   className?: string;
   sizeClass?: string;
 }) {
-  const { locale, dict, setLocale } = useLang();
-
-  // Single button showing the language you'll switch to.
-  const target: Locale = locale === 'en' ? 'es' : 'en';
-  const label = target === 'es' ? dict.lang.switchToSpanish : dict.lang.switchToEnglish;
+  const { locale, setLocale } = useLang();
 
   return (
-    <button
-      type="button"
-      onClick={() => setLocale(target)}
-      aria-label={label}
-      title={label}
-      className={`inline-flex items-center justify-center leading-none transition-transform hover:scale-110 ${sizeClass} ${className}`}
+    <div
+      className={`inline-flex items-center ${className}`}
+      role="group"
+      aria-label="Language"
     >
-      <span aria-hidden>{FLAG[target]}</span>
-    </button>
+      {OPTIONS.map((opt) => {
+        const active = opt.locale === locale;
+        return (
+          <button
+            key={opt.locale}
+            type="button"
+            onClick={() => setLocale(opt.locale)}
+            aria-pressed={active}
+            aria-label={opt.label}
+            title={opt.label}
+            className={`px-2 py-1 leading-none transition-opacity ${sizeClass} ${
+              active ? 'opacity-100' : 'opacity-40 hover:opacity-80'
+            }`}
+          >
+            <span aria-hidden>{opt.flag}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
