@@ -11,18 +11,26 @@ import {
   rescheduleMyAppointment,
   type MyAppointment,
 } from '@/actions/account';
+import { useLang } from '@/components/i18n/language-provider';
+import { ReviewForm } from '@/components/account/review-form';
 
 interface Props {
   initialUpcoming: MyAppointment[];
   initialPast: MyAppointment[];
+  reviewedIds: string[];
 }
 
 const fmtDate = (d: string) => format(new Date(`${d}T00:00:00`), 'EEE, MMM d, yyyy');
 
-export function AccountAppointments({ initialUpcoming, initialPast }: Props) {
+export function AccountAppointments({ initialUpcoming, initialPast, reviewedIds }: Props) {
+  const { dict } = useLang();
   const [upcoming, setUpcoming] = useState(initialUpcoming);
   const [past, setPast] = useState(initialPast);
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  // Review state.
+  const [reviewed, setReviewed] = useState<Set<string>>(new Set(reviewedIds));
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
 
   // Reschedule state (single active at a time).
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
@@ -190,20 +198,42 @@ export function AccountAppointments({ initialUpcoming, initialPast }: Props) {
           </p>
         ) : (
           <div className="border border-white-10 bg-dark-800/50">
-            {past.map((a) => (
-              <div
-                key={a.id}
-                className="flex items-center justify-between gap-4 border-b border-white-10 p-4 last:border-b-0"
-              >
-                <div>
-                  <div className="text-white">{a.serviceName}</div>
-                  <div className="text-sm text-white-50">
-                    {fmtDate(a.date)} at {a.time}
+            {past.map((a) => {
+              const canReview = a.status === 'completed' && !reviewed.has(a.id);
+              return (
+                <div key={a.id} className="border-b border-white-10 p-4 last:border-b-0">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-white">{a.serviceName}</div>
+                      <div className="text-sm text-white-50">
+                        {fmtDate(a.date)} at {a.time}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {a.status === 'completed' && reviewed.has(a.id) && (
+                        <span className="text-xs text-gold">★ {dict.reviews.reviewed}</span>
+                      )}
+                      {canReview && reviewingId !== a.id && (
+                        <Button variant="outline" size="sm" onClick={() => setReviewingId(a.id)}>
+                          {dict.reviews.leaveReview}
+                        </Button>
+                      )}
+                      <Badge variant={a.status}>{APPOINTMENT_STATUSES[a.status].label}</Badge>
+                    </div>
                   </div>
+                  {reviewingId === a.id && (
+                    <ReviewForm
+                      appointmentId={a.id}
+                      onDone={() => {
+                        setReviewed((prev) => new Set(prev).add(a.id));
+                        setReviewingId(null);
+                      }}
+                      onCancel={() => setReviewingId(null)}
+                    />
+                  )}
                 </div>
-                <Badge variant={a.status}>{APPOINTMENT_STATUSES[a.status].label}</Badge>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

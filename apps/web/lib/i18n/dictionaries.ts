@@ -25,10 +25,10 @@ const en = {
   },
   comingSoon: {
     eyebrow: 'Grand Opening',
-    heading: 'A New Face Studio in East Málaga',
+    heading: 'A New Face Studio\nin East Málaga',
     descriptionPrefix: 'Mediterránea Face Studio opens on ',
     date: 'September 8th, 2026',
-    descriptionSuffix: ' — a space dedicated to personalized facial treatments.',
+    descriptionSuffix: 'A space dedicated to personalized facial treatments.',
     days: 'Days',
     hours: 'Hours',
     minutes: 'Minutes',
@@ -164,6 +164,19 @@ const en = {
     switchToSpanish: 'Ver en español',
     switchToEnglish: 'View in English',
   },
+  reviews: {
+    sectionEyebrow: 'What Clients Say',
+    sectionTitle: 'Reviews',
+    empty: 'Be the first to share your experience.',
+    leaveReview: 'Leave a review',
+    yourRating: 'Your rating',
+    comment: 'Your comment (optional)',
+    submit: 'Submit review',
+    submitting: 'Submitting…',
+    thanks: 'Thank you for your review!',
+    reviewed: 'Reviewed',
+    cancel: 'Cancel',
+  },
 };
 
 // Spanish translation — same shape as `en`.
@@ -192,10 +205,10 @@ const es: typeof en = {
   },
   comingSoon: {
     eyebrow: 'Gran Apertura',
-    heading: 'Un Nuevo Estudio Facial en Málaga Este',
+    heading: 'Un Nuevo Estudio Facial\nen Málaga Este',
     descriptionPrefix: 'Mediterránea Face Studio abre el ',
     date: '8 de septiembre de 2026',
-    descriptionSuffix: ' — un espacio dedicado a los tratamientos faciales personalizados.',
+    descriptionSuffix: 'Un espacio dedicado a los tratamientos faciales personalizados.',
     days: 'Días',
     hours: 'Horas',
     minutes: 'Minutos',
@@ -330,6 +343,19 @@ const es: typeof en = {
   lang: {
     switchToSpanish: 'Ver en español',
     switchToEnglish: 'View in English',
+  },
+  reviews: {
+    sectionEyebrow: 'Lo Que Dicen Nuestros Clientes',
+    sectionTitle: 'Opiniones',
+    empty: 'Sé el primero en compartir tu experiencia.',
+    leaveReview: 'Deja tu opinión',
+    yourRating: 'Tu valoración',
+    comment: 'Tu comentario (opcional)',
+    submit: 'Enviar opinión',
+    submitting: 'Enviando…',
+    thanks: '¡Gracias por tu opinión!',
+    reviewed: 'Valorado',
+    cancel: 'Cancelar',
   },
 };
 
