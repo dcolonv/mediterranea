@@ -3,7 +3,25 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "FIREBASE_ADMIN_PROJECT_ID",
+        "FIREBASE_ADMIN_CLIENT_EMAIL",
+        "FIREBASE_ADMIN_PRIVATE_KEY",
+        "OPENAI_API_KEY",
+        "OPENAI_AGENT_MODEL",
+        "RESEND_API_KEY",
+        "NOTIFICATIONS_EMAIL_FROM",
+        "TWILIO_ACCOUNT_SID",
+        "TWILIO_AUTH_TOKEN",
+        "TWILIO_FROM_NUMBER",
+        "CRON_SECRET",
+        "AWS_REGION",
+        "AWS_S3_BUCKET",
+        "AWS_S3_PREFIX",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY"
+      ]
     },
     "dev": {
       "cache": false,
