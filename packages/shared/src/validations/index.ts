@@ -7,3 +7,4 @@ export * from './settings';
 export * from './review';
 export * from './recipe';
 export * from './waitlist';
+export * from './blog';

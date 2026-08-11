@@ -8,6 +8,7 @@ const en = {
     contact: 'Contact',
     account: 'Account',
     giftCards: 'Gift Cards',
+    blog: 'Blog',
     bookNow: 'Book Now',
   },
   footer: {
@@ -197,6 +198,14 @@ const en = {
     successBody: 'Your gift card is on its way by email.',
     backHome: 'Back to home',
   },
+  blog: {
+    eyebrow: 'Journal',
+    title: 'Skincare Journal',
+    subtitle: 'Tips, treatments, and news from the studio.',
+    empty: 'Our first stories are coming soon.',
+    readMore: 'Read more',
+    back: 'All articles',
+  },
 };
 
 // Spanish translation — same shape as `en`.
@@ -208,6 +217,7 @@ const es: typeof en = {
     contact: 'Contacto',
     account: 'Mi cuenta',
     giftCards: 'Tarjetas Regalo',
+    blog: 'Blog',
     bookNow: 'Reservar',
   },
   footer: {
@@ -396,6 +406,14 @@ const es: typeof en = {
     successTitle: '¡Gracias!',
     successBody: 'Tu tarjeta regalo está en camino por correo.',
     backHome: 'Volver al inicio',
+  },
+  blog: {
+    eyebrow: 'Diario',
+    title: 'Diario de Belleza',
+    subtitle: 'Consejos, tratamientos y novedades del estudio.',
+    empty: 'Nuestras primeras historias llegarán pronto.',
+    readMore: 'Leer más',
+    back: 'Todos los artículos',
   },
 };
 

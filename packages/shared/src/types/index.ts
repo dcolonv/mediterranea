@@ -213,6 +213,45 @@ export interface Review {
   updatedAt: Timestamp;
 }
 
+export type CampaignChannel = 'email' | 'sms';
+export type CampaignStatus = 'draft' | 'sent';
+export type CampaignSegment = 'all' | 'marketing' | 'tag' | 'inactive';
+
+export interface Campaign {
+  id: string;
+  name: string;
+  channel: CampaignChannel;
+  segment: CampaignSegment;
+  /** Tag name (segment=tag) or days-of-inactivity (segment=inactive). */
+  segmentValue?: string;
+  subject: string;
+  body: string;
+  status: CampaignStatus;
+  recipientCount?: number;
+  sentCount?: number;
+  createdAt: Timestamp;
+  sentAt?: Timestamp | null;
+}
+
+export type BlogStatus = 'draft' | 'published';
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  /** Plain text / simple paragraphs. */
+  body: string;
+  coverImageUrl?: string;
+  authorName: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  status: BlogStatus;
+  publishedAt?: Timestamp | null;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 export type GiftCardStatus = 'active' | 'depleted' | 'void';
 
 export interface GiftCardRedemption {

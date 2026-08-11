@@ -122,6 +122,12 @@ export function Header() {
               </Link>
             ))}
             <Link
+              href="/init/blog"
+              className="elegant-underline text-sm tracking-widest uppercase text-white-70 transition-colors hover:text-white"
+            >
+              {dict.nav.blog}
+            </Link>
+            <Link
               href="/init/gift-cards"
               className="elegant-underline text-sm tracking-widest uppercase text-white-70 transition-colors hover:text-white"
             >
@@ -190,6 +196,13 @@ export function Header() {
                   {dict.nav[section.key]}
                 </Link>
               ))}
+              <Link
+                href="/init/blog"
+                className="text-sm tracking-widest uppercase text-white-70 hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {dict.nav.blog}
+              </Link>
               <Link
                 href="/init/gift-cards"
                 className="text-sm tracking-widest uppercase text-white-70 hover:text-white"

@@ -61,7 +61,7 @@ export default function BackofficeLayout({
                   Backoffice
                 </span>
               </Link>
-              <nav className="hidden md:flex gap-8">
+              <nav className="hidden md:flex flex-wrap gap-x-5 gap-y-1">
                 <Link
                   href="/backoffice"
                   className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
@@ -115,6 +115,18 @@ export default function BackofficeLayout({
                   className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
                 >
                   Gift Cards
+                </Link>
+                <Link
+                  href="/backoffice/blog"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Blog
+                </Link>
+                <Link
+                  href="/backoffice/campaigns"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Campaigns
                 </Link>
                 <Link
                   href="/backoffice/settings"
