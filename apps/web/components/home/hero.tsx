@@ -118,7 +118,7 @@ export function Hero() {
             {/* Image container */}
             <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] overflow-hidden">
               <Image
-                src="/hero-clinic.png"
+                src="/hero-clinic.jpg"
                 alt="Mediterránea Face Studio — Treatment room"
                 fill
                 priority
