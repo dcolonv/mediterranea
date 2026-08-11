@@ -54,6 +54,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Gift cards: server-only (purchased via Stripe, managed via Admin SDK).
+    match /giftCards/{cardId} {
+      allow read, write: if false;
+    }
+
     // Studio settings: public read (business hours + policy for booking), admin write
     match /settings/{docId} {
       allow read: if true;

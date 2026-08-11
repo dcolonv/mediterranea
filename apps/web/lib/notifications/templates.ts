@@ -84,6 +84,29 @@ export function appointmentCancelled(ctx: NotificationContext): RenderedMessage 
   };
 }
 
+export function giftCardIssued(input: {
+  recipientName: string;
+  code: string;
+  amount: string; // pre-formatted, e.g. "€50.00"
+  message?: string;
+}): RenderedMessage {
+  return {
+    subject: `Your ${STUDIO} gift card`,
+    html: shell(
+      'A gift for you',
+      `<p>Hi ${input.recipientName},</p>
+       <p>You’ve received a <strong>${input.amount}</strong> gift card for ${STUDIO}.</p>
+       <p style="font-size:20px;letter-spacing:2px"><strong>${input.code}</strong></p>
+       ${input.message ? `<p style="font-style:italic;color:#8a8378">“${input.message}”</p>` : ''}
+       <p>Present this code when you book or visit. Enjoy your treatment.</p>`
+    ),
+    text: `Hi ${input.recipientName}, you've received a ${input.amount} gift card for ${STUDIO}. Code: ${input.code}.${
+      input.message ? ` Message: ${input.message}` : ''
+    }`,
+    sms: `${STUDIO}: you've received a ${input.amount} gift card. Code: ${input.code}.`,
+  };
+}
+
 export function waitlistSlotOpened(ctx: NotificationContext): RenderedMessage {
   const when = `${prettyDate(ctx.date)} at ${ctx.time}`;
   return {

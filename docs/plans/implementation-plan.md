@@ -190,14 +190,14 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ## Phase 3 — Commerce (deferred, Stripe)
 
-- [ ] Stripe integration — payments with SCA / 3-D Secure; webhooks reconcile to Firestore
+- [x] Stripe integration — payments with SCA / 3-D Secure; webhooks reconcile to Firestore _(hosted Checkout + signature-verified `/api/stripe/webhook`; dormant-safe when unconfigured; foundation shipped via gift cards)_
 - [ ] Retail products management (price, stock)
 - [ ] Shop retail products (browse, cart, checkout) — customer
 - [ ] Inventory / stock — movements, low-stock alerts
 - [ ] Packages & memberships — define, link services
 - [ ] Client memberships — sell, track sessions used, renewals
 - [ ] Customer: view / manage own membership (sessions remaining, renewal)
-- [ ] Gift cards — issue, redeem, balances (backoffice) + buy/redeem (customer)
+- [x] Gift cards — issue, redeem, balances (backoffice) + buy/redeem (customer) _(public `/init/gift-cards` buy via Stripe Checkout → webhook mints + emails a code; backoffice `/backoffice/gift-cards` issue / redeem / void / outstanding balance)_
 - [ ] Checkout / POS — services, products, packages, gift cards, discounts, tips
 - [ ] Mobile checkout (mobile payment)
 
@@ -227,7 +227,7 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 - [x] Notifications dispatch layer (Resend + Twilio + push) with scheduled reminders — _built in 1c (dormant without keys; reminders need a scheduler)_
 - [x] Media: AWS S3 for before/after photos, private objects, presigned read URLs _(Phase 2; all access server-side)_
-- [ ] Payments: Stripe as system of record; webhook reconciliation — _Phase 3_
+- [x] Payments: Stripe as system of record; webhook reconciliation _(hosted Checkout + `/api/stripe/webhook`; gift cards live, other products to follow)_
 - [x] Privacy: per-collection Firestore rules by role _(in place)_; GDPR export/delete tooling _(built in Phase 2)_
 - [ ] Quality: CI typecheck + build gates; an idempotent seed/migration script per data-model change
 

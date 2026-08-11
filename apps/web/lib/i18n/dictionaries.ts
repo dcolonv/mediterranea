@@ -7,6 +7,7 @@ const en = {
     about: 'About',
     contact: 'Contact',
     account: 'Account',
+    giftCards: 'Gift Cards',
     bookNow: 'Book Now',
   },
   footer: {
@@ -177,6 +178,25 @@ const en = {
     reviewed: 'Reviewed',
     cancel: 'Cancel',
   },
+  giftCards: {
+    eyebrow: 'Give the Gift of Radiance',
+    title: 'Gift Cards',
+    subtitle: 'A treatment they’ll love, delivered by email.',
+    amount: 'Amount',
+    custom: 'Custom amount',
+    yourName: 'Your name',
+    yourEmail: 'Your email',
+    recipientName: 'Recipient’s name (optional)',
+    recipientEmail: 'Recipient’s email (optional)',
+    recipientHint: 'Leave the recipient blank to receive the card yourself.',
+    message: 'Message (optional)',
+    continue: 'Continue to payment',
+    processing: 'Redirecting…',
+    unavailable: 'Online gift cards are coming soon. Please contact us to purchase one.',
+    successTitle: 'Thank you!',
+    successBody: 'Your gift card is on its way by email.',
+    backHome: 'Back to home',
+  },
 };
 
 // Spanish translation — same shape as `en`.
@@ -187,6 +207,7 @@ const es: typeof en = {
     about: 'Sobre nosotras',
     contact: 'Contacto',
     account: 'Mi cuenta',
+    giftCards: 'Tarjetas Regalo',
     bookNow: 'Reservar',
   },
   footer: {
@@ -356,6 +377,25 @@ const es: typeof en = {
     thanks: '¡Gracias por tu opinión!',
     reviewed: 'Valorado',
     cancel: 'Cancelar',
+  },
+  giftCards: {
+    eyebrow: 'Regala Bienestar',
+    title: 'Tarjetas Regalo',
+    subtitle: 'Un tratamiento que les encantará, enviado por correo.',
+    amount: 'Importe',
+    custom: 'Importe personalizado',
+    yourName: 'Tu nombre',
+    yourEmail: 'Tu correo',
+    recipientName: 'Nombre del destinatario (opcional)',
+    recipientEmail: 'Correo del destinatario (opcional)',
+    recipientHint: 'Deja el destinatario en blanco para recibir la tarjeta tú.',
+    message: 'Mensaje (opcional)',
+    continue: 'Continuar al pago',
+    processing: 'Redirigiendo…',
+    unavailable: 'Las tarjetas regalo online estarán disponibles pronto. Contáctanos para adquirir una.',
+    successTitle: '¡Gracias!',
+    successBody: 'Tu tarjeta regalo está en camino por correo.',
+    backHome: 'Volver al inicio',
   },
 };
 

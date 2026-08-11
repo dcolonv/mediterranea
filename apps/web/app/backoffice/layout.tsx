@@ -111,6 +111,12 @@ export default function BackofficeLayout({
                   Reviews
                 </Link>
                 <Link
+                  href="/backoffice/gift-cards"
+                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                >
+                  Gift Cards
+                </Link>
+                <Link
                   href="/backoffice/settings"
                   className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
                 >

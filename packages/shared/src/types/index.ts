@@ -213,6 +213,35 @@ export interface Review {
   updatedAt: Timestamp;
 }
 
+export type GiftCardStatus = 'active' | 'depleted' | 'void';
+
+export interface GiftCardRedemption {
+  amount: number;
+  note?: string;
+  at: Timestamp;
+}
+
+export interface GiftCard {
+  id: string;
+  /** Human-friendly redemption code, e.g. MED-AB12-CD34. */
+  code: string;
+  initialAmount: number;
+  balance: number;
+  status: GiftCardStatus;
+  purchaserName: string;
+  purchaserEmail: string;
+  recipientName?: string;
+  recipientEmail?: string;
+  message?: string;
+  /** How the card was created. */
+  source: 'online' | 'manual';
+  redemptions?: GiftCardRedemption[];
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 export type WaitlistStatus = 'waiting' | 'offered' | 'booked' | 'cancelled';
 
 export interface WaitlistEntry {
