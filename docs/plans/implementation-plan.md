@@ -149,9 +149,9 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 ### Use it — UI & entry points
 
 - [x] Backoffice **chat UI** (web) — slide-over assistant panel (server action → booking agent), shows the tools it ran and refreshes the calendar on a booking _(launched from `/backoffice/calendar`)_
-- [ ] Mobile **"book by chat"** in the admin app _(with 1c)_
-- [x] Quick entry points — launch the assistant from the calendar _(✦ Assistant button; today's-schedule entry still to add)_
-- [ ] Conversation history persistence (per staff session)
+- [x] Mobile **"book by chat"** in the admin app _(Assistant tab → `/api/agent` + `/api/agent/confirm`, with Confirm/Cancel on proposed writes)_
+- [x] Quick entry points — launch the assistant from the calendar and the dashboard _(✦ Assistant on both `/backoffice/calendar` and `/backoffice`)_
+- [x] Conversation history persistence (per staff session) _(web localStorage + mobile AsyncStorage, with a "New chat" reset)_
 
 ### Guardrails & trust
 
