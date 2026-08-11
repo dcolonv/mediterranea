@@ -26,10 +26,37 @@ export function getAdminDb() {
   return getFirestore(getAdminApp());
 }
 
+/** Base roles for RBAC. The `role` custom claim carries this on the auth token. */
+export type UserRole = 'admin' | 'staff' | 'customer';
+
+/** Stamp a role custom claim on a user (baked into their next-refreshed token). */
+export async function setUserRole(uid: string, role: UserRole): Promise<void> {
+  await getAdminAuth().setCustomUserClaims(uid, { role });
+}
+
+/**
+ * Sync the `admin` role claim onto the Auth user for an email in the `admins`
+ * allowlist. No-op (returns false) when no Auth account exists for that email yet
+ * — the claim is then set self-healingly on their first admin request.
+ */
+export async function syncAdminClaimForEmail(email: string): Promise<boolean> {
+  try {
+    const user = await getAdminAuth().getUserByEmail(email);
+    if (user.customClaims?.role !== 'admin') {
+      await setUserRole(user.uid, 'admin');
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Verify a request's `Authorization: Bearer <idToken>` header and confirm the
- * caller is an admin (present in the `admins/{email}` collection).
- * Returns the admin's email on success, or null if unauthenticated / not an admin.
+ * caller is an admin. Fast path: the `admin` role custom claim on the token.
+ * Fallback: the `admins/{email}` allowlist (source of truth) — and when the doc
+ * exists but the claim is missing, the claim is set opportunistically so future
+ * requests take the fast path. Returns the admin's email, or null.
  */
 export async function verifyAdminToken(
   authHeader: string | null
@@ -41,8 +68,16 @@ export async function verifyAdminToken(
     const email = decoded.email;
     if (!email) return null;
 
+    // Fast path: role claim already on the token.
+    if (decoded.role === 'admin') return email;
+
+    // Fallback: allowlist doc (authoritative).
     const adminDoc = await getAdminDb().collection('admins').doc(email).get();
-    return adminDoc.exists ? email : null;
+    if (!adminDoc.exists) return null;
+
+    // Self-heal: stamp the claim so subsequent tokens skip the read.
+    setUserRole(decoded.uid, 'admin').catch(() => {});
+    return email;
   } catch {
     return null;
   }

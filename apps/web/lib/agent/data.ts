@@ -10,39 +10,25 @@ import { Timestamp, type DocumentSnapshot } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { upsertCustomerForAppointment } from '@/actions/customers';
 import { DEFAULT_STUDIO_SETTINGS } from '@mediterranea/shared/constants';
+import {
+  timeToMinutes,
+  weekdayOf,
+  addDaysStr,
+  computeSlots,
+  detectConflicts,
+  type AvailAppt,
+} from '@/lib/agent/availability';
 import type {
   Service,
   Staff,
   Room,
   Appointment,
-  Weekday,
   AppointmentStatus,
   StudioSettings,
 } from '@mediterranea/shared/types';
 
-const WEEKDAYS: Weekday[] = [
-  'sunday',
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-];
-
 /** Statuses that occupy a staff member / room on the calendar. */
 const ACTIVE_STATUSES: AppointmentStatus[] = ['pending', 'confirmed', 'checked-in', 'completed'];
-
-function timeToMinutes(time: string): number {
-  const [h, m] = time.split(':').map(Number);
-  return h * 60 + (m || 0);
-}
-
-function minutesToTime(mins: number): string {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
 
 /** Current date + minutes-since-midnight in the studio's timezone (Europe/Madrid). */
 function malagaNow(): { date: string; minutes: number } {
@@ -61,26 +47,12 @@ function malagaNow(): { date: string; minutes: number } {
   return { date, minutes };
 }
 
-function addDaysStr(date: string, days: number): string {
-  const d = new Date(`${date}T00:00:00`);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 /** Read studio settings, falling back to defaults when unset. */
 export async function getStudioSettings(): Promise<StudioSettings> {
   const snap = await getAdminDb().doc('settings/studio').get();
   return snap.exists
     ? ({ ...DEFAULT_STUDIO_SETTINGS, ...snap.data() } as StudioSettings)
     : (DEFAULT_STUDIO_SETTINGS as unknown as StudioSettings);
-}
-
-function rangesOverlap(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
-  return aStart < bEnd && bStart < aEnd;
-}
-
-function weekdayOf(date: string): Weekday {
-  return WEEKDAYS[new Date(`${date}T00:00:00`).getDay()];
 }
 
 function docData<T>(doc: DocumentSnapshot): T {
@@ -192,19 +164,11 @@ export interface AvailabilityResult {
   slots: AvailabilitySlot[];
 }
 
-function staffOffAt(staff: Staff, date: string, start: number, end: number): boolean {
-  if (!staff.timeOff) return false;
-  return staff.timeOff.some((t) => {
-    if (t.date !== date) return false;
-    if (!t.start || !t.end) return true; // whole day off
-    return rangesOverlap(start, end, timeToMinutes(t.start), timeToMinutes(t.end));
-  });
-}
-
 /**
  * Compute bookable start times for a service on a date, intersecting: service
  * duration + slot grid, each qualified staff member's hours (minus time off and
- * their booked appointments), and a free room of the required type.
+ * their booked appointments), and a free room of the required type. Fetches the
+ * records, then delegates the pure computation to `computeSlots`.
  */
 export async function findAvailability(input: {
   serviceId: string;
@@ -231,17 +195,8 @@ export async function findAvailability(input: {
   const maxDate = addDaysStr(now.date, settings.booking.maxAdvanceDays);
   if (input.date < now.date || input.date > maxDate) return empty;
 
-  // Studio must be open that weekday.
-  const bh = settings.businessHours?.[weekday];
+  const bh = settings.businessHours?.[weekday] ?? null;
   if (!bh) return empty;
-  const bhOpen = timeToMinutes(bh.open);
-  const bhClose = timeToMinutes(bh.close);
-
-  // Earliest bookable start for today, given the minimum lead time.
-  const earliest =
-    input.date === now.date ? now.minutes + settings.booking.minLeadHours * 60 : 0;
-
-  const interval = settings.booking.slotIntervalMinutes;
 
   let staffList = await getServiceStaff(service.id);
   if (input.staffId) staffList = staffList.filter((s) => s.id === input.staffId);
@@ -254,44 +209,22 @@ export async function findAvailability(input: {
     ACTIVE_STATUSES.includes(a.status)
   );
 
-  const slots: AvailabilitySlot[] = [];
-
-  // Candidate start times on the business-hours grid that fit before closing.
-  for (let start = bhOpen; start + duration <= bhClose; start += interval) {
-    const end = start + duration;
-    if (start < earliest) continue;
-    const time = minutesToTime(start);
-
-    const freeStaff = staffList
-      .filter((s) => {
-        const wh = s.workingHours?.[weekday];
-        if (!wh) return false;
-        if (start < timeToMinutes(wh.open) || end > timeToMinutes(wh.close)) return false;
-        if (staffOffAt(s, input.date, start, end)) return false;
-        const busy = dayAppts.some(
-          (a) =>
-            a.staffId === s.id &&
-            rangesOverlap(start, end, timeToMinutes(a.appointmentTime), timeToMinutes(a.appointmentTime) + a.durationMinutes)
-        );
-        return !busy;
-      })
-      .map((s) => s.id);
-
-    const freeRooms = rooms
-      .filter((r) => {
-        const busy = dayAppts.some(
-          (a) =>
-            a.roomId === r.id &&
-            rangesOverlap(start, end, timeToMinutes(a.appointmentTime), timeToMinutes(a.appointmentTime) + a.durationMinutes)
-        );
-        return !busy;
-      })
-      .map((r) => r.id);
-
-    if (freeStaff.length && freeRooms.length) {
-      slots.push({ time, staffIds: freeStaff, roomIds: freeRooms });
-    }
-  }
+  const slots = computeSlots({
+    date: input.date,
+    weekday,
+    duration,
+    businessHours: bh,
+    intervalMinutes: settings.booking.slotIntervalMinutes,
+    earliestMinutes: input.date === now.date ? now.minutes + settings.booking.minLeadHours * 60 : 0,
+    staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
+    rooms: rooms.map((r) => ({ id: r.id })),
+    dayAppointments: dayAppts.map((a) => ({
+      staffId: a.staffId,
+      roomId: a.roomId,
+      appointmentTime: a.appointmentTime,
+      durationMinutes: a.durationMinutes,
+    })),
+  });
 
   return {
     serviceId: service.id,
@@ -368,20 +301,13 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
           .where('status', 'in', ACTIVE_STATUSES)
       );
 
-      let staffClash = false;
-      let roomClash = false;
-      for (const doc of daySnap.docs) {
-        const a = doc.data() as Appointment;
-        const overlap = rangesOverlap(
-          start,
-          end,
-          timeToMinutes(a.appointmentTime),
-          timeToMinutes(a.appointmentTime) + a.durationMinutes
-        );
-        if (!overlap) continue;
-        if (a.staffId === input.staffId) staffClash = true;
-        if (a.roomId === input.roomId) roomClash = true;
-      }
+      const existing: AvailAppt[] = daySnap.docs.map((doc) => doc.data() as Appointment);
+      const { staffClash, roomClash } = detectConflicts(existing, {
+        start,
+        end,
+        staffId: input.staffId,
+        roomId: input.roomId,
+      });
       if (staffClash || roomClash) throw new ConflictError(staffClash, roomClash);
 
       const now = Timestamp.now();
@@ -467,21 +393,23 @@ export async function updateAppointment(
             .where('appointmentDate', '==', next.date)
             .where('status', 'in', ACTIVE_STATUSES)
         );
-        let staffClash = false;
-        let roomClash = false;
-        for (const doc of daySnap.docs) {
-          if (doc.id === id) continue; // ignore self
+        const existing: AvailAppt[] = daySnap.docs.map((doc) => {
           const a = doc.data() as Appointment;
-          const overlap = rangesOverlap(
-            start,
-            end,
-            timeToMinutes(a.appointmentTime),
-            timeToMinutes(a.appointmentTime) + a.durationMinutes
-          );
-          if (!overlap) continue;
-          if (next.staffId && a.staffId === next.staffId) staffClash = true;
-          if (next.roomId && a.roomId === next.roomId) roomClash = true;
-        }
+          return {
+            id: doc.id,
+            staffId: a.staffId,
+            roomId: a.roomId,
+            appointmentTime: a.appointmentTime,
+            durationMinutes: a.durationMinutes,
+          };
+        });
+        const { staffClash, roomClash } = detectConflicts(existing, {
+          start,
+          end,
+          staffId: next.staffId,
+          roomId: next.roomId,
+          ignoreId: id,
+        });
         if (staffClash || roomClash) throw new ConflictError(staffClash, roomClash);
       }
 

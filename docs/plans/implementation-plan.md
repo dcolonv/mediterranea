@@ -61,17 +61,17 @@ The foundation this plan extends. All of these are implemented and building.
 
 ---
 
-## Phase 0 — Foundations
+## Phase 0 — Foundations ✅
 
 Enablers with no screen of their own; Phase 1 can't start without them.
 
-- [ ] RBAC roles (customer / staff / admin) via Firebase custom claims _(currently: admin via `admins/{email}` allowlist, customer via `__customer` session cookie; custom claims still to add)_
+- [x] RBAC roles (admin) via Firebase custom claims _(`admin` role claim: fast-path in `verifyAdminToken` + rules, self-healing from the `admins` allowlist, `POST /api/admin/sync-claims` backfill; staff/customer roles reserved via `setUserRole`)_
 - [x] Middleware guards per route group; customer session handling _(admin `/backoffice` + customer `/init/account` guarded; customer sessions via verifiable Firebase session cookies)_
 - [x] Extended data model (staff, rooms, clients+skin profile fields, appointment staff/room/source) — _(skinProfile + uid on clients now added; consultation intake fields are Phase 2)_
-- [x] Availability engine as a standalone, tested module — _(partial: implemented; automated unit tests still to add)_
-- [ ] Shared web UI kit extending the Sandy Serenity tokens
-- [ ] Provider env wired but dormant: Stripe (test), Resend, Twilio
-- [ ] CI typecheck + build gates
+- [x] Availability engine as a standalone, tested module _(pure `lib/agent/availability.ts` used by `data.ts`; 18 vitest unit tests — caught + fixed a timezone bug in the booking-window date math)_
+- [x] Shared web UI kit extending the Sandy Serenity tokens _(`components/ui` — Button/Input/Select/Textarea/Card/Badge on the remapped tokens; extend further as needed)_
+- [x] Provider env wired but dormant: Stripe (test), Resend, Twilio _(Resend/Twilio live-dormant; Stripe test placeholders in `.env.example` + `turbo.json`)_
+- [x] CI typecheck + build gates _(GitHub Actions: pnpm install + build:web + mobile tsc + web unit tests on PRs to main)_
 
 ---
 
@@ -158,7 +158,7 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 - [ ] Confirmation-before-write — agent proposes create/update/delete, human confirms
 - [ ] Audit log of agent actions (who, when, tool, args, result)
 - [ ] Rate limiting / usage caps on `/api/agent`
-- [ ] Unit tests for the availability + conflict engine (correctness floor, independent of the LLM)
+- [x] Unit tests for the availability + conflict engine (correctness floor, independent of the LLM) _(18 vitest tests over `lib/agent/availability.ts`)_
 
 ### Integrations
 

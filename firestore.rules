@@ -60,9 +60,13 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
+    // Admin = the `admin` role custom claim (fast path) OR the admins allowlist
+    // (authoritative fallback, so no one is locked out before claims propagate).
     function isAdmin() {
-      return request.auth != null &&
-        exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+      return request.auth != null && (
+        request.auth.token.role == 'admin' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
     }
   }
 }
