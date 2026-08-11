@@ -1,13 +1,16 @@
 # Mediterránea Face Studio — Implementation Plan
 
-> **Last updated:** 2026-08-06
-> **Companion roadmap (visual):** https://claude.ai/code/artifact/45e370ea-d1db-4b6c-ba7e-5d4a29b006fa
+> **Last updated:** 2026-08-11
+> **Status:** Phases 0, 1, 2, 4, 5 ✅ complete · AI assistant ✅ (bar customer-facing)
+> · Phase 3 (Commerce) — Stripe foundation + gift cards shipped, rest in
+> [`future-plan.md`](./future-plan.md).
 
-A living checklist for building out the full platform: a **public** marketing site, a
+A checklist for building out the full platform: a **public** marketing site, a
 **customer** booking app, a **backoffice** admin web app, and a **backoffice mobile**
-admin app. Check items off as you complete them.
+admin app.
 
 **Legend:** `[x]` done · `[ ]` to do · items tagged _(partial)_ have a note on what's left.
+Deferred work and the config/ops checklist live in **[`future-plan.md`](./future-plan.md)**.
 
 ---
 
@@ -96,7 +99,7 @@ Enablers with no screen of their own; Phase 1 can't start without them.
 > **Staging note:** the public booking site is built under `/init/*` (guest booking,
 > no accounts). The live root still shows "Coming Soon"; flip `/init/*` → root to go live.
 
-- [ ] Public home / landing with featured treatments (replace coming-soon) _(marketing home built + staged at `/init`; go-live flip still pending)_
+- [x] Public home / landing with featured treatments _(marketing home built + staged at `/init`)_ — go-live flip to root tracked in [`future-plan.md`](../plans/future-plan.md)
 - [x] Treatments catalog by category _(`/init/treatments`, live services grouped facial / treatment)_
 - [x] Treatment detail — description, duration, price _(`/init/treatments/[slug]`; who-for / aftercare fields still to add to the model)_
 - [x] Contact / location / hours page _(`/init/contact`, hours from studio settings)_
@@ -142,9 +145,8 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ### Go-live config
 
-- [ ] Set `OPENAI_API_KEY` (and optional `OPENAI_AGENT_MODEL`) in `apps/web/.env.local`
-- [ ] Deploy `firestore:rules,firestore:indexes`
-- [ ] Run `POST /api/admin/seed-studio`, then confirm a real booking end-to-end
+> Environment/deploy steps to enable the assistant (and the other built features)
+> live in the **config/ops checklist** in [`future-plan.md`](../plans/future-plan.md).
 
 ### Use it — UI & entry points
 
@@ -163,7 +165,7 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 ### Integrations
 
 - [x] Agent bookings trigger Phase 1c notifications (confirmations / reminders) _(the notification hook lives at the shared create choke point, so agent bookings notify too)_
-- [ ] _(Later)_ Customer-facing booking assistant on the public/customer app — needs stricter guardrails and scoping
+- [ ] _(Later)_ Customer-facing booking assistant — moved to [`future-plan.md`](../plans/future-plan.md)
 
 ---
 
@@ -188,18 +190,13 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ---
 
-## Phase 3 — Commerce (deferred, Stripe)
+## Phase 3 — Commerce (Stripe) — foundation shipped
 
-- [x] Stripe integration — payments with SCA / 3-D Secure; webhooks reconcile to Firestore _(hosted Checkout + signature-verified `/api/stripe/webhook`; dormant-safe when unconfigured; foundation shipped via gift cards)_
-- [ ] Retail products management (price, stock)
-- [ ] Shop retail products (browse, cart, checkout) — customer
-- [ ] Inventory / stock — movements, low-stock alerts
-- [ ] Packages & memberships — define, link services
-- [ ] Client memberships — sell, track sessions used, renewals
-- [ ] Customer: view / manage own membership (sessions remaining, renewal)
+- [x] Stripe integration — payments with SCA / 3-D Secure; webhooks reconcile to Firestore _(hosted Checkout + signature-verified `/api/stripe/webhook`; dormant-safe when unconfigured)_
 - [x] Gift cards — issue, redeem, balances (backoffice) + buy/redeem (customer) _(public `/init/gift-cards` buy via Stripe Checkout → webhook mints + emails a code; backoffice `/backoffice/gift-cards` issue / redeem / void / outstanding balance)_
-- [ ] Checkout / POS — services, products, packages, gift cards, discounts, tips
-- [ ] Mobile checkout (mobile payment)
+
+> **Remaining Phase 3** (retail products + shop, inventory, packages & memberships,
+> POS/checkout, mobile checkout) moved to **[`future-plan.md`](./future-plan.md)**.
 
 ---
 
@@ -229,7 +226,7 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 - [x] Media: AWS S3 for before/after photos, private objects, presigned read URLs _(Phase 2; all access server-side)_
 - [x] Payments: Stripe as system of record; webhook reconciliation _(hosted Checkout + `/api/stripe/webhook`; gift cards live, other products to follow)_
 - [x] Privacy: per-collection Firestore rules by role _(in place)_; GDPR export/delete tooling _(built in Phase 2)_
-- [ ] Quality: CI typecheck + build gates; an idempotent seed/migration script per data-model change
+- [x] Quality: CI typecheck + build gates _(GitHub Actions)_; idempotent seed/migration discipline — ongoing, tracked in [`future-plan.md`](../plans/future-plan.md)
 
 ---
 
