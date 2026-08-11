@@ -2,14 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui';
-import { sendAgentMessage } from '@/actions/agent';
-import type { AgentMessage } from '@/lib/agent/booking-agent';
+import { sendAgentMessage, confirmAgentAction } from '@/actions/agent';
+import type { AgentMessage, PendingAction } from '@/lib/agent/booking-agent';
 
 interface ChatMessage extends AgentMessage {
   /** Tools the assistant ran to produce this reply. */
   actions?: string[];
   /** Marks an error bubble. */
   error?: boolean;
+  /** A proposed write attached to this assistant message, awaiting confirmation. */
+  pending?: PendingAction;
+  /** Resolution once the user acts on the pending action. */
+  resolved?: 'confirmed' | 'cancelled';
 }
 
 const SUGGESTIONS = [
@@ -51,7 +55,12 @@ export function BookingAssistant({ onClose, onMutated }: BookingAssistantProps) 
     if (res.success) {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: res.reply || '(no reply)', actions: res.actions },
+        {
+          role: 'assistant',
+          content: res.reply || '(no reply)',
+          actions: res.actions,
+          pending: res.pendingAction,
+        },
       ]);
       if (res.mutated) onMutated();
     } else {
@@ -61,6 +70,33 @@ export function BookingAssistant({ onClose, onMutated }: BookingAssistantProps) 
       ]);
     }
     setSending(false);
+  }
+
+  async function confirmPending(index: number, action: PendingAction) {
+    if (sending) return;
+    setSending(true);
+    const res = await confirmAgentAction(action);
+    setMessages((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], resolved: 'confirmed' };
+      next.push({
+        role: 'assistant',
+        content: res.success ? '✓ Done — the calendar is updated.' : res.error || 'Could not complete that.',
+        error: !res.success,
+      });
+      return next;
+    });
+    if (res.success && res.mutated) onMutated();
+    setSending(false);
+  }
+
+  function cancelPending(index: number) {
+    setMessages((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], resolved: 'cancelled' };
+      next.push({ role: 'assistant', content: 'Okay, I won’t make that change.' });
+      return next;
+    });
   }
 
   return (
@@ -131,6 +167,26 @@ export function BookingAssistant({ onClose, onMutated }: BookingAssistantProps) 
                           {a}
                         </span>
                       ))}
+                    </div>
+                  )}
+                  {m.pending && !m.resolved && (
+                    <div className="mt-3 flex gap-2 border-t border-white-10 pt-3">
+                      <Button
+                        variant="elegant"
+                        size="sm"
+                        disabled={sending}
+                        onClick={() => confirmPending(i, m.pending!)}
+                      >
+                        Confirm
+                      </Button>
+                      <Button variant="ghost" size="sm" disabled={sending} onClick={() => cancelPending(i)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                  {m.pending && m.resolved && (
+                    <div className="mt-2 border-t border-white-10 pt-2 text-[11px] uppercase tracking-wider text-white-30">
+                      {m.resolved === 'confirmed' ? 'Confirmed' : 'Cancelled'}
                     </div>
                   )}
                 </div>

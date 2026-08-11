@@ -155,9 +155,9 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ### Guardrails & trust
 
-- [ ] Confirmation-before-write — agent proposes create/update/delete, human confirms
-- [ ] Audit log of agent actions (who, when, tool, args, result)
-- [ ] Rate limiting / usage caps on `/api/agent`
+- [x] Confirmation-before-write — agent proposes create/update/delete, human confirms _(writes are gated: the agent proposes, the chat shows Confirm/Cancel, `confirmAgentAction` executes on confirm)_
+- [x] Audit log of agent actions (who, when, tool, args, result) _(every run logged to `agentAudit`; server-only)_
+- [x] Rate limiting / usage caps on `/api/agent` _(30 requests / 5 min per admin, on both the API route and the backoffice server action)_
 - [x] Unit tests for the availability + conflict engine (correctness floor, independent of the LLM) _(18 vitest tests over `lib/agent/availability.ts`)_
 
 ### Integrations

@@ -49,6 +49,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Agent audit log: server-only (written via Admin SDK).
+    match /agentAudit/{entryId} {
+      allow read, write: if false;
+    }
+
     // Studio settings: public read (business hours + policy for booking), admin write
     match /settings/{docId} {
       allow read: if true;
