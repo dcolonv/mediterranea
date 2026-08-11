@@ -182,11 +182,18 @@ export interface LoyaltyRules {
   redeemPointsPerEuro: number;
 }
 
+export interface NotificationSettings {
+  confirmationEnabled: boolean;
+  reminderEnabled: boolean;
+  cancellationEnabled: boolean;
+}
+
 export interface StudioSettings {
   businessHours: WorkingHours;
   booking: BookingRules;
   cancellation: CancellationPolicy;
   loyalty?: LoyaltyRules;
+  notifications?: NotificationSettings;
   updatedAt?: Timestamp;
 }
 

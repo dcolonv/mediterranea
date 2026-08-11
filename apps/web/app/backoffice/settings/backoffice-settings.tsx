@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button, Input, Textarea } from '@/components/ui';
-import { getSettings, updateSettings } from '@/actions/settings';
+import { getSettings, updateSettings, getIntegrationStatus } from '@/actions/settings';
 import { DEFAULT_STUDIO_SETTINGS } from '@mediterranea/shared/constants';
 import type { DayHours, Weekday, WorkingHours } from '@mediterranea/shared/types';
 import type { StudioSettingsFormData } from '@mediterranea/shared/validations';
@@ -29,6 +29,11 @@ export function BackofficeSettings() {
   const [earnRate, setEarnRate] = useState('1');
   const [redeemRate, setRedeemRate] = useState('20');
 
+  const [confirmationEnabled, setConfirmationEnabled] = useState(true);
+  const [reminderEnabled, setReminderEnabled] = useState(true);
+  const [cancellationEnabled, setCancellationEnabled] = useState(true);
+  const [integrations, setIntegrations] = useState<Record<string, boolean> | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,9 +52,13 @@ export function BackofficeSettings() {
         setLoyaltyEnabled(s.loyalty?.enabled ?? false);
         setEarnRate(String(s.loyalty?.earnPointsPerEuro ?? 1));
         setRedeemRate(String(s.loyalty?.redeemPointsPerEuro ?? 20));
+        setConfirmationEnabled(s.notifications?.confirmationEnabled ?? true);
+        setReminderEnabled(s.notifications?.reminderEnabled ?? true);
+        setCancellationEnabled(s.notifications?.cancellationEnabled ?? true);
       }
       setLoading(false);
     });
+    getIntegrationStatus().then(setIntegrations);
   }, []);
 
   function toggleDay(day: Weekday, working: boolean) {
@@ -81,6 +90,11 @@ export function BackofficeSettings() {
         enabled: loyaltyEnabled,
         earnPointsPerEuro: Number(earnRate) || 0,
         redeemPointsPerEuro: Number(redeemRate) || 20,
+      },
+      notifications: {
+        confirmationEnabled,
+        reminderEnabled,
+        cancellationEnabled,
       },
       cancellation: {
         cutoffHours: Number(cutoffHours),
@@ -246,6 +260,53 @@ export function BackofficeSettings() {
             value={redeemRate}
             onChange={(e) => setRedeemRate(e.target.value)}
           />
+        </div>
+      </section>
+
+      {/* Notifications */}
+      <section className="border border-white-10 bg-dark-800 p-8">
+        <h2 className="mb-1 font-serif text-xl text-white">Notifications</h2>
+        <p className="mb-6 text-sm text-white-50">
+          Which automatic messages go to clients. Staff alerts are always on.
+        </p>
+        <div className="space-y-3">
+          {(
+            [
+              ['Booking confirmation', confirmationEnabled, setConfirmationEnabled],
+              ['Appointment reminder', reminderEnabled, setReminderEnabled],
+              ['Cancellation notice', cancellationEnabled, setCancellationEnabled],
+            ] as const
+          ).map(([label, val, setter]) => (
+            <label key={label} className="flex items-center gap-3 text-white-70">
+              <input type="checkbox" checked={val} onChange={(e) => setter(e.target.checked)} className="h-4 w-4 accent-gold" />
+              <span className="text-sm">{label}</span>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      {/* Integrations */}
+      <section className="border border-white-10 bg-dark-800 p-8">
+        <h2 className="mb-1 font-serif text-xl text-white">Integrations</h2>
+        <p className="mb-6 text-sm text-white-50">Read-only status. Configure keys in the environment.</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {integrations &&
+            Object.entries({
+              'Stripe (payments)': integrations.stripe,
+              'Stripe webhook': integrations.stripeWebhook,
+              'Resend (email)': integrations.resend,
+              'Twilio (SMS)': integrations.twilio,
+              'OpenAI (assistant)': integrations.openai,
+              'AWS S3 (photos)': integrations.s3,
+              'Reminders (cron)': integrations.reminders,
+            }).map(([label, on]) => (
+              <div key={label} className="flex items-center justify-between border border-white-10 px-3 py-2 text-sm">
+                <span className="text-white-70">{label}</span>
+                <span className={on ? 'text-green-400' : 'text-white-30'}>
+                  {on ? '● Connected' : '○ Not set'}
+                </span>
+              </div>
+            ))}
         </div>
       </section>
 

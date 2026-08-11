@@ -214,12 +214,12 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ---
 
-## Phase 5 — Intelligence & control (deferred)
+## Phase 5 — Intelligence & control ✅
 
-- [ ] Reports & analytics — revenue, popular treatments, staff performance, retention, no-show rate
-- [ ] Advanced settings — notification templates, integrations
-- [ ] Granular roles & permissions (beyond base roles)
-- [ ] Richer dashboard
+- [x] Reports & analytics — revenue, popular treatments, staff performance, retention, no-show rate _(`/backoffice/reports`, 30/90/365-day ranges)_
+- [x] Advanced settings — notification toggles + integration status _(`/backoffice/settings`; per-event on/off respected by dispatch; Stripe/Resend/Twilio/OpenAI/S3/cron status)_
+- [x] Granular roles & permissions (beyond base roles) _(`/backoffice/team`: per-admin capabilities; nav gated by capability; empty = full access)_
+- [x] Richer dashboard _(week/month revenue, top treatment, quick links to reports & campaigns)_
 
 ---
 

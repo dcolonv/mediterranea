@@ -23,6 +23,13 @@ export const studioSettingsSchema = z.object({
       redeemPointsPerEuro: z.number().min(1).max(1000),
     })
     .optional(),
+  notifications: z
+    .object({
+      confirmationEnabled: z.boolean(),
+      reminderEnabled: z.boolean(),
+      cancellationEnabled: z.boolean(),
+    })
+    .optional(),
 });
 
 export type StudioSettingsFormData = z.infer<typeof studioSettingsSchema>;

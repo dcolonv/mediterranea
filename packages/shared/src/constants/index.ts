@@ -119,6 +119,11 @@ export const DEFAULT_STUDIO_SETTINGS = {
     earnPointsPerEuro: 1,
     redeemPointsPerEuro: 20,
   },
+  notifications: {
+    confirmationEnabled: true,
+    reminderEnabled: true,
+    cancellationEnabled: true,
+  },
 } as const;
 
 /** Bump when the consent/privacy terms materially change. */

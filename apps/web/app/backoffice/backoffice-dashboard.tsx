@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { format } from 'date-fns';
 import { Button, Badge } from '@/components/ui';
 import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
+import { formatPrice } from '@mediterranea/shared/utils';
 import { getDashboard, type DashboardData } from '@/actions/dashboard';
 import { AppointmentModal } from '@/components/appointments';
 import { WalkInBooking } from '@/components/scheduling/walk-in-booking';
@@ -48,12 +50,15 @@ export function BackofficeDashboard() {
   }
 
   const { metrics, todayAppointments, today } = dash;
-  const cards: { label: string; value: number; hint?: string }[] = [
-    { label: 'Today', value: metrics.todayTotal, hint: 'booked' },
-    { label: 'Checked in', value: metrics.todayCheckedIn, hint: 'in the studio' },
-    { label: 'Completed today', value: metrics.todayCompleted },
-    { label: 'Awaiting confirmation', value: metrics.pendingUpcoming, hint: 'upcoming' },
-    { label: 'This week', value: metrics.weekTotal },
+  const cards: { label: string; value: string; hint?: string }[] = [
+    { label: 'Today', value: String(metrics.todayTotal), hint: 'booked' },
+    { label: 'Checked in', value: String(metrics.todayCheckedIn), hint: 'in the studio' },
+    { label: 'Completed today', value: String(metrics.todayCompleted) },
+    { label: 'Awaiting confirmation', value: String(metrics.pendingUpcoming), hint: 'upcoming' },
+    { label: 'This week', value: String(metrics.weekTotal), hint: 'appointments' },
+    { label: 'Revenue · week', value: formatPrice(metrics.weekRevenue) },
+    { label: 'Revenue · month', value: formatPrice(metrics.monthRevenue) },
+    { label: 'Top treatment', value: metrics.topTreatment ?? '—', hint: 'this month' },
   ];
 
   return (
@@ -66,13 +71,25 @@ export function BackofficeDashboard() {
         <Button variant="elegant" size="sm" onClick={() => setBooking(true)}>
           + New Appointment
         </Button>
+        <Link href="/backoffice/reports">
+          <Button variant="ghost" size="sm">
+            Reports
+          </Button>
+        </Link>
+        <Link href="/backoffice/campaigns">
+          <Button variant="ghost" size="sm">
+            Campaigns
+          </Button>
+        </Link>
       </div>
 
       {/* Metric cards */}
-      <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cards.map((c) => (
           <div key={c.label} className="border border-white-10 bg-dark-800 p-4">
-            <div className="text-3xl font-serif text-white">{c.value}</div>
+            <div className="truncate font-serif text-2xl text-white" title={c.value}>
+              {c.value}
+            </div>
             <div className="mt-1 text-[11px] uppercase tracking-wider text-white-50">{c.label}</div>
             {c.hint && <div className="text-[10px] text-white-30">{c.hint}</div>}
           </div>
