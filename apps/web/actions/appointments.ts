@@ -170,6 +170,10 @@ export async function updateAppointmentStatus(
       const { notifyAppointmentCancelled } = await import('@/lib/notifications/dispatch');
       await notifyAppointmentCancelled(appointmentId);
     }
+    if (status === 'completed') {
+      const { awardLoyaltyForCompletion } = await import('@/actions/loyalty');
+      await awardLoyaltyForCompletion(appointmentId);
+    }
 
     return { success: true };
   } catch (error) {

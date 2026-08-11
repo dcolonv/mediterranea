@@ -114,6 +114,11 @@ export const DEFAULT_STUDIO_SETTINGS = {
     policyText:
       'Please give at least 24 hours’ notice to cancel or reschedule. Later changes may incur a fee.',
   },
+  loyalty: {
+    enabled: false,
+    earnPointsPerEuro: 1,
+    redeemPointsPerEuro: 20,
+  },
 } as const;
 
 /** Bump when the consent/privacy terms materially change. */

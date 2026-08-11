@@ -444,6 +444,14 @@ export async function updateAppointment(
       /* best-effort */
     }
   }
+  if (status === 'completed' && existing.status !== 'completed') {
+    try {
+      const { awardLoyaltyForCompletion } = await import('@/actions/loyalty');
+      await awardLoyaltyForCompletion(id);
+    } catch {
+      /* best-effort */
+    }
+  }
 
   return { success: true, id };
 }

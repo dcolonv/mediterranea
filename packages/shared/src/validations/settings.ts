@@ -16,6 +16,13 @@ export const studioSettingsSchema = z.object({
     cutoffHours: z.number().int().min(0).max(720),
     policyText: z.string().max(1000),
   }),
+  loyalty: z
+    .object({
+      enabled: z.boolean(),
+      earnPointsPerEuro: z.number().min(0).max(100),
+      redeemPointsPerEuro: z.number().min(1).max(1000),
+    })
+    .optional(),
 });
 
 export type StudioSettingsFormData = z.infer<typeof studioSettingsSchema>;

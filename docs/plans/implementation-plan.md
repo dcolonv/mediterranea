@@ -203,14 +203,14 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ---
 
-## Phase 4 — Marketing & growth (deferred)
+## Phase 4 — Marketing & growth ✅
 
-- [ ] Campaigns — segmentation, email/SMS campaigns, win-back
-- [ ] Loyalty — rules configuration
-- [ ] Loyalty — customer balance and redemption
+- [x] Campaigns — segmentation, email/SMS campaigns, win-back _(`/backoffice/campaigns`; segments: all / marketing opt-in / tag / inactive-since-N-days; audience estimate; sends via providers)_
+- [x] Loyalty — rules configuration _(settings: enable, earn per €, redeem rate)_
+- [x] Loyalty — customer balance and redemption _(auto-earn on completed appointments; backoffice add/redeem on client detail; points shown on the customer account)_
 - [x] Reviews moderation — approve / hide / publish _(built in Phase 2 at `/backoffice/reviews`)_
-- [ ] Blog CMS — create / edit / publish, SEO
-- [ ] Public blog / skincare tips
+- [x] Blog CMS — create / edit / publish, SEO _(`/backoffice/blog`; draft/publish + SEO fields)_
+- [x] Public blog / tips _(`/init/blog` + `/init/blog/[slug]`, EN/ES)_
 
 ---
 

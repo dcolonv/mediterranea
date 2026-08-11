@@ -94,6 +94,8 @@ export interface Appointment {
   durationMinutes: number;
   notes: string;
   status: AppointmentStatus;
+  /** Set once loyalty points have been awarded for this appointment's completion. */
+  loyaltyAwarded?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -146,6 +148,8 @@ export interface Customer {
   intake?: IntakeForm;
   /** Consent record (treatment + marketing), versioned for GDPR. */
   consent?: ConsentRecord;
+  /** Loyalty points balance. */
+  loyaltyPoints?: number;
   /** Denormalized rollups maintained from appointments. */
   totalVisits: number;
   /** appointmentDate (YYYY-MM-DD) of the most recent appointment, or null. */
@@ -170,10 +174,19 @@ export interface CancellationPolicy {
   policyText: string;
 }
 
+export interface LoyaltyRules {
+  enabled: boolean;
+  /** Points earned per €1 spent on completed appointments. */
+  earnPointsPerEuro: number;
+  /** Points required for €1 of redeemable value. */
+  redeemPointsPerEuro: number;
+}
+
 export interface StudioSettings {
   businessHours: WorkingHours;
   booking: BookingRules;
   cancellation: CancellationPolicy;
+  loyalty?: LoyaltyRules;
   updatedAt?: Timestamp;
 }
 

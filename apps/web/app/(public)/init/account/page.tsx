@@ -31,6 +31,11 @@ export default async function AccountPage() {
           <div>
             <span className="text-[11px] uppercase tracking-[0.4em] text-gold/70">My account</span>
             <h1 className="mt-2 font-serif text-4xl tracking-wide text-white">Hello, {firstName}</h1>
+            {(customer.loyaltyPoints ?? 0) > 0 && (
+              <p className="mt-2 text-sm text-white-50">
+                <span className="text-gold">★ {customer.loyaltyPoints}</span> loyalty points
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Link href="/init/account/profile">
