@@ -89,8 +89,8 @@ export function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled || mobileMenuOpen ? 'bg-dark-900/95 backdrop-blur-sm' : 'bg-transparent'
+      className={`fixed top-0 left-0 right-0 z-50 bg-dark-900 transition-all duration-500 ${
+        scrolled || mobileMenuOpen ? 'shadow-sm' : ''
       }`}
     >
       <nav className="mx-auto max-w-7xl px-6 lg:px-8">
