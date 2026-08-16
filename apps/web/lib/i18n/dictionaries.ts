@@ -35,29 +35,29 @@ const en = {
     hours: 'Hours',
     minutes: 'Minutes',
     seconds: 'Seconds',
-    open: 'We’re open — welcome.',
+    open: 'We’re open. Welcome.',
   },
   hero: {
     eyebrow: 'Personalized Facial Treatments',
     headingLine1: 'Facial Care,',
     headingLine2: 'Made for You',
     description:
-      'A studio dedicated to personalized facial treatments in East Málaga. Every session is tailored to your skin — blending science with warm, Mediterranean care.',
+      'A studio dedicated to personalized facial treatments in East Málaga. Every session is tailored to your skin, with warm, attentive Mediterranean care.',
     book: 'Book Appointment',
     explore: 'Explore Facials',
   },
   services: {
     eyebrow: 'What We Offer',
     title: 'Our Facials',
-    subtitle: 'Two ways to care for your skin — a fully personalized session, or a single focused treatment.',
+    subtitle: 'Two ways to care for your skin: a fully personalized session, or a single focused treatment.',
     customName: 'Custom Facial',
     customDuration: '1.5–2 hours',
     customDesc:
-      'A fully personalized session that blends the treatments your skin needs — hydration, even tone, anti-aging, INDIBA and more — for complete, tailored care.',
+      'A fully personalized session that blends the treatments your skin needs, from hydration and even tone to anti-aging and INDIBA, for complete, tailored care.',
     focusName: 'Focus Facial',
     focusDuration: '45 minutes',
     focusDesc:
-      'A single, targeted treatment for when you know exactly what your skin needs — peeling, dermapen, INDIBA, hydration and more.',
+      'A single, targeted treatment for when you know exactly what your skin needs, whether peeling, dermapen, INDIBA or hydration.',
     cta: 'Book Your Facial',
     minutes: 'min',
   },
@@ -65,14 +65,14 @@ const en = {
     storyEyebrow: 'Our Story',
     storyTitle: 'Meet Dr. Mariana',
     storyP1:
-      'Hi, I’m Dr. Mariana, the founder of Mediterránea Face Studio. I hold a doctorate in pharmacy and have always been fascinated by the connection between skin health and overall well-being. Mediterránea was born from a desire to offer results-driven facial treatments rooted in dermatological science — yet delivered with warmth, care, and presence.',
+      'Hi, I’m Dr. Mariana, the founder of Mediterránea Face Studio. I hold a doctorate in pharmacy and have always been fascinated by the connection between skin health and overall well-being. Mediterránea was born from a desire to offer results-driven facial treatments, delivered with warmth, care, and presence.',
     storyP2:
-      'I believe beauty is not about covering up, but about uncovering your natural radiance through knowledge, balance, and gentle care. Each treatment at Mediterránea is customized to your skin’s unique needs, using clinically backed products and the latest in facial technology.',
+      'I believe beauty is not about covering up, but about uncovering your natural radiance through knowledge, balance, and gentle care. Each treatment at Mediterránea is customized to your skin’s unique needs, using carefully selected products and the latest in facial technology.',
     valuesEyebrow: 'Our Values',
     valuesTitle: 'What We Stand For',
     value1Title: 'High-Quality Products',
     value1Desc:
-      'We use only dermo-cosmetic products backed by science and clinical results. Each formula is carefully chosen for its performance, skin compatibility, and long-term benefits. Your skin deserves the best — and we deliver just that.',
+      'We use only premium dermo-cosmetic products, carefully chosen for their performance, skin compatibility, and long-term benefits. Your skin deserves the best, and that is exactly what we deliver.',
     value2Title: 'Transparent Ingredients',
     value2Desc:
       'No secrets, no gimmicks. We believe you have the right to know what goes on your skin. That’s why we’re always happy to explain the ingredients we use and why they matter. Education is part of your glow.',
@@ -84,7 +84,7 @@ const en = {
     line1: 'Facial care, personalized to you,',
     line2Prefix: 'delivered with ',
     line2Accent: 'warmth and care',
-    body: 'A full custom session or a single focused treatment — every visit is tailored to your skin, rooted in dermatological science.',
+    body: 'A full custom session or a single focused treatment. Every visit is tailored to your skin, with genuine care and attention.',
     button: 'Begin Your Journey',
   },
   contactSection: {
@@ -250,14 +250,14 @@ const es: typeof en = {
     hours: 'Horas',
     minutes: 'Minutos',
     seconds: 'Segundos',
-    open: 'Ya estamos abiertos — te esperamos.',
+    open: 'Ya estamos abiertos. Te esperamos.',
   },
   hero: {
     eyebrow: 'Tratamientos Faciales Personalizados',
     headingLine1: 'Cuidado Facial,',
     headingLine2: 'Hecho para Ti',
     description:
-      'Un estudio dedicado a los tratamientos faciales personalizados en Málaga Este. Cada sesión se adapta a tu piel, uniendo la ciencia con el cálido cuidado mediterráneo.',
+      'Un estudio dedicado a los tratamientos faciales personalizados en Málaga Este. Cada sesión se adapta a tu piel, con el cálido y atento cuidado mediterráneo.',
     book: 'Reservar cita',
     explore: 'Ver faciales',
   },
@@ -268,11 +268,11 @@ const es: typeof en = {
     customName: 'Facial Personalizado',
     customDuration: '1,5–2 horas',
     customDesc:
-      'Una sesión totalmente personalizada que combina los tratamientos que tu piel necesita — hidratación, unificación del tono, antiedad, INDIBA y más — para un cuidado completo y a medida.',
+      'Una sesión totalmente personalizada que combina los tratamientos que tu piel necesita, desde hidratación y unificación del tono hasta antiedad e INDIBA, para un cuidado completo y a medida.',
     focusName: 'Facial Focus',
     focusDuration: '45 minutos',
     focusDesc:
-      'Un tratamiento único y focalizado para cuando sabes exactamente qué necesita tu piel — peeling, dermapen, INDIBA, hidratación y más.',
+      'Un tratamiento único y focalizado para cuando sabes exactamente qué necesita tu piel, ya sea peeling, dermapen, INDIBA o hidratación.',
     cta: 'Reserva tu cita',
     minutes: 'min',
   },
@@ -280,14 +280,14 @@ const es: typeof en = {
     storyEyebrow: 'Nuestra Historia',
     storyTitle: 'Conoce a la Dra. Mariana',
     storyP1:
-      'Hola, soy la Dra. Mariana, fundadora de Mediterránea Face Studio. Soy doctora en farmacia y siempre me ha fascinado la conexión entre la salud de la piel y el bienestar general. Mediterránea nació del deseo de ofrecer tratamientos faciales con resultados reales, basados en la ciencia dermatológica, pero brindados con calidez, cuidado y presencia.',
+      'Hola, soy la Dra. Mariana, fundadora de Mediterránea Face Studio. Soy doctora en farmacia y siempre me ha fascinado la conexión entre la salud de la piel y el bienestar general. Mediterránea nació del deseo de ofrecer tratamientos faciales con resultados reales, brindados con calidez, cuidado y presencia.',
     storyP2:
-      'Creo que la belleza no se trata de disimular, sino de revelar tu resplandor natural a través del conocimiento, el equilibrio y el cuidado delicado. Cada tratamiento en Mediterránea se personaliza según las necesidades únicas de tu piel, con productos respaldados clínicamente y la última tecnología facial.',
+      'Creo que la belleza no se trata de disimular, sino de revelar tu resplandor natural a través del conocimiento, el equilibrio y el cuidado delicado. Cada tratamiento en Mediterránea se personaliza según las necesidades únicas de tu piel, con productos cuidadosamente seleccionados y la última tecnología facial.',
     valuesEyebrow: 'Nuestros Valores',
     valuesTitle: 'Lo Que Defendemos',
     value1Title: 'Productos de Alta Calidad',
     value1Desc:
-      'Usamos solo productos dermocosméticos respaldados por la ciencia y resultados clínicos. Cada fórmula se elige cuidadosamente por su rendimiento, compatibilidad con la piel y beneficios a largo plazo. Tu piel merece lo mejor, y eso es justo lo que ofrecemos.',
+      'Usamos solo productos dermocosméticos premium, elegidos cuidadosamente por su rendimiento, compatibilidad con la piel y beneficios a largo plazo. Tu piel merece lo mejor, y eso es justo lo que ofrecemos.',
     value2Title: 'Ingredientes Transparentes',
     value2Desc:
       'Sin secretos ni trucos. Creemos que tienes derecho a saber qué se aplica en tu piel. Por eso siempre explicamos con gusto los ingredientes que usamos y por qué importan. La educación es parte de tu luz.',
@@ -299,7 +299,7 @@ const es: typeof en = {
     line1: 'Cuidado facial, personalizado para ti,',
     line2Prefix: 'brindado con ',
     line2Accent: 'calidez y cuidado',
-    body: 'Una sesión personalizada completa o un tratamiento único y focalizado: adaptamos cada visita a tu piel, con base en la ciencia dermatológica.',
+    body: 'Una sesión personalizada completa o un tratamiento único y focalizado: adaptamos cada visita a tu piel, con verdadero cuidado y atención.',
     button: 'Comienza Tu Viaje',
   },
   contactSection: {
