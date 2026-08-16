@@ -9,7 +9,6 @@ import { useLang } from '@/components/i18n/language-provider';
 import { LanguageToggle } from '@/components/i18n/language-toggle';
 
 const NAV_SECTIONS = [
-  { id: 'home', key: 'home', href: '/init' },
   { id: 'services', key: 'treatments', href: '/init/treatments' },
   { id: 'about', key: 'about', href: '/init#about' },
   { id: 'contact', key: 'contact', href: '/init/contact' },
