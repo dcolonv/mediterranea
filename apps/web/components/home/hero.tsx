@@ -59,7 +59,7 @@ export function Hero() {
 
             {/* Heading */}
             <h1
-              className={`font-serif text-5xl sm:text-6xl lg:text-7xl xl:text-[5.25rem] tracking-wide text-white leading-[1.1] transition-all duration-1000 delay-200 ease-out ${
+              className={`font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-wide text-white leading-[1.1] whitespace-nowrap transition-all duration-1000 delay-200 ease-out ${
                 mounted
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
