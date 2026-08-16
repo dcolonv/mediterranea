@@ -38,21 +38,27 @@ const en = {
     open: 'We’re open — welcome.',
   },
   hero: {
-    eyebrow: 'Premium Facial Care',
+    eyebrow: 'Personalized Facial Treatments',
     headingLine1: 'Discover Your',
     headingLine2: 'Natural Radiance',
     description:
-      'Experience the art of Mediterranean facial treatments at our exclusive face studio. Where science meets personalized care to reveal your skin’s true beauty.',
+      'A studio dedicated to personalized facial treatments in East Málaga. Every session is tailored to your skin — blending science with warm, Mediterranean care.',
     book: 'Book Appointment',
-    explore: 'Explore Services',
+    explore: 'Explore Facials',
   },
   services: {
     eyebrow: 'What We Offer',
-    title: 'Our Services',
-    subtitle: 'Tailored facial treatments designed to enhance your natural beauty',
-    facials: 'Facial Treatments',
-    advanced: 'Advanced Treatments',
-    cta: 'Book Your Appointment',
+    title: 'Our Facials',
+    subtitle: 'Two ways to care for your skin — a fully personalized session, or a single focused treatment.',
+    customName: 'Custom Facial',
+    customDuration: '1.5–2 hours',
+    customDesc:
+      'A fully personalized session that blends the treatments your skin needs — hydration, even tone, anti-aging, INDIBA and more — for complete, tailored care.',
+    focusName: 'Focus Facial',
+    focusDuration: '45 minutes',
+    focusDesc:
+      'A single, targeted treatment for when you know exactly what your skin needs — peeling, dermapen, INDIBA, hydration and more.',
+    cta: 'Book Your Facial',
     minutes: 'min',
   },
   about: {
@@ -75,10 +81,10 @@ const en = {
       'We’re committed to sourcing our materials with care and responsibility. From the lab to your skin, we prioritize sustainability, cruelty-free processes, and human-centered values at every step.',
   },
   cta: {
-    line1: 'Science-backed facial care,',
+    line1: 'Facial care, personalized to you,',
     line2Prefix: 'delivered with ',
     line2Accent: 'warmth and care',
-    body: 'Your skin is unique. Let us create a personalized treatment plan rooted in dermatological science and tailored just for you.',
+    body: 'A full custom session or a single focused treatment — every visit is tailored to your skin, rooted in dermatological science.',
     button: 'Begin Your Journey',
   },
   contactSection: {
@@ -247,20 +253,26 @@ const es: typeof en = {
     open: 'Ya estamos abiertos — te esperamos.',
   },
   hero: {
-    eyebrow: 'Cuidado Facial Premium',
+    eyebrow: 'Tratamientos Faciales Personalizados',
     headingLine1: 'Descubre Tu',
     headingLine2: 'Resplandor Natural',
     description:
-      'Vive el arte de los tratamientos faciales mediterráneos en nuestro exclusivo estudio facial. Donde la ciencia se une al cuidado personalizado para revelar la verdadera belleza de tu piel.',
+      'Un estudio dedicado a los tratamientos faciales personalizados en Málaga Este. Cada sesión se adapta a tu piel, uniendo la ciencia con el cálido cuidado mediterráneo.',
     book: 'Reservar cita',
-    explore: 'Ver servicios',
+    explore: 'Ver faciales',
   },
   services: {
     eyebrow: 'Lo Que Ofrecemos',
-    title: 'Nuestros Servicios',
-    subtitle: 'Tratamientos faciales personalizados para realzar tu belleza natural',
-    facials: 'Tratamientos Faciales',
-    advanced: 'Tratamientos Avanzados',
+    title: 'Nuestros Faciales',
+    subtitle: 'Dos formas de cuidar tu piel: una sesión totalmente personalizada o un tratamiento único y focalizado.',
+    customName: 'Facial Personalizado',
+    customDuration: '1,5–2 horas',
+    customDesc:
+      'Una sesión totalmente personalizada que combina los tratamientos que tu piel necesita — hidratación, unificación del tono, antiedad, INDIBA y más — para un cuidado completo y a medida.',
+    focusName: 'Facial Focus',
+    focusDuration: '45 minutos',
+    focusDesc:
+      'Un tratamiento único y focalizado para cuando sabes exactamente qué necesita tu piel — peeling, dermapen, INDIBA, hidratación y más.',
     cta: 'Reserva tu cita',
     minutes: 'min',
   },
@@ -284,10 +296,10 @@ const es: typeof en = {
       'Nos comprometemos a obtener nuestros materiales con cuidado y responsabilidad. Del laboratorio a tu piel, priorizamos la sostenibilidad, los procesos libres de crueldad y los valores centrados en las personas en cada paso.',
   },
   cta: {
-    line1: 'Cuidado facial con base científica,',
+    line1: 'Cuidado facial, personalizado para ti,',
     line2Prefix: 'brindado con ',
     line2Accent: 'calidez y cuidado',
-    body: 'Tu piel es única. Permítenos crear un plan de tratamiento personalizado, basado en la ciencia dermatológica y hecho a tu medida.',
+    body: 'Una sesión personalizada completa o un tratamiento único y focalizado: adaptamos cada visita a tu piel, con base en la ciencia dermatológica.',
     button: 'Comienza Tu Viaje',
   },
   contactSection: {
