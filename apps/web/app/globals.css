@@ -24,10 +24,11 @@ html {
   --white-30: rgba(52, 48, 43, 0.46);
   --white-10: rgba(52, 48, 43, 0.16);
 
-  /* Sand surfaces, lightest → deepest (legacy "dark-*") */
+  /* Surfaces (legacy "dark-*"). 900/800 share one near-white so page sections
+     never band; 700 is a whisper darker so cards/panels still read. */
   --dark-900: #fcfbf9;
-  --dark-800: #f3efe9;
-  --dark-700: #e9e3da;
+  --dark-800: #fcfbf9;
+  --dark-700: #f4f0ea;
   --dark-600: #c2b8b0;
   --dark-500: #b7a99d;
 
