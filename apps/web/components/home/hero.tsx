@@ -50,7 +50,7 @@ export function Hero() {
             >
               <div className="flex items-center justify-center lg:justify-start gap-6">
                 <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-                <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
+                <span className="text-xs sm:text-sm tracking-[0.35em] text-gold uppercase font-semibold">
                   {dict.hero.eyebrow}
                 </span>
                 <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50 lg:hidden" />
