@@ -39,8 +39,8 @@ const en = {
   },
   hero: {
     eyebrow: 'Personalized Facial Treatments',
-    headingLine1: 'Discover Your',
-    headingLine2: 'Natural Radiance',
+    headingLine1: 'Facial Care,',
+    headingLine2: 'Made for You',
     description:
       'A studio dedicated to personalized facial treatments in East Málaga. Every session is tailored to your skin — blending science with warm, Mediterranean care.',
     book: 'Book Appointment',
@@ -254,8 +254,8 @@ const es: typeof en = {
   },
   hero: {
     eyebrow: 'Tratamientos Faciales Personalizados',
-    headingLine1: 'Descubre Tu',
-    headingLine2: 'Resplandor Natural',
+    headingLine1: 'Cuidado Facial,',
+    headingLine2: 'Hecho para Ti',
     description:
       'Un estudio dedicado a los tratamientos faciales personalizados en Málaga Este. Cada sesión se adapta a tu piel, uniendo la ciencia con el cálido cuidado mediterráneo.',
     book: 'Reservar cita',
