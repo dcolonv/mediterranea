@@ -47,8 +47,13 @@ export async function notifyBookingCreated(appointmentId: string): Promise<void>
   try {
     const appt = await data.getAppointment(appointmentId);
     if (!appt) return;
+    const settings = await data.getStudioSettings();
+    const clientJob =
+      settings.notifications?.confirmationEnabled === false
+        ? Promise.resolve()
+        : deliver(appt, bookingConfirmed(await buildContext(appt)));
     await Promise.allSettled([
-      deliver(appt, bookingConfirmed(await buildContext(appt))),
+      clientJob,
       sendStaffPush(
         'New booking',
         `${appt.clientName} — ${appt.serviceName}, ${appt.appointmentDate} at ${appt.appointmentTime}`,
@@ -64,13 +69,21 @@ export async function notifyAppointmentCancelled(appointmentId: string): Promise
   try {
     const appt = await data.getAppointment(appointmentId);
     if (!appt) return;
+    const settings = await data.getStudioSettings();
+    // Offer the freed slot to matching waitlist entries (best-effort).
+    const { offerFreedSlot } = await import('@/actions/waitlist');
+    const clientJob =
+      settings.notifications?.cancellationEnabled === false
+        ? Promise.resolve()
+        : deliver(appt, appointmentCancelled(await buildContext(appt)));
     await Promise.allSettled([
-      deliver(appt, appointmentCancelled(await buildContext(appt))),
+      clientJob,
       sendStaffPush(
         'Cancellation',
         `${appt.clientName} — ${appt.serviceName}, ${appt.appointmentDate} at ${appt.appointmentTime}`,
         { appointmentId: appt.id }
       ),
+      offerFreedSlot(appt),
     ]);
   } catch (error) {
     console.error('[notifications] notifyAppointmentCancelled failed:', error);
@@ -80,6 +93,8 @@ export async function notifyAppointmentCancelled(appointmentId: string): Promise
 /** Reminder for an already-loaded appointment (used by the scheduled job). */
 export async function notifyAppointmentReminder(appt: Appointment): Promise<void> {
   try {
+    const settings = await data.getStudioSettings();
+    if (settings.notifications?.reminderEnabled === false) return;
     await deliver(appt, appointmentReminder(await buildContext(appt)));
   } catch (error) {
     console.error('[notifications] notifyAppointmentReminder failed:', error);

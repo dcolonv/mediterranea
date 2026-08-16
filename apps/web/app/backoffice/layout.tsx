@@ -1,10 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/components/providers';
+import { hasCapability, type Capability } from '@/lib/auth/capabilities';
+import { getMyCapabilities } from '@/actions/team';
+
+const NAV: { href: string; label: string; cap?: Capability }[] = [
+  { href: '/backoffice', label: 'Dashboard' },
+  { href: '/backoffice/calendar', label: 'Calendar', cap: 'calendar' },
+  { href: '/backoffice/waitlist', label: 'Waitlist', cap: 'waitlist' },
+  { href: '/backoffice/clients', label: 'Clients', cap: 'clients' },
+  { href: '/backoffice/services', label: 'Services', cap: 'services' },
+  { href: '/backoffice/staff', label: 'Staff', cap: 'staff' },
+  { href: '/backoffice/rooms', label: 'Rooms', cap: 'rooms' },
+  { href: '/backoffice/reviews', label: 'Reviews', cap: 'reviews' },
+  { href: '/backoffice/gift-cards', label: 'Gift Cards', cap: 'giftcards' },
+  { href: '/backoffice/blog', label: 'Blog', cap: 'blog' },
+  { href: '/backoffice/campaigns', label: 'Campaigns', cap: 'campaigns' },
+  { href: '/backoffice/reports', label: 'Reports', cap: 'reports' },
+  { href: '/backoffice/team', label: 'Team', cap: 'team' },
+  { href: '/backoffice/settings', label: 'Settings', cap: 'settings' },
+];
 
 export default function BackofficeLayout({
   children,
@@ -13,6 +32,13 @@ export default function BackofficeLayout({
 }) {
   const router = useRouter();
   const { user, loading, signOut } = useAuth();
+  const [caps, setCaps] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    getMyCapabilities().then(setCaps);
+  }, []);
+
+  const visibleNav = NAV.filter((n) => !n.cap || hasCapability(caps, n.cap));
 
   useEffect(() => {
     if (!loading) {
@@ -61,55 +87,16 @@ export default function BackofficeLayout({
                   Backoffice
                 </span>
               </Link>
-              <nav className="hidden md:flex gap-8">
-                <Link
-                  href="/backoffice"
-                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/backoffice/calendar"
-                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
-                >
-                  Calendar
-                </Link>
-                <Link
-                  href="/backoffice/clients"
-                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
-                >
-                  Clients
-                </Link>
-                <Link
-                  href="/backoffice/services"
-                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
-                >
-                  Services
-                </Link>
-                <Link
-                  href="/backoffice/staff"
-                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
-                >
-                  Staff
-                </Link>
-                <Link
-                  href="/backoffice/rooms"
-                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
-                >
-                  Rooms
-                </Link>
-                <Link
-                  href="/backoffice/reviews"
-                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
-                >
-                  Reviews
-                </Link>
-                <Link
-                  href="/backoffice/settings"
-                  className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
-                >
-                  Settings
-                </Link>
+              <nav className="hidden md:flex flex-wrap gap-x-5 gap-y-1">
+                {visibleNav.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-sm tracking-wider text-white-70 hover:text-white transition-colors uppercase"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </nav>
             </div>
 

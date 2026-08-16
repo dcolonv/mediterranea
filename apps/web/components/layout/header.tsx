@@ -9,7 +9,6 @@ import { useLang } from '@/components/i18n/language-provider';
 import { LanguageToggle } from '@/components/i18n/language-toggle';
 
 const NAV_SECTIONS = [
-  { id: 'home', key: 'home', href: '/init' },
   { id: 'services', key: 'treatments', href: '/init/treatments' },
   { id: 'about', key: 'about', href: '/init#about' },
   { id: 'contact', key: 'contact', href: '/init/contact' },
@@ -89,8 +88,8 @@ export function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'bg-dark-900/95 backdrop-blur-sm' : 'bg-transparent'
+      className={`fixed top-0 left-0 right-0 z-50 bg-dark-900 transition-all duration-500 ${
+        scrolled || mobileMenuOpen ? 'shadow-sm' : ''
       }`}
     >
       <nav className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -107,12 +106,12 @@ export function Header() {
           </Link>
 
           {/* Desktop navigation */}
-          <div className="hidden md:flex md:items-center md:gap-x-8">
+          <div className="hidden lg:flex lg:items-center lg:gap-x-4 xl:gap-x-6">
             {NAV_SECTIONS.map((section) => (
               <Link
                 key={section.id}
                 href={section.href}
-                className={`elegant-underline text-sm tracking-widest uppercase transition-colors ${
+                className={`elegant-underline whitespace-nowrap text-xs tracking-wider uppercase transition-colors xl:text-sm ${
                   isActive(section.id)
                     ? 'text-white elegant-underline-active'
                     : 'text-white-70 hover:text-white'
@@ -122,12 +121,24 @@ export function Header() {
               </Link>
             ))}
             <Link
+              href="/init/blog"
+              className="elegant-underline whitespace-nowrap text-xs tracking-wider uppercase text-white-70 transition-colors hover:text-white xl:text-sm"
+            >
+              {dict.nav.blog}
+            </Link>
+            <Link
+              href="/init/gift-cards"
+              className="elegant-underline whitespace-nowrap text-xs tracking-wider uppercase text-white-70 transition-colors hover:text-white xl:text-sm"
+            >
+              {dict.nav.giftCards}
+            </Link>
+            <Link
               href="/init/account"
-              className="elegant-underline text-sm tracking-widest uppercase text-white-70 transition-colors hover:text-white"
+              className="elegant-underline whitespace-nowrap text-xs tracking-wider uppercase text-white-70 transition-colors hover:text-white xl:text-sm"
             >
               {dict.nav.account}
             </Link>
-            <LanguageToggle sizeClass="text-[1.6875rem] sm:text-[2.0625rem]" />
+            <LanguageToggle sizeClass="text-[1.5rem] xl:text-[1.875rem]" />
             <Link href="/init/book">
               <Button variant="elegant" size="sm">
                 {dict.nav.bookNow}
@@ -138,7 +149,7 @@ export function Header() {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden p-2"
+            className="lg:hidden p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <span className="sr-only">Open menu</span>
@@ -168,7 +179,7 @@ export function Header() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-6 border-t border-white-10">
+          <div className="lg:hidden bg-dark-900 -mx-6 lg:-mx-8 px-6 lg:px-8 py-6 border-t border-white-10">
             <div className="flex flex-col space-y-6">
               {NAV_SECTIONS.map((section) => (
                 <Link
@@ -184,6 +195,20 @@ export function Header() {
                   {dict.nav[section.key]}
                 </Link>
               ))}
+              <Link
+                href="/init/blog"
+                className="text-sm tracking-widest uppercase text-white-70 hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {dict.nav.blog}
+              </Link>
+              <Link
+                href="/init/gift-cards"
+                className="text-sm tracking-widest uppercase text-white-70 hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {dict.nav.giftCards}
+              </Link>
               <Link
                 href="/init/account"
                 className="text-sm tracking-widest uppercase text-white-70 hover:text-white"

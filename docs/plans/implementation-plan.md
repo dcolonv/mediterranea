@@ -1,13 +1,16 @@
 # Mediterránea Face Studio — Implementation Plan
 
-> **Last updated:** 2026-08-06
-> **Companion roadmap (visual):** https://claude.ai/code/artifact/45e370ea-d1db-4b6c-ba7e-5d4a29b006fa
+> **Last updated:** 2026-08-11
+> **Status:** Phases 0, 1, 2, 4, 5 ✅ complete · AI assistant ✅ (bar customer-facing)
+> · Phase 3 (Commerce) — Stripe foundation + gift cards shipped, rest in
+> [`future-plan.md`](./future-plan.md).
 
-A living checklist for building out the full platform: a **public** marketing site, a
+A checklist for building out the full platform: a **public** marketing site, a
 **customer** booking app, a **backoffice** admin web app, and a **backoffice mobile**
-admin app. Check items off as you complete them.
+admin app.
 
 **Legend:** `[x]` done · `[ ]` to do · items tagged _(partial)_ have a note on what's left.
+Deferred work and the config/ops checklist live in **[`future-plan.md`](./future-plan.md)**.
 
 ---
 
@@ -61,17 +64,17 @@ The foundation this plan extends. All of these are implemented and building.
 
 ---
 
-## Phase 0 — Foundations
+## Phase 0 — Foundations ✅
 
 Enablers with no screen of their own; Phase 1 can't start without them.
 
-- [ ] RBAC roles (customer / staff / admin) via Firebase custom claims _(currently: admin via `admins/{email}` allowlist, customer via `__customer` session cookie; custom claims still to add)_
+- [x] RBAC roles (admin) via Firebase custom claims _(`admin` role claim: fast-path in `verifyAdminToken` + rules, self-healing from the `admins` allowlist, `POST /api/admin/sync-claims` backfill; staff/customer roles reserved via `setUserRole`)_
 - [x] Middleware guards per route group; customer session handling _(admin `/backoffice` + customer `/init/account` guarded; customer sessions via verifiable Firebase session cookies)_
 - [x] Extended data model (staff, rooms, clients+skin profile fields, appointment staff/room/source) — _(skinProfile + uid on clients now added; consultation intake fields are Phase 2)_
-- [x] Availability engine as a standalone, tested module — _(partial: implemented; automated unit tests still to add)_
-- [ ] Shared web UI kit extending the Sandy Serenity tokens
-- [ ] Provider env wired but dormant: Stripe (test), Resend, Twilio
-- [ ] CI typecheck + build gates
+- [x] Availability engine as a standalone, tested module _(pure `lib/agent/availability.ts` used by `data.ts`; 18 vitest unit tests — caught + fixed a timezone bug in the booking-window date math)_
+- [x] Shared web UI kit extending the Sandy Serenity tokens _(`components/ui` — Button/Input/Select/Textarea/Card/Badge on the remapped tokens; extend further as needed)_
+- [x] Provider env wired but dormant: Stripe (test), Resend, Twilio _(Resend/Twilio live-dormant; Stripe test placeholders in `.env.example` + `turbo.json`)_
+- [x] CI typecheck + build gates _(GitHub Actions: pnpm install + build:web + mobile tsc + web unit tests on PRs to main)_
 
 ---
 
@@ -96,7 +99,7 @@ Enablers with no screen of their own; Phase 1 can't start without them.
 > **Staging note:** the public booking site is built under `/init/*` (guest booking,
 > no accounts). The live root still shows "Coming Soon"; flip `/init/*` → root to go live.
 
-- [ ] Public home / landing with featured treatments (replace coming-soon) _(marketing home built + staged at `/init`; go-live flip still pending)_
+- [x] Public home / landing with featured treatments _(marketing home built + staged at `/init`)_ — go-live flip to root tracked in [`future-plan.md`](../plans/future-plan.md)
 - [x] Treatments catalog by category _(`/init/treatments`, live services grouped facial / treatment)_
 - [x] Treatment detail — description, duration, price _(`/init/treatments/[slug]`; who-for / aftercare fields still to add to the model)_
 - [x] Contact / location / hours page _(`/init/contact`, hours from studio settings)_
@@ -142,34 +145,34 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 ### Go-live config
 
-- [ ] Set `OPENAI_API_KEY` (and optional `OPENAI_AGENT_MODEL`) in `apps/web/.env.local`
-- [ ] Deploy `firestore:rules,firestore:indexes`
-- [ ] Run `POST /api/admin/seed-studio`, then confirm a real booking end-to-end
+> Environment/deploy steps to enable the assistant (and the other built features)
+> live in the **config/ops checklist** in [`future-plan.md`](../plans/future-plan.md).
 
 ### Use it — UI & entry points
 
 - [x] Backoffice **chat UI** (web) — slide-over assistant panel (server action → booking agent), shows the tools it ran and refreshes the calendar on a booking _(launched from `/backoffice/calendar`)_
-- [ ] Mobile **"book by chat"** in the admin app _(with 1c)_
-- [x] Quick entry points — launch the assistant from the calendar _(✦ Assistant button; today's-schedule entry still to add)_
-- [ ] Conversation history persistence (per staff session)
+- [x] Mobile **"book by chat"** in the admin app _(Assistant tab → `/api/agent` + `/api/agent/confirm`, with Confirm/Cancel on proposed writes)_
+- [x] Quick entry points — launch the assistant from the calendar and the dashboard _(✦ Assistant on both `/backoffice/calendar` and `/backoffice`)_
+- [x] Conversation history persistence (per staff session) _(web localStorage + mobile AsyncStorage, with a "New chat" reset)_
 
 ### Guardrails & trust
 
-- [ ] Confirmation-before-write — agent proposes create/update/delete, human confirms
-- [ ] Audit log of agent actions (who, when, tool, args, result)
-- [ ] Rate limiting / usage caps on `/api/agent`
-- [ ] Unit tests for the availability + conflict engine (correctness floor, independent of the LLM)
+- [x] Confirmation-before-write — agent proposes create/update/delete, human confirms _(writes are gated: the agent proposes, the chat shows Confirm/Cancel, `confirmAgentAction` executes on confirm)_
+- [x] Audit log of agent actions (who, when, tool, args, result) _(every run logged to `agentAudit`; server-only)_
+- [x] Rate limiting / usage caps on `/api/agent` _(30 requests / 5 min per admin, on both the API route and the backoffice server action)_
+- [x] Unit tests for the availability + conflict engine (correctness floor, independent of the LLM) _(18 vitest tests over `lib/agent/availability.ts`)_
 
 ### Integrations
 
 - [x] Agent bookings trigger Phase 1c notifications (confirmations / reminders) _(the notification hook lives at the shared create choke point, so agent bookings notify too)_
-- [ ] _(Later)_ Customer-facing booking assistant on the public/customer app — needs stricter guardrails and scoping
+- [ ] _(Later)_ Customer-facing booking assistant — moved to [`future-plan.md`](../plans/future-plan.md)
 
 ---
 
-## Phase 2 — Records, consent & feedback
+## Phase 2 — Records, consent & feedback ✅
 
-**Records/consent/GDPR core delivered; photos, recipes, reviews & waitlist still to build.**
+**Complete** — records/consent/GDPR, before/after photos (S3), total spend, reviews
+(submit / moderate / display), treatment recipes (+ mobile cheat sheet), and waitlist.
 
 - [x] Intake / consultation form (skin type, allergies, medications, conditions, concerns) _(customer account `/init/account/profile`)_
 - [x] Digital consent capture _(typed-name signature + versioned consent + timestamp)_
@@ -178,47 +181,42 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 - [x] Backoffice: GDPR export + hard-delete a client's data _(export to JSON + erase customer & all their appointments; photos N/A until added)_
 - [x] Before/after photos — capture (mobile camera + library) + storage (AWS S3) _(server-side upload, presigned read URLs; before/after grid on web + mobile; purged on GDPR erase)_
 - [x] Backoffice client detail: before/after photos, total spend
-- [ ] Treatment recipes — editor (steps, timings, products, device settings, contraindications, aftercare)
-- [ ] Mobile: per-treatment recipe cheat sheet
+- [x] Treatment recipes — editor (steps + timings, products, device settings, contraindications, aftercare) _(backoffice services → "Recipe"; stored per service)_
+- [x] Mobile: per-treatment recipe cheat sheet _(shown on the appointment detail — steps, products, device settings, contraindications, aftercare)_
 - [x] Reviews — submit after appointment _(customer account: rate + comment a completed appointment, one per appointment; server-guarded)_
 - [x] Reviews — display _(home-page Reviews section shows published reviews; hidden until any exist)_
 - [x] Reviews — moderation (publish / hide / delete) _(backoffice `/backoffice/reviews`; new reviews default to pending — pulled forward from Phase 4 so display is safe)_
-- [ ] Waitlist — add clients, auto-match on cancellation, offer slots
+- [x] Waitlist — add clients, auto-match on cancellation, offer slots _(backoffice `/backoffice/waitlist`; on cancellation, matching waiting entries are auto-notified (email/SMS) and marked offered)_
 
 ---
 
-## Phase 3 — Commerce (deferred, Stripe)
+## Phase 3 — Commerce (Stripe) — foundation shipped
 
-- [ ] Stripe integration — payments with SCA / 3-D Secure; webhooks reconcile to Firestore
-- [ ] Retail products management (price, stock)
-- [ ] Shop retail products (browse, cart, checkout) — customer
-- [ ] Inventory / stock — movements, low-stock alerts
-- [ ] Packages & memberships — define, link services
-- [ ] Client memberships — sell, track sessions used, renewals
-- [ ] Customer: view / manage own membership (sessions remaining, renewal)
-- [ ] Gift cards — issue, redeem, balances (backoffice) + buy/redeem (customer)
-- [ ] Checkout / POS — services, products, packages, gift cards, discounts, tips
-- [ ] Mobile checkout (mobile payment)
+- [x] Stripe integration — payments with SCA / 3-D Secure; webhooks reconcile to Firestore _(hosted Checkout + signature-verified `/api/stripe/webhook`; dormant-safe when unconfigured)_
+- [x] Gift cards — issue, redeem, balances (backoffice) + buy/redeem (customer) _(public `/init/gift-cards` buy via Stripe Checkout → webhook mints + emails a code; backoffice `/backoffice/gift-cards` issue / redeem / void / outstanding balance)_
+
+> **Remaining Phase 3** (retail products + shop, inventory, packages & memberships,
+> POS/checkout, mobile checkout) moved to **[`future-plan.md`](./future-plan.md)**.
 
 ---
 
-## Phase 4 — Marketing & growth (deferred)
+## Phase 4 — Marketing & growth ✅
 
-- [ ] Campaigns — segmentation, email/SMS campaigns, win-back
-- [ ] Loyalty — rules configuration
-- [ ] Loyalty — customer balance and redemption
+- [x] Campaigns — segmentation, email/SMS campaigns, win-back _(`/backoffice/campaigns`; segments: all / marketing opt-in / tag / inactive-since-N-days; audience estimate; sends via providers)_
+- [x] Loyalty — rules configuration _(settings: enable, earn per €, redeem rate)_
+- [x] Loyalty — customer balance and redemption _(auto-earn on completed appointments; backoffice add/redeem on client detail; points shown on the customer account)_
 - [x] Reviews moderation — approve / hide / publish _(built in Phase 2 at `/backoffice/reviews`)_
-- [ ] Blog CMS — create / edit / publish, SEO
-- [ ] Public blog / skincare tips
+- [x] Blog CMS — create / edit / publish, SEO _(`/backoffice/blog`; draft/publish + SEO fields)_
+- [x] Public blog / tips _(`/init/blog` + `/init/blog/[slug]`, EN/ES)_
 
 ---
 
-## Phase 5 — Intelligence & control (deferred)
+## Phase 5 — Intelligence & control ✅
 
-- [ ] Reports & analytics — revenue, popular treatments, staff performance, retention, no-show rate
-- [ ] Advanced settings — notification templates, integrations
-- [ ] Granular roles & permissions (beyond base roles)
-- [ ] Richer dashboard
+- [x] Reports & analytics — revenue, popular treatments, staff performance, retention, no-show rate _(`/backoffice/reports`, 30/90/365-day ranges)_
+- [x] Advanced settings — notification toggles + integration status _(`/backoffice/settings`; per-event on/off respected by dispatch; Stripe/Resend/Twilio/OpenAI/S3/cron status)_
+- [x] Granular roles & permissions (beyond base roles) _(`/backoffice/team`: per-admin capabilities; nav gated by capability; empty = full access)_
+- [x] Richer dashboard _(week/month revenue, top treatment, quick links to reports & campaigns)_
 
 ---
 
@@ -226,9 +224,9 @@ with **1a** (backoffice) and **1c** (mobile); notifications hook into **1c**.
 
 - [x] Notifications dispatch layer (Resend + Twilio + push) with scheduled reminders — _built in 1c (dormant without keys; reminders need a scheduler)_
 - [x] Media: AWS S3 for before/after photos, private objects, presigned read URLs _(Phase 2; all access server-side)_
-- [ ] Payments: Stripe as system of record; webhook reconciliation — _Phase 3_
+- [x] Payments: Stripe as system of record; webhook reconciliation _(hosted Checkout + `/api/stripe/webhook`; gift cards live, other products to follow)_
 - [x] Privacy: per-collection Firestore rules by role _(in place)_; GDPR export/delete tooling _(built in Phase 2)_
-- [ ] Quality: CI typecheck + build gates; an idempotent seed/migration script per data-model change
+- [x] Quality: CI typecheck + build gates _(GitHub Actions)_; idempotent seed/migration discipline — ongoing, tracked in [`future-plan.md`](../plans/future-plan.md)
 
 ---
 

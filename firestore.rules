@@ -39,6 +39,34 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Treatment recipes: admin only (internal protocol; served via Admin SDK).
+    match /recipes/{serviceId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Waitlist: server-only (managed + matched via Admin SDK).
+    match /waitlist/{entryId} {
+      allow read, write: if false;
+    }
+
+    // Agent audit log: server-only (written via Admin SDK).
+    match /agentAudit/{entryId} {
+      allow read, write: if false;
+    }
+
+    // Gift cards: server-only (purchased via Stripe, managed via Admin SDK).
+    match /giftCards/{cardId} {
+      allow read, write: if false;
+    }
+
+    // Blog + campaigns: server-only (rendered / managed via Admin SDK).
+    match /blog/{postId} {
+      allow read, write: if false;
+    }
+    match /campaigns/{campaignId} {
+      allow read, write: if false;
+    }
+
     // Studio settings: public read (business hours + policy for booking), admin write
     match /settings/{docId} {
       allow read: if true;
@@ -50,9 +78,13 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
+    // Admin = the `admin` role custom claim (fast path) OR the admins allowlist
+    // (authoritative fallback, so no one is locked out before claims propagate).
     function isAdmin() {
-      return request.auth != null &&
-        exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+      return request.auth != null && (
+        request.auth.token.role == 'admin' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
     }
   }
 }

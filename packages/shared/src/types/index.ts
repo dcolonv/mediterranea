@@ -94,6 +94,8 @@ export interface Appointment {
   durationMinutes: number;
   notes: string;
   status: AppointmentStatus;
+  /** Set once loyalty points have been awarded for this appointment's completion. */
+  loyaltyAwarded?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -146,6 +148,8 @@ export interface Customer {
   intake?: IntakeForm;
   /** Consent record (treatment + marketing), versioned for GDPR. */
   consent?: ConsentRecord;
+  /** Loyalty points balance. */
+  loyaltyPoints?: number;
   /** Denormalized rollups maintained from appointments. */
   totalVisits: number;
   /** appointmentDate (YYYY-MM-DD) of the most recent appointment, or null. */
@@ -170,11 +174,46 @@ export interface CancellationPolicy {
   policyText: string;
 }
 
+export interface LoyaltyRules {
+  enabled: boolean;
+  /** Points earned per €1 spent on completed appointments. */
+  earnPointsPerEuro: number;
+  /** Points required for €1 of redeemable value. */
+  redeemPointsPerEuro: number;
+}
+
+export interface NotificationSettings {
+  confirmationEnabled: boolean;
+  reminderEnabled: boolean;
+  cancellationEnabled: boolean;
+}
+
 export interface StudioSettings {
   businessHours: WorkingHours;
   booking: BookingRules;
   cancellation: CancellationPolicy;
+  loyalty?: LoyaltyRules;
+  notifications?: NotificationSettings;
   updatedAt?: Timestamp;
+}
+
+export interface RecipeStep {
+  text: string;
+  /** Optional time for this step, in minutes. */
+  minutes?: number;
+}
+
+/** The standard protocol ("recipe") for a treatment. One per service (doc id = serviceId). */
+export interface Recipe {
+  serviceId: string;
+  steps: RecipeStep[];
+  /** Products used, one per line/entry. */
+  products: string[];
+  /** Device/machine settings notes. */
+  deviceSettings: string;
+  contraindications: string;
+  aftercare: string;
+  updatedAt: Timestamp;
 }
 
 export type ReviewStatus = 'pending' | 'published' | 'hidden';
@@ -190,6 +229,94 @@ export interface Review {
   rating: number;
   comment: string;
   status: ReviewStatus;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export type CampaignChannel = 'email' | 'sms';
+export type CampaignStatus = 'draft' | 'sent';
+export type CampaignSegment = 'all' | 'marketing' | 'tag' | 'inactive';
+
+export interface Campaign {
+  id: string;
+  name: string;
+  channel: CampaignChannel;
+  segment: CampaignSegment;
+  /** Tag name (segment=tag) or days-of-inactivity (segment=inactive). */
+  segmentValue?: string;
+  subject: string;
+  body: string;
+  status: CampaignStatus;
+  recipientCount?: number;
+  sentCount?: number;
+  createdAt: Timestamp;
+  sentAt?: Timestamp | null;
+}
+
+export type BlogStatus = 'draft' | 'published';
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  /** Plain text / simple paragraphs. */
+  body: string;
+  coverImageUrl?: string;
+  authorName: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  status: BlogStatus;
+  publishedAt?: Timestamp | null;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export type GiftCardStatus = 'active' | 'depleted' | 'void';
+
+export interface GiftCardRedemption {
+  amount: number;
+  note?: string;
+  at: Timestamp;
+}
+
+export interface GiftCard {
+  id: string;
+  /** Human-friendly redemption code, e.g. MED-AB12-CD34. */
+  code: string;
+  initialAmount: number;
+  balance: number;
+  status: GiftCardStatus;
+  purchaserName: string;
+  purchaserEmail: string;
+  recipientName?: string;
+  recipientEmail?: string;
+  message?: string;
+  /** How the card was created. */
+  source: 'online' | 'manual';
+  redemptions?: GiftCardRedemption[];
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export type WaitlistStatus = 'waiting' | 'offered' | 'booked' | 'cancelled';
+
+export interface WaitlistEntry {
+  id: string;
+  serviceId: string;
+  serviceName: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  customerId?: string;
+  /** Preferred date (YYYY-MM-DD); empty means any date. */
+  preferredDate?: string;
+  /** Preferred practitioner; empty means any. */
+  staffId?: string;
+  notes?: string;
+  status: WaitlistStatus;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

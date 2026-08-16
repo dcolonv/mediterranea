@@ -84,6 +84,45 @@ export function appointmentCancelled(ctx: NotificationContext): RenderedMessage 
   };
 }
 
+export function giftCardIssued(input: {
+  recipientName: string;
+  code: string;
+  amount: string; // pre-formatted, e.g. "€50.00"
+  message?: string;
+}): RenderedMessage {
+  return {
+    subject: `Your ${STUDIO} gift card`,
+    html: shell(
+      'A gift for you',
+      `<p>Hi ${input.recipientName},</p>
+       <p>You’ve received a <strong>${input.amount}</strong> gift card for ${STUDIO}.</p>
+       <p style="font-size:20px;letter-spacing:2px"><strong>${input.code}</strong></p>
+       ${input.message ? `<p style="font-style:italic;color:#8a8378">“${input.message}”</p>` : ''}
+       <p>Present this code when you book or visit. Enjoy your treatment.</p>`
+    ),
+    text: `Hi ${input.recipientName}, you've received a ${input.amount} gift card for ${STUDIO}. Code: ${input.code}.${
+      input.message ? ` Message: ${input.message}` : ''
+    }`,
+    sms: `${STUDIO}: you've received a ${input.amount} gift card. Code: ${input.code}.`,
+  };
+}
+
+export function waitlistSlotOpened(ctx: NotificationContext): RenderedMessage {
+  const when = `${prettyDate(ctx.date)} at ${ctx.time}`;
+  return {
+    subject: `A spot just opened at ${STUDIO}`,
+    html: shell(
+      'A spot just opened',
+      `<p>Hi ${ctx.clientName},</p>
+       <p>Good news — a spot for <strong>${ctx.serviceName}</strong> has just opened up on
+       <strong>${when}</strong>.</p>
+       <p>Spots go quickly. To claim it, reply to this email or call us as soon as you can.</p>`
+    ),
+    text: `Hi ${ctx.clientName}, a spot for ${ctx.serviceName} just opened on ${when} at ${STUDIO}. Call ${CONTACT_INFO.phone} to claim it.`,
+    sms: `${STUDIO}: a spot for ${ctx.serviceName} opened ${when}. Call ${CONTACT_INFO.phone} to book — spots go fast!`,
+  };
+}
+
 export function appointmentReminder(ctx: NotificationContext): RenderedMessage {
   const summary = line(ctx);
   return {

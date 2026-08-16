@@ -15,6 +15,7 @@ import {
   hardDeleteCustomer,
 } from '@/actions/customers';
 import { formatPrice } from '@mediterranea/shared/utils';
+import { adjustLoyaltyPoints, redeemLoyaltyPoints } from '@/actions/loyalty';
 import { PhotosPanel } from '@/components/clients/photos-panel';
 import type { Customer, Appointment } from '@mediterranea/shared/types';
 import type { CustomerFormData } from '@mediterranea/shared/validations';
@@ -61,6 +62,8 @@ export function BackofficeClients() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [totalSpend, setTotalSpend] = useState<number | null>(null);
   const [erasing, setErasing] = useState(false);
+  const [pointsInput, setPointsInput] = useState('');
+  const [loyaltyBusy, setLoyaltyBusy] = useState(false);
 
   const load = useCallback(async (term?: string) => {
     setLoading(true);
@@ -107,6 +110,23 @@ export function BackofficeClients() {
     a.download = `${c.email.replace(/[^a-z0-9]/gi, '_')}-data.json`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function applyLoyalty(kind: 'add' | 'redeem') {
+    if (!active) return;
+    const n = Math.abs(Number(pointsInput));
+    if (!Number.isFinite(n) || n === 0) return;
+    setLoyaltyBusy(true);
+    const res =
+      kind === 'add' ? await adjustLoyaltyPoints(active.id, n) : await redeemLoyaltyPoints(active.id, n);
+    setLoyaltyBusy(false);
+    if (res.success) {
+      const delta = kind === 'add' ? n : -n;
+      setActive({ ...active, loyaltyPoints: (active.loyaltyPoints ?? 0) + delta });
+      setPointsInput('');
+    } else {
+      alert(res.error);
+    }
   }
 
   async function handleErase(c: Customer) {
@@ -397,6 +417,33 @@ export function BackofficeClients() {
             </dl>
           </div>
         )}
+
+        {/* Loyalty */}
+        <div className="mt-6 border border-white-10 bg-dark-800 p-6">
+          <div className="flex items-center justify-between">
+            <h3 className="font-serif text-lg text-white">Loyalty</h3>
+            <span className="text-sm text-white-50">
+              <span className="text-2xl font-serif text-white">{active.loyaltyPoints ?? 0}</span> points
+            </span>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="w-28">
+              <Input
+                id="loyalty-pts"
+                type="number"
+                value={pointsInput}
+                onChange={(e) => setPointsInput(e.target.value)}
+                placeholder="points"
+              />
+            </div>
+            <Button variant="outline" size="sm" disabled={loyaltyBusy} onClick={() => applyLoyalty('add')}>
+              Add
+            </Button>
+            <Button variant="ghost" size="sm" disabled={loyaltyBusy} onClick={() => applyLoyalty('redeem')}>
+              Redeem
+            </Button>
+          </div>
+        </div>
 
         {/* Before & after photos */}
         <PhotosPanel customerId={active.id} />

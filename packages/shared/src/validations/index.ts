@@ -5,3 +5,6 @@ export * from './staff';
 export * from './room';
 export * from './settings';
 export * from './review';
+export * from './recipe';
+export * from './waitlist';
+export * from './blog';

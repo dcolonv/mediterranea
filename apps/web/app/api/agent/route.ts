@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/firebase/admin';
 import { runBookingAgent, type AgentMessage } from '@/lib/agent/booking-agent';
+import { logAgentRun } from '@/lib/agent/audit';
+import { allowAction } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -26,8 +28,17 @@ function todayInMalaga(): string {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await verifyAdminToken(request.headers.get('Authorization')))) {
+  const actor = await verifyAdminToken(request.headers.get('Authorization'));
+  if (!actor) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders });
+  }
+
+  // Usage cap per admin (30 requests / 5 min).
+  if (!(await allowAction(`agent:${actor}`, 30, 5 * 60))) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait a moment and try again.' },
+      { status: 429, headers: corsHeaders }
+    );
   }
 
   if (!process.env.OPENAI_API_KEY) {
@@ -56,6 +67,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await runBookingAgent(messages, { today: todayInMalaga() });
+    logAgentRun({
+      actor,
+      message: body.message,
+      toolCalls: result.toolCalls,
+      replyPreview: result.reply,
+    }).catch(() => {});
     return NextResponse.json(result, { headers: corsHeaders });
   } catch (e) {
     console.error('Agent run failed:', e);

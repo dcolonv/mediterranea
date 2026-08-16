@@ -2,14 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui';
-import { sendAgentMessage } from '@/actions/agent';
-import type { AgentMessage } from '@/lib/agent/booking-agent';
+import { sendAgentMessage, confirmAgentAction } from '@/actions/agent';
+import type { AgentMessage, PendingAction } from '@/lib/agent/booking-agent';
 
 interface ChatMessage extends AgentMessage {
   /** Tools the assistant ran to produce this reply. */
   actions?: string[];
   /** Marks an error bubble. */
   error?: boolean;
+  /** A proposed write attached to this assistant message, awaiting confirmation. */
+  pending?: PendingAction;
+  /** Resolution once the user acts on the pending action. */
+  resolved?: 'confirmed' | 'cancelled';
 }
 
 const SUGGESTIONS = [
@@ -24,11 +28,45 @@ interface BookingAssistantProps {
   onMutated: () => void;
 }
 
+const STORAGE_KEY = 'assistant.thread.v1';
+
 export function BookingAssistant({ onClose, onMutated }: BookingAssistantProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Restore the thread from the previous session.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setMessages(JSON.parse(raw));
+    } catch {
+      /* ignore */
+    }
+    setLoaded(true);
+  }, []);
+
+  // Persist the thread.
+  useEffect(() => {
+    if (loaded) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [messages, loaded]);
+
+  function newChat() {
+    setMessages([]);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -51,7 +89,12 @@ export function BookingAssistant({ onClose, onMutated }: BookingAssistantProps) 
     if (res.success) {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: res.reply || '(no reply)', actions: res.actions },
+        {
+          role: 'assistant',
+          content: res.reply || '(no reply)',
+          actions: res.actions,
+          pending: res.pendingAction,
+        },
       ]);
       if (res.mutated) onMutated();
     } else {
@@ -61,6 +104,33 @@ export function BookingAssistant({ onClose, onMutated }: BookingAssistantProps) 
       ]);
     }
     setSending(false);
+  }
+
+  async function confirmPending(index: number, action: PendingAction) {
+    if (sending) return;
+    setSending(true);
+    const res = await confirmAgentAction(action);
+    setMessages((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], resolved: 'confirmed' };
+      next.push({
+        role: 'assistant',
+        content: res.success ? '✓ Done — the calendar is updated.' : res.error || 'Could not complete that.',
+        error: !res.success,
+      });
+      return next;
+    });
+    if (res.success && res.mutated) onMutated();
+    setSending(false);
+  }
+
+  function cancelPending(index: number) {
+    setMessages((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], resolved: 'cancelled' };
+      next.push({ role: 'assistant', content: 'Okay, I won’t make that change.' });
+      return next;
+    });
   }
 
   return (
@@ -77,15 +147,25 @@ export function BookingAssistant({ onClose, onMutated }: BookingAssistantProps) 
             </div>
             <h2 className="mt-1 font-serif text-xl text-white">Booking assistant</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-white-50 transition-colors hover:text-white"
-            aria-label="Close assistant"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-3">
+            {messages.length > 0 && (
+              <button
+                onClick={newChat}
+                className="text-xs uppercase tracking-wider text-white-50 transition-colors hover:text-white"
+              >
+                New chat
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-1 text-white-50 transition-colors hover:text-white"
+              aria-label="Close assistant"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Messages */}
@@ -131,6 +211,26 @@ export function BookingAssistant({ onClose, onMutated }: BookingAssistantProps) 
                           {a}
                         </span>
                       ))}
+                    </div>
+                  )}
+                  {m.pending && !m.resolved && (
+                    <div className="mt-3 flex gap-2 border-t border-white-10 pt-3">
+                      <Button
+                        variant="elegant"
+                        size="sm"
+                        disabled={sending}
+                        onClick={() => confirmPending(i, m.pending!)}
+                      >
+                        Confirm
+                      </Button>
+                      <Button variant="ghost" size="sm" disabled={sending} onClick={() => cancelPending(i)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                  {m.pending && m.resolved && (
+                    <div className="mt-2 border-t border-white-10 pt-2 text-[11px] uppercase tracking-wider text-white-30">
+                      {m.resolved === 'confirmed' ? 'Confirmed' : 'Cancelled'}
                     </div>
                   )}
                 </div>

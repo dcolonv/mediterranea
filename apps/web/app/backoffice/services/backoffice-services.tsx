@@ -11,6 +11,7 @@ import {
 } from '@/actions/services';
 import { getStaffList, setServiceQualifiedStaff } from '@/actions/staff';
 import { getRoomsList } from '@/actions/rooms';
+import { RecipeEditor } from '@/components/services/recipe-editor';
 import type { Service, Staff, Room, ServiceCategory } from '@mediterranea/shared/types';
 import type { ServiceFormData } from '@mediterranea/shared/validations';
 
@@ -57,6 +58,7 @@ export function BackofficeServices() {
   const [loading, setLoading] = useState(true);
 
   const [editingId, setEditingId] = useState<string | null>(null); // null = list, '' = new
+  const [recipeFor, setRecipeFor] = useState<Service | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [slugEdited, setSlugEdited] = useState(false);
   const [qualifiedStaff, setQualifiedStaff] = useState<Set<string>>(new Set());
@@ -188,6 +190,17 @@ export function BackofficeServices() {
 
   if (loading) {
     return <div className="py-16 text-center text-white-50">Loading services…</div>;
+  }
+
+  // ── Recipe editor ──────────────────────────────────────────────────────────
+  if (recipeFor) {
+    return (
+      <RecipeEditor
+        serviceId={recipeFor.id}
+        serviceName={recipeFor.name}
+        onClose={() => setRecipeFor(null)}
+      />
+    );
   }
 
   // ── Form view ──────────────────────────────────────────────────────────────
@@ -393,11 +406,14 @@ export function BackofficeServices() {
                   <Button variant="outline" size="sm" onClick={() => startEdit(svc)}>
                     Edit
                   </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setRecipeFor(svc)}>
+                    Recipe
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(svc)}
-                    className="text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                    className="ml-auto text-red-400 hover:bg-red-500/10 hover:text-red-300"
                   >
                     Delete
                   </Button>

@@ -50,7 +50,7 @@ export function Hero() {
             >
               <div className="flex items-center justify-center lg:justify-start gap-6">
                 <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-                <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
+                <span className="text-xs sm:text-sm tracking-[0.35em] text-gold uppercase font-semibold">
                   {dict.hero.eyebrow}
                 </span>
                 <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50 lg:hidden" />
@@ -59,7 +59,7 @@ export function Hero() {
 
             {/* Heading */}
             <h1
-              className={`font-serif text-5xl sm:text-6xl lg:text-7xl xl:text-[5.25rem] tracking-wide text-white leading-[1.1] transition-all duration-1000 delay-200 ease-out ${
+              className={`font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-wide text-white leading-[1.1] whitespace-nowrap transition-all duration-1000 delay-200 ease-out ${
                 mounted
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
@@ -118,7 +118,7 @@ export function Hero() {
             {/* Image container */}
             <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] overflow-hidden">
               <Image
-                src="/hero-clinic.png"
+                src="/hero-room.jpg"
                 alt="Mediterránea Face Studio — Treatment room"
                 fill
                 priority

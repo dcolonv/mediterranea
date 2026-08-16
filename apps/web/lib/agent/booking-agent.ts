@@ -16,10 +16,28 @@ export interface AgentMessage {
   content: string;
 }
 
+export interface AgentToolCall {
+  name: string;
+  arguments: string;
+  /** Compact JSON of the tool's result (truncated), for the audit log. */
+  result?: string;
+}
+
+/** A create/update/delete the agent proposed and is awaiting human confirmation on. */
+export interface PendingAction {
+  tool: string;
+  arguments: string;
+}
+
 export interface AgentResult {
   reply: string;
-  toolCalls: { name: string; arguments: string }[];
+  toolCalls: AgentToolCall[];
+  /** Set when the agent proposed a write that needs confirmation before executing. */
+  pendingAction?: PendingAction;
 }
+
+/** Tools that change data — gated behind human confirmation when proposeWrites is on. */
+export const WRITE_TOOLS = new Set(['create_appointment', 'update_appointment', 'delete_appointment']);
 
 function buildInstructions(today: string): string {
   return [
@@ -42,21 +60,25 @@ function buildInstructions(today: string): string {
     '- To reschedule or reassign, use update_appointment.',
     '- Be concise. After acting, confirm what you did: service, date, time, practitioner, and room.',
     '- If a request is ambiguous or missing information, ask one short clarifying question instead of guessing.',
+    '',
+    'Confirmation: creating, updating, or deleting an appointment requires the user to confirm first. When you call one of those tools it returns "awaiting_confirmation" — do NOT call it again. Instead, clearly summarize the exact action (service, date, time, practitioner, room, and client) and ask the user to confirm.',
   ].join('\n');
 }
 
 export async function runBookingAgent(
   messages: AgentMessage[],
-  opts: { today: string; maxToolTurns?: number }
+  opts: { today: string; maxToolTurns?: number; proposeWrites?: boolean }
 ): Promise<AgentResult> {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const maxTurns = opts.maxToolTurns ?? 8;
+  const proposeWrites = opts.proposeWrites ?? true;
 
   const input: OpenAI.Responses.ResponseInput = messages.map((m) => ({
     role: m.role,
     content: m.content,
   }));
-  const toolCalls: { name: string; arguments: string }[] = [];
+  const toolCalls: AgentToolCall[] = [];
+  let pendingAction: PendingAction | undefined;
 
   for (let turn = 0; turn <= maxTurns; turn++) {
     const response = await client.responses.create({
@@ -76,7 +98,7 @@ export async function runBookingAgent(
     );
 
     if (calls.length === 0) {
-      return { reply: response.output_text ?? '', toolCalls };
+      return { reply: response.output_text ?? '', toolCalls, pendingAction };
     }
 
     for (const call of calls) {
@@ -86,12 +108,32 @@ export async function runBookingAgent(
       } catch {
         args = {};
       }
+
+      // Gate writes behind human confirmation: don't execute — capture the
+      // proposal and return a synthetic result so the model asks the user.
+      if (proposeWrites && WRITE_TOOLS.has(call.name)) {
+        if (!pendingAction) pendingAction = { tool: call.name, arguments: call.arguments };
+        const synthetic = {
+          status: 'awaiting_confirmation',
+          note: 'Not performed yet. Summarize the action and ask the user to confirm; do not call this tool again.',
+        };
+        const syntheticJson = JSON.stringify(synthetic);
+        toolCalls.push({ name: call.name, arguments: call.arguments, result: syntheticJson });
+        input.push({ type: 'function_call_output', call_id: call.call_id, output: syntheticJson });
+        continue;
+      }
+
       const result = await executeTool(call.name, args);
-      toolCalls.push({ name: call.name, arguments: call.arguments });
+      const resultJson = JSON.stringify(result);
+      toolCalls.push({
+        name: call.name,
+        arguments: call.arguments,
+        result: resultJson.length > 600 ? `${resultJson.slice(0, 600)}…` : resultJson,
+      });
       input.push({
         type: 'function_call_output',
         call_id: call.call_id,
-        output: JSON.stringify(result),
+        output: resultJson,
       });
     }
   }
@@ -99,5 +141,6 @@ export async function runBookingAgent(
   return {
     reply: 'I could not complete that within the allowed number of steps. Please try rephrasing the request.',
     toolCalls,
+    pendingAction,
   };
 }

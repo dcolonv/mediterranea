@@ -286,6 +286,66 @@ export async function deleteClientPhoto(token: string, id: string): Promise<void
   });
 }
 
+// ── Treatment recipes ────────────────────────────────────────────────────────────
+
+export interface RecipeDTO {
+  serviceId: string;
+  steps: { text: string; minutes?: number }[];
+  products: string[];
+  deviceSettings: string;
+  contraindications: string;
+  aftercare: string;
+}
+
+export async function fetchRecipe(token: string, serviceId: string): Promise<RecipeDTO> {
+  const result = await apiFetch<{ recipe: RecipeDTO }>(
+    `/api/recipes?serviceId=${encodeURIComponent(serviceId)}`,
+    { headers: authHeaders(token) }
+  );
+  return result.recipe;
+}
+
+// ── Booking assistant (agent) ─────────────────────────────────────────────────────
+
+export interface AgentChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface AgentPendingAction {
+  tool: string;
+  arguments: string;
+}
+
+export interface AgentResponse {
+  reply: string;
+  toolCalls: { name: string; arguments: string }[];
+  pendingAction?: AgentPendingAction;
+}
+
+export async function sendAgentMessage(
+  token: string,
+  message: string,
+  history: AgentChatMessage[]
+): Promise<AgentResponse> {
+  return apiFetch<AgentResponse>('/api/agent', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ message, history }),
+  });
+}
+
+export async function confirmAgentAction(
+  token: string,
+  action: AgentPendingAction
+): Promise<{ success: boolean; mutated?: boolean }> {
+  return apiFetch('/api/agent/confirm', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(action),
+  });
+}
+
 // ── Push notifications ──────────────────────────────────────────────────────────
 
 export async function registerPushToken(token: string, expoToken: string): Promise<void> {

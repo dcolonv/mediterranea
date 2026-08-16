@@ -38,6 +38,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="assistant"
+        options={{
+          title: 'Assistant',
+          tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="customers"
         options={{
           title: 'Customers',
