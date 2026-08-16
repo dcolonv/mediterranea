@@ -90,7 +90,7 @@ export function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'bg-dark-900/95 backdrop-blur-sm' : 'bg-transparent'
+        scrolled || mobileMenuOpen ? 'bg-dark-900/95 backdrop-blur-sm' : 'bg-transparent'
       }`}
     >
       <nav className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -180,7 +180,7 @@ export function Header() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-6 border-t border-white-10">
+          <div className="lg:hidden bg-dark-900 -mx-6 lg:-mx-8 px-6 lg:px-8 py-6 border-t border-white-10">
             <div className="flex flex-col space-y-6">
               {NAV_SECTIONS.map((section) => (
                 <Link
