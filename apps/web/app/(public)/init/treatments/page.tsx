@@ -73,7 +73,7 @@ export default async function TreatmentsPage() {
         <div className="mb-16 text-center">
           <div className="mb-6 flex items-center justify-center gap-5">
             <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-            <span className="text-[11px] uppercase tracking-[0.4em] text-gold/70">
+            <span className="text-[11px] uppercase tracking-[0.4em] text-gold font-semibold">
               {dict.treatments.eyebrow}
             </span>
             <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />

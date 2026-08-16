@@ -29,7 +29,7 @@ export default async function AccountPage() {
       <div className="mx-auto max-w-3xl">
         <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <span className="text-[11px] uppercase tracking-[0.4em] text-gold/70">My account</span>
+            <span className="text-[11px] uppercase tracking-[0.4em] text-gold font-semibold">My account</span>
             <h1 className="mt-2 font-serif text-4xl tracking-wide text-white">Hello, {firstName}</h1>
             {(customer.loyaltyPoints ?? 0) > 0 && (
               <p className="mt-2 text-sm text-white-50">

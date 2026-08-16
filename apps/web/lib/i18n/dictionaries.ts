@@ -48,16 +48,20 @@ const en = {
   },
   services: {
     eyebrow: 'What We Offer',
-    title: 'Our Facials',
-    subtitle: 'Two ways to care for your skin: a fully personalized session, or a single focused treatment.',
+    title: 'Three ways to care for your skin',
+    subtitle: 'A fully personalized session, a single focused treatment, or a targeted INDIBA facial.',
     customName: 'Custom Facial',
     customDuration: '1.5–2 hours',
     customDesc:
-      'A fully personalized session that blends the treatments your skin needs, from hydration and even tone to anti-aging and INDIBA, for complete, tailored care.',
+      'We analyze your skin in the studio and design a session around what it needs, from hydration and firming to even tone, fading marks and softening expression lines, for complete, tailored care.',
     focusName: 'Focus Facial',
     focusDuration: '45 minutes',
     focusDesc:
-      'A single, targeted treatment for when you know exactly what your skin needs, whether peeling, dermapen, INDIBA or hydration.',
+      'A single, targeted treatment for when you know exactly what your skin needs, whether peeling, dermapen or hydration.',
+    indibaName: 'INDIBA Facial',
+    indibaDuration: '45–60 minutes',
+    indibaDesc:
+      'A radiofrequency facial that boosts circulation and collagen from within, for firmer, revitalized skin with a natural glow.',
     cta: 'Book Your Facial',
     minutes: 'min',
   },
@@ -85,7 +89,7 @@ const en = {
     line2Prefix: 'delivered with ',
     line2Accent: 'warmth and care',
     body: 'A full custom session or a single focused treatment. Every visit is tailored to your skin, with genuine care and attention.',
-    button: 'Begin Your Journey',
+    button: 'Reserve Your Visit',
   },
   contactSection: {
     eyebrow: 'Get In Touch',
@@ -263,16 +267,20 @@ const es: typeof en = {
   },
   services: {
     eyebrow: 'Lo Que Ofrecemos',
-    title: 'Nuestros Faciales',
-    subtitle: 'Dos formas de cuidar tu piel: una sesión totalmente personalizada o un tratamiento único y focalizado.',
+    title: 'Tres formas de cuidar tu piel',
+    subtitle: 'Una sesión personalizada, un tratamiento único y focalizado, o un facial INDIBA específico.',
     customName: 'Facial Personalizado',
     customDuration: '1,5–2 horas',
     customDesc:
-      'Una sesión totalmente personalizada que combina los tratamientos que tu piel necesita, desde hidratación y unificación del tono hasta antiedad e INDIBA, para un cuidado completo y a medida.',
-    focusName: 'Facial Focus',
+      'Analizamos tu piel en el estudio y diseñamos una sesión según lo que necesita, desde hidratación y reafirmación hasta unificación del tono, atenuar marcas y suavizar las líneas de expresión, para un cuidado completo y a medida.',
+    focusName: 'Facial Focalizado',
     focusDuration: '45 minutos',
     focusDesc:
-      'Un tratamiento único y focalizado para cuando sabes exactamente qué necesita tu piel, ya sea peeling, dermapen, INDIBA o hidratación.',
+      'Un tratamiento único y focalizado para cuando sabes exactamente qué necesita tu piel, ya sea peeling, dermapen o hidratación.',
+    indibaName: 'Facial INDIBA',
+    indibaDuration: '45–60 minutos',
+    indibaDesc:
+      'Un facial de radiofrecuencia que activa la circulación y el colágeno desde el interior, para una piel más firme, revitalizada y con luminosidad natural.',
     cta: 'Reserva tu cita',
     minutes: 'min',
   },
@@ -300,7 +308,7 @@ const es: typeof en = {
     line2Prefix: 'brindado con ',
     line2Accent: 'calidez y cuidado',
     body: 'Una sesión personalizada completa o un tratamiento único y focalizado: adaptamos cada visita a tu piel, con verdadero cuidado y atención.',
-    button: 'Comienza Tu Viaje',
+    button: 'Reserva tu visita',
   },
   contactSection: {
     eyebrow: 'Contáctanos',

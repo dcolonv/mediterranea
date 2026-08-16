@@ -9,9 +9,12 @@ import { useLang } from '@/components/i18n/language-provider';
 import { LanguageToggle } from '@/components/i18n/language-toggle';
 
 const NAV_SECTIONS = [
-  { id: 'services', key: 'treatments', href: '/init/treatments' },
   { id: 'about', key: 'about', href: '/init#about' },
-  { id: 'contact', key: 'contact', href: '/init/contact' },
+  { id: 'contact', key: 'contact', href: '/init#contact' },
+  { id: 'services', key: 'treatments', href: '/init/treatments' },
+  { id: 'blog', key: 'blog', href: '/init/blog' },
+  { id: 'giftCards', key: 'giftCards', href: '/init/gift-cards' },
+  { id: 'account', key: 'account', href: '/init/account' },
 ] as const;
 
 export function Header() {
@@ -120,24 +123,6 @@ export function Header() {
                 {dict.nav[section.key]}
               </Link>
             ))}
-            <Link
-              href="/init/blog"
-              className="elegant-underline whitespace-nowrap text-xs tracking-wider uppercase text-white-70 transition-colors hover:text-white xl:text-sm"
-            >
-              {dict.nav.blog}
-            </Link>
-            <Link
-              href="/init/gift-cards"
-              className="elegant-underline whitespace-nowrap text-xs tracking-wider uppercase text-white-70 transition-colors hover:text-white xl:text-sm"
-            >
-              {dict.nav.giftCards}
-            </Link>
-            <Link
-              href="/init/account"
-              className="elegant-underline whitespace-nowrap text-xs tracking-wider uppercase text-white-70 transition-colors hover:text-white xl:text-sm"
-            >
-              {dict.nav.account}
-            </Link>
             <LanguageToggle sizeClass="text-[1.5rem] xl:text-[1.875rem]" />
             <Link href="/init/book">
               <Button variant="elegant" size="sm">
@@ -195,27 +180,6 @@ export function Header() {
                   {dict.nav[section.key]}
                 </Link>
               ))}
-              <Link
-                href="/init/blog"
-                className="text-sm tracking-widest uppercase text-white-70 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {dict.nav.blog}
-              </Link>
-              <Link
-                href="/init/gift-cards"
-                className="text-sm tracking-widest uppercase text-white-70 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {dict.nav.giftCards}
-              </Link>
-              <Link
-                href="/init/account"
-                className="text-sm tracking-widest uppercase text-white-70 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {dict.nav.account}
-              </Link>
               <LanguageToggle sizeClass="text-[1.6875rem] sm:text-[2.0625rem]" />
               <Link href="/init/book" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="elegant" className="w-full">

@@ -48,7 +48,7 @@ export function ServicesOverview() {
         <ScrollReveal>
           <div className="text-center mb-20">
             <div className="section-divider mb-6">
-              <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
+              <span className="text-[11px] tracking-[0.4em] text-gold uppercase font-semibold">
                 {s.eyebrow}
               </span>
             </div>
@@ -61,10 +61,11 @@ export function ServicesOverview() {
           </div>
         </ScrollReveal>
 
-        {/* The two facial formats */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* The three facial formats */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <FacialCard name={s.customName} duration={s.customDuration} description={s.customDesc} delay={0} />
           <FacialCard name={s.focusName} duration={s.focusDuration} description={s.focusDesc} delay={120} />
+          <FacialCard name={s.indibaName} duration={s.indibaDuration} description={s.indibaDesc} delay={240} />
         </div>
 
         {/* CTA */}

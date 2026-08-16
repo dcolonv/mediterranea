@@ -19,7 +19,7 @@ export default async function GiftCardsPage() {
         <div className="mb-12 text-center">
           <div className="mb-6 flex items-center justify-center gap-5">
             <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-            <span className="text-[11px] uppercase tracking-[0.4em] text-gold/70">{g.eyebrow}</span>
+            <span className="text-[11px] uppercase tracking-[0.4em] text-gold font-semibold">{g.eyebrow}</span>
             <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />
           </div>
           <h1 className="font-serif text-4xl tracking-wide text-white sm:text-5xl">{g.title}</h1>
