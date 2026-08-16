@@ -20,7 +20,7 @@ export function ContactSection() {
         <ScrollReveal>
           <div className="text-center mb-24">
             <div className="section-divider mb-6">
-              <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
+              <span className="text-[11px] tracking-[0.4em] text-gold uppercase font-semibold">
                 {dict.contactSection.eyebrow}
               </span>
             </div>

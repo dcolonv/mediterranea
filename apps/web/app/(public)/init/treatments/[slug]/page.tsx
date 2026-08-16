@@ -40,7 +40,7 @@ export default async function TreatmentDetailPage({
         </Link>
 
         <div className="mt-8">
-          <span className="text-[11px] uppercase tracking-[0.4em] text-gold/70">
+          <span className="text-[11px] uppercase tracking-[0.4em] text-gold font-semibold">
             {service.category}
           </span>
           <h1 className="mt-3 font-serif text-4xl tracking-wide text-white sm:text-5xl">

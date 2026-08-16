@@ -20,7 +20,7 @@ export async function ReviewsSection() {
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mb-16 text-center">
           <div className="section-divider mb-6">
-            <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
+            <span className="text-[11px] tracking-[0.4em] text-gold uppercase font-semibold">
               {dict.reviews.sectionEyebrow}
             </span>
           </div>

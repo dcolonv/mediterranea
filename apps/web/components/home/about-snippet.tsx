@@ -80,7 +80,7 @@ export function AboutSnippet() {
             <ScrollReveal>
               <div className="mb-8 flex items-center gap-5">
                 <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-                <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
+                <span className="text-[11px] tracking-[0.4em] text-gold uppercase font-semibold">
                   {dict.about.storyEyebrow}
                 </span>
               </div>
@@ -108,7 +108,7 @@ export function AboutSnippet() {
           <ScrollReveal>
             <div className="mb-8 flex items-center justify-center gap-5">
               <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-              <span className="text-[11px] tracking-[0.4em] text-gold/70 uppercase font-light">
+              <span className="text-[11px] tracking-[0.4em] text-gold uppercase font-semibold">
                 {dict.about.valuesEyebrow}
               </span>
               <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />
