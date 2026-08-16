@@ -89,7 +89,7 @@ const en = {
     line2Prefix: 'delivered with ',
     line2Accent: 'warmth and care',
     body: 'A full custom session or a single focused treatment. Every visit is tailored to your skin, with genuine care and attention.',
-    button: 'Begin Your Journey',
+    button: 'Reserve Your Visit',
   },
   contactSection: {
     eyebrow: 'Get In Touch',
@@ -308,7 +308,7 @@ const es: typeof en = {
     line2Prefix: 'brindado con ',
     line2Accent: 'calidez y cuidado',
     body: 'Una sesión personalizada completa o un tratamiento único y focalizado: adaptamos cada visita a tu piel, con verdadero cuidado y atención.',
-    button: 'Comienza Tu Viaje',
+    button: 'Reserva tu visita',
   },
   contactSection: {
     eyebrow: 'Contáctanos',
