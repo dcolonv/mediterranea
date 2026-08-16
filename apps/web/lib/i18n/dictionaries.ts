@@ -213,10 +213,10 @@ const es: typeof en = {
   nav: {
     home: 'Inicio',
     treatments: 'Tratamientos',
-    about: 'Sobre nosotras',
+    about: 'Nosotras',
     contact: 'Contacto',
     account: 'Mi cuenta',
-    giftCards: 'Tarjetas Regalo',
+    giftCards: 'Regalos',
     blog: 'Blog',
     bookNow: 'Reservar',
   },
