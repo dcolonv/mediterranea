@@ -11,6 +11,7 @@ export const studioSettingsSchema = z.object({
     minLeadHours: z.number().int().min(0).max(720),
     maxAdvanceDays: z.number().int().min(1).max(365),
     slotIntervalMinutes: z.number().int().min(5).max(120),
+    bufferMinutes: z.number().int().min(0).max(240),
   }),
   cancellation: z.object({
     cutoffHours: z.number().int().min(0).max(720),

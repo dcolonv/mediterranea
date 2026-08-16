@@ -22,6 +22,7 @@ export function BackofficeSettings() {
   const [minLeadHours, setMinLeadHours] = useState('2');
   const [maxAdvanceDays, setMaxAdvanceDays] = useState('60');
   const [slotInterval, setSlotInterval] = useState('30');
+  const [bufferMinutes, setBufferMinutes] = useState('30');
   const [cutoffHours, setCutoffHours] = useState('24');
   const [policyText, setPolicyText] = useState('');
 
@@ -47,6 +48,7 @@ export function BackofficeSettings() {
         setMinLeadHours(String(s.booking.minLeadHours));
         setMaxAdvanceDays(String(s.booking.maxAdvanceDays));
         setSlotInterval(String(s.booking.slotIntervalMinutes));
+        setBufferMinutes(String(s.booking.bufferMinutes ?? 30));
         setCutoffHours(String(s.cancellation.cutoffHours));
         setPolicyText(s.cancellation.policyText);
         setLoyaltyEnabled(s.loyalty?.enabled ?? false);
@@ -85,6 +87,7 @@ export function BackofficeSettings() {
         minLeadHours: Number(minLeadHours),
         maxAdvanceDays: Number(maxAdvanceDays),
         slotIntervalMinutes: Number(slotInterval),
+        bufferMinutes: Number(bufferMinutes),
       },
       loyalty: {
         enabled: loyaltyEnabled,
@@ -103,7 +106,7 @@ export function BackofficeSettings() {
     };
 
     if (
-      [payload.booking.minLeadHours, payload.booking.maxAdvanceDays, payload.booking.slotIntervalMinutes, payload.cancellation.cutoffHours].some(
+      [payload.booking.minLeadHours, payload.booking.maxAdvanceDays, payload.booking.slotIntervalMinutes, payload.booking.bufferMinutes, payload.cancellation.cutoffHours].some(
         (n) => !Number.isFinite(n)
       )
     ) {
@@ -179,7 +182,7 @@ export function BackofficeSettings() {
         <p className="mb-6 text-sm text-white-50">
           These bound the availability engine used across walk-ins, the assistant, and online booking.
         </p>
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Input
             id="min-lead"
             label="Min. lead time (hours)"
@@ -200,6 +203,13 @@ export function BackofficeSettings() {
             type="number"
             value={slotInterval}
             onChange={(e) => setSlotInterval(e.target.value)}
+          />
+          <Input
+            id="buffer-minutes"
+            label="Cool-down between appts (min)"
+            type="number"
+            value={bufferMinutes}
+            onChange={(e) => setBufferMinutes(e.target.value)}
           />
         </div>
       </section>

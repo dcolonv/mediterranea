@@ -215,6 +215,7 @@ export async function findAvailability(input: {
     duration,
     businessHours: bh,
     intervalMinutes: settings.booking.slotIntervalMinutes,
+    bufferMinutes: settings.booking.bufferMinutes ?? 0,
     earliestMinutes: input.date === now.date ? now.minutes + settings.booking.minLeadHours * 60 : 0,
     staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
     rooms: rooms.map((r) => ({ id: r.id })),
@@ -281,6 +282,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
 
   const start = timeToMinutes(input.time);
   const end = start + service.durationMinutes;
+  const bufferMinutes = (await getStudioSettings()).booking.bufferMinutes ?? 0;
 
   // Link/refresh the customer record before the transaction.
   const customerId = await upsertCustomerForAppointment({
@@ -307,6 +309,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         end,
         staffId: input.staffId,
         roomId: input.roomId,
+        bufferMinutes,
       });
       if (staffClash || roomClash) throw new ConflictError(staffClash, roomClash);
 
@@ -382,6 +385,7 @@ export async function updateAppointment(
   const reschedules = Boolean(patch.date || patch.time || patch.staffId || patch.roomId);
   const start = timeToMinutes(next.time);
   const end = start + existing.durationMinutes;
+  const bufferMinutes = (await getStudioSettings()).booking.bufferMinutes ?? 0;
 
   try {
     await db.runTransaction(async (tx) => {
@@ -409,6 +413,7 @@ export async function updateAppointment(
           staffId: next.staffId,
           roomId: next.roomId,
           ignoreId: id,
+          bufferMinutes,
         });
         if (staffClash || roomClash) throw new ConflictError(staffClash, roomClash);
       }

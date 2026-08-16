@@ -90,6 +90,8 @@ export interface ComputeSlotsInput {
   businessHours: DayHours | null;
   /** Slot grid granularity in minutes. */
   intervalMinutes: number;
+  /** Cool-down/preparation gap required between consecutive appointments, in minutes. */
+  bufferMinutes: number;
   /** Earliest bookable start (minutes since midnight); e.g. lead-time cutoff for today. */
   earliestMinutes: number;
   /** Staff already filtered to those qualified for the service. */
@@ -112,12 +114,21 @@ export interface AvailabilitySlot {
  * not on time off, not already booked) with free rooms.
  */
 export function computeSlots(input: ComputeSlotsInput): AvailabilitySlot[] {
-  const { businessHours: bh, duration, intervalMinutes, earliestMinutes, weekday, date } = input;
+  const { businessHours: bh, duration, intervalMinutes, bufferMinutes, earliestMinutes, weekday, date } = input;
   if (!bh) return [];
 
   const bhOpen = timeToMinutes(bh.open);
   const bhClose = timeToMinutes(bh.close);
   const slots: AvailabilitySlot[] = [];
+
+  // A candidate [start, end) conflicts with an existing appointment when the
+  // gap between them is smaller than the buffer. Expanding both ends by the
+  // buffer turns that into a plain overlap test (symmetric gap enforcement).
+  const clashesWithBuffer = (start: number, end: number, a: AvailAppt): boolean => {
+    const aStart = timeToMinutes(a.appointmentTime);
+    const aEnd = aStart + a.durationMinutes;
+    return rangesOverlap(start, end + bufferMinutes, aStart, aEnd + bufferMinutes);
+  };
 
   for (let start = bhOpen; start + duration <= bhClose; start += intervalMinutes) {
     const end = start + duration;
@@ -130,14 +141,7 @@ export function computeSlots(input: ComputeSlotsInput): AvailabilitySlot[] {
         if (start < timeToMinutes(wh.open) || end > timeToMinutes(wh.close)) return false;
         if (staffOffAt(s, date, start, end)) return false;
         const busy = input.dayAppointments.some(
-          (a) =>
-            a.staffId === s.id &&
-            rangesOverlap(
-              start,
-              end,
-              timeToMinutes(a.appointmentTime),
-              timeToMinutes(a.appointmentTime) + a.durationMinutes
-            )
+          (a) => a.staffId === s.id && clashesWithBuffer(start, end, a)
         );
         return !busy;
       })
@@ -146,14 +150,7 @@ export function computeSlots(input: ComputeSlotsInput): AvailabilitySlot[] {
     const freeRooms = input.rooms
       .filter((r) => {
         const busy = input.dayAppointments.some(
-          (a) =>
-            a.roomId === r.id &&
-            rangesOverlap(
-              start,
-              end,
-              timeToMinutes(a.appointmentTime),
-              timeToMinutes(a.appointmentTime) + a.durationMinutes
-            )
+          (a) => a.roomId === r.id && clashesWithBuffer(start, end, a)
         );
         return !busy;
       })
@@ -173,17 +170,26 @@ export function computeSlots(input: ComputeSlotsInput): AvailabilitySlot[] {
  */
 export function detectConflicts(
   existing: AvailAppt[],
-  target: { start: number; end: number; staffId?: string; roomId?: string; ignoreId?: string }
+  target: {
+    start: number;
+    end: number;
+    staffId?: string;
+    roomId?: string;
+    ignoreId?: string;
+    /** Cool-down gap required on either side of the appointment, in minutes. */
+    bufferMinutes?: number;
+  }
 ): { staffClash: boolean; roomClash: boolean } {
   let staffClash = false;
   let roomClash = false;
+  const buffer = target.bufferMinutes ?? 0;
   for (const a of existing) {
     if (target.ignoreId && a.id === target.ignoreId) continue;
     const overlap = rangesOverlap(
       target.start,
-      target.end,
+      target.end + buffer,
       timeToMinutes(a.appointmentTime),
-      timeToMinutes(a.appointmentTime) + a.durationMinutes
+      timeToMinutes(a.appointmentTime) + a.durationMinutes + buffer
     );
     if (!overlap) continue;
     if (target.staffId && a.staffId === target.staffId) staffClash = true;

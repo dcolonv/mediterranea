@@ -108,6 +108,7 @@ export const DEFAULT_STUDIO_SETTINGS = {
     minLeadHours: 2,
     maxAdvanceDays: 60,
     slotIntervalMinutes: 30,
+    bufferMinutes: 30,
   },
   cancellation: {
     cutoffHours: 24,

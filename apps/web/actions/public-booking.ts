@@ -29,6 +29,7 @@ export interface PublicService {
   description: string;
   descriptionEs: string;
   category: string;
+  bookingGroup: string;
   durationMinutes: number;
   price: number;
 }
@@ -47,6 +48,7 @@ function toPublicService(s: {
   description: string;
   descriptionEs?: string;
   category: string;
+  bookingGroup?: string;
   durationMinutes: number;
   price: number;
 }): PublicService {
@@ -58,6 +60,7 @@ function toPublicService(s: {
     description: s.description,
     descriptionEs: s.descriptionEs ?? '',
     category: s.category,
+    bookingGroup: s.bookingGroup ?? '',
     durationMinutes: s.durationMinutes,
     price: s.price,
   };

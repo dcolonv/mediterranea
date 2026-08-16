@@ -1,16 +1,17 @@
 /**
- * Seed Firestore with Mediterránea's real facial menu (Aug 2026).
+ * Seed Firestore with Mediterránea's public booking model (Aug 2026).
  *
  * Run with: npx tsx scripts/seed-treatments-2026.ts
  *
  * Requires Firebase Admin credentials in .env.local.
  *
- * Notes:
- * - All entries are facials (category: 'facial').
- * - "Focalizado" = 45-min focus facials (the client's "Express" line).
- *   "Completo" = 75-min full sessions. "Post Verano" is a seasonal special.
- * - Prices are 0 (to be defined); all are seeded active per request.
- * - Doc id = slug, so re-running is idempotent (upsert).
+ * Booking model (drives the two-level booking flow via `bookingGroup`):
+ *   custom → Custom Facial (books directly)
+ *   focus  → 5 focus facials (submenu)
+ *   indiba → INDIBA Focus / INDIBA Full (submenu)
+ *
+ * Everything is a facial (category: 'facial'). Doc id = slug (idempotent upsert).
+ * Also removes the earlier menu that this model replaces.
  */
 
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
@@ -20,157 +21,131 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 type Seed = {
+  slug: string;
   name: string;
   nameEs: string;
-  slug: string;
   description: string;
   descriptionEs: string;
+  bookingGroup: 'custom' | 'focus' | 'indiba';
   durationMinutes: number;
+  price: number;
 };
 
-// 45-min focus facials (client's "Express" → renamed "Focalizado")
-const FOCALIZADO: Seed[] = [
+const SERVICES: Seed[] = [
+  // ── Custom (books directly) ────────────────────────────────────────────────
   {
+    slug: 'custom-facial',
+    name: 'Custom Facial',
+    nameEs: 'Facial Personalizado',
+    description:
+      'We analyze your skin in the studio and design a session around what it needs, from hydration and firming to even tone, fading marks and softening expression lines, for complete, tailored care.',
+    descriptionEs:
+      'Analizamos tu piel en el estudio y diseñamos una sesión según lo que necesita, desde hidratación y reafirmación hasta unificación del tono, atenuar marcas y suavizar las líneas de expresión, para un cuidado completo y a medida.',
+    bookingGroup: 'custom',
+    durationMinutes: 120,
+    price: 120,
+  },
+
+  // ── Focus facials (submenu) — 45 min, €75 ─────────────────────────────────
+  {
+    slug: 'iluminador-focalizado',
     name: 'Brightening Focus',
     nameEs: 'Iluminador Focalizado',
-    slug: 'iluminador-focalizado',
     description:
-      'A focused 45-minute facial that restores luminosity to dull skin, bringing back a fresh, radiant tone.',
+      'A focused facial that restores luminosity to dull skin, bringing back a fresh, radiant tone.',
     descriptionEs:
-      'Un facial focalizado de 45 minutos que devuelve luminosidad a la piel apagada y recupera un tono fresco y radiante.',
+      'Un facial focalizado que devuelve luminosidad a la piel apagada y recupera un tono fresco y radiante.',
+    bookingGroup: 'focus',
     durationMinutes: 45,
+    price: 75,
   },
   {
+    slug: 'purificante-focalizado',
     name: 'Purifying Focus',
     nameEs: 'Purificante Focalizado',
-    slug: 'purificante-focalizado',
     description:
-      'A focused 45-minute facial that deeply cleanses, decongests pores and rebalances oily, congested skin.',
+      'A focused facial that deeply cleanses, decongests pores and rebalances oily, congested skin.',
     descriptionEs:
-      'Un facial focalizado de 45 minutos que limpia en profundidad, descongestiona los poros y equilibra la piel grasa y congestionada.',
+      'Un facial focalizado que limpia en profundidad, descongestiona los poros y equilibra la piel grasa y congestionada.',
+    bookingGroup: 'focus',
     durationMinutes: 45,
+    price: 75,
   },
   {
-    name: 'Firming INDIBA Focus',
-    nameEs: 'Reafirmante Indiba Focalizado',
-    slug: 'reafirmante-indiba-focalizado',
-    description:
-      'A focused 45-minute INDIBA facial that firms and tones, stimulating collagen for firmer skin.',
-    descriptionEs:
-      'Un facial focalizado de 45 minutos con tecnología INDIBA que reafirma y tonifica, estimulando el colágeno para una piel más firme.',
-    durationMinutes: 45,
-  },
-  {
+    slug: 'hidratacion-focalizado',
     name: 'Hydration Focus',
     nameEs: 'Hidratación Focalizado',
-    slug: 'hidratacion-focalizado',
     description:
-      'A focused 45-minute facial that replenishes water and nutrients for soft, plump, comfortable skin.',
+      'A focused facial that replenishes water and nutrients for soft, plump, comfortable skin.',
     descriptionEs:
-      'Un facial focalizado de 45 minutos que repone agua y nutrientes para una piel suave, jugosa y confortable.',
+      'Un facial focalizado que repone agua y nutrientes para una piel suave, jugosa y confortable.',
+    bookingGroup: 'focus',
     durationMinutes: 45,
+    price: 75,
   },
   {
+    slug: 'tono-uniforme-focalizado',
     name: 'Even Tone Focus',
     nameEs: 'Tono Uniforme Focalizado',
-    slug: 'tono-uniforme-focalizado',
     description:
-      'A focused 45-minute facial that evens tone and fades spots and marks for more uniform, luminous skin.',
+      'A focused facial that evens tone and fades spots and marks for more uniform, luminous skin.',
     descriptionEs:
-      'Un facial focalizado de 45 minutos que unifica el tono y atenúa manchas y marcas para una piel más homogénea y luminosa.',
+      'Un facial focalizado que unifica el tono y atenúa manchas y marcas para una piel más homogénea y luminosa.',
+    bookingGroup: 'focus',
     durationMinutes: 45,
+    price: 75,
   },
   {
+    slug: 'lineas-firmeza-focalizado',
     name: 'Lines & Firmness Focus',
     nameEs: 'Líneas & Firmeza Focalizado',
-    slug: 'lineas-firmeza-focalizado',
     description:
-      'A focused 45-minute facial that targets expression lines and skin laxity for a firmer, smoother effect.',
+      'A focused facial that targets expression lines and skin laxity for a firmer, smoother effect.',
     descriptionEs:
-      'Un facial focalizado de 45 minutos que trabaja las líneas de expresión y la laxitud cutánea para un efecto más firme y liso.',
+      'Un facial focalizado que trabaja las líneas de expresión y la laxitud cutánea para un efecto más firme y liso.',
+    bookingGroup: 'focus',
     durationMinutes: 45,
+    price: 75,
+  },
+
+  // ── INDIBA (submenu) ──────────────────────────────────────────────────────
+  {
+    slug: 'indiba-focus',
+    name: 'INDIBA Focus',
+    nameEs: 'INDIBA Focalizado',
+    description:
+      'A focused INDIBA radiofrequency facial that boosts circulation and collagen for firmer, revitalized skin.',
+    descriptionEs:
+      'Un facial focalizado de radiofrecuencia INDIBA que activa la circulación y el colágeno para una piel más firme y revitalizada.',
+    bookingGroup: 'indiba',
+    durationMinutes: 45,
+    price: 75,
+  },
+  {
+    slug: 'indiba-full',
+    name: 'INDIBA Full',
+    nameEs: 'INDIBA Completo',
+    description:
+      'A complete INDIBA radiofrequency facial that firms and tones the skin from within, for a lasting, natural glow.',
+    descriptionEs:
+      'Un facial completo de radiofrecuencia INDIBA que reafirma y tonifica la piel desde el interior, para una luminosidad natural y duradera.',
+    bookingGroup: 'indiba',
+    durationMinutes: 75,
+    price: 100,
   },
 ];
 
-// 75-min full facials ("Completo")
-const COMPLETO: Seed[] = [
-  {
-    name: 'Brightening Facial',
-    nameEs: 'Iluminador',
-    slug: 'iluminador',
-    description:
-      'A complete facial that restores luminosity and vitality to dull skin, recovering a fresh, radiant tone.',
-    descriptionEs:
-      'Un facial completo que devuelve luminosidad y vitalidad a la piel apagada, recuperando un tono fresco y radiante.',
-    durationMinutes: 75,
-  },
-  {
-    name: 'Purifying Facial',
-    nameEs: 'Purificante',
-    slug: 'purificante',
-    description:
-      'A complete purifying facial that deeply cleanses, decongests pores and rebalances oily, congested skin.',
-    descriptionEs:
-      'Un facial purificante completo que limpia en profundidad, descongestiona los poros y equilibra la piel grasa y congestionada.',
-    durationMinutes: 75,
-  },
-  {
-    name: 'Firming INDIBA Facial',
-    nameEs: 'Reafirmante Indiba',
-    slug: 'reafirmante-indiba',
-    description:
-      'A complete INDIBA facial that firms and tones, stimulating collagen from within for firmer, revitalized skin.',
-    descriptionEs:
-      'Un facial completo con tecnología INDIBA que reafirma y tonifica, estimulando el colágeno desde el interior para una piel más firme y revitalizada.',
-    durationMinutes: 75,
-  },
-  {
-    name: 'Hydration Facial',
-    nameEs: 'Hidratación',
-    slug: 'hidratacion',
-    description:
-      'A complete intensive-hydration facial that replenishes water and nutrients for soft, plump, comfortable skin.',
-    descriptionEs:
-      'Un facial completo de hidratación intensa que repone agua y nutrientes para una piel suave, jugosa y confortable.',
-    durationMinutes: 75,
-  },
-  {
-    name: 'Even Tone Facial',
-    nameEs: 'Tono Uniforme',
-    slug: 'tono-uniforme',
-    description:
-      'A complete facial that evens tone and fades spots and marks for more uniform, luminous skin.',
-    descriptionEs:
-      'Un facial completo que unifica el tono y atenúa manchas y marcas para una piel más homogénea y luminosa.',
-    durationMinutes: 75,
-  },
-  {
-    name: 'Lines & Firmness Facial',
-    nameEs: 'Líneas & Firmeza',
-    slug: 'lineas-firmeza',
-    description:
-      'A complete facial that targets expression lines and skin laxity, redensifying skin for a firmer, smoother look.',
-    descriptionEs:
-      'Un facial completo que trabaja las líneas de expresión y la laxitud cutánea, redensificando la piel para un efecto más firme y liso.',
-    durationMinutes: 75,
-  },
+// Slugs from the earlier menu that this booking model replaces.
+const REMOVE_SLUGS = [
+  'iluminador',
+  'purificante',
+  'reafirmante-indiba',
+  'hidratacion',
+  'tono-uniforme',
+  'lineas-firmeza',
+  'post-verano',
+  'reafirmante-indiba-focalizado',
 ];
-
-// Seasonal special
-const ESPECIAL: Seed[] = [
-  {
-    name: 'After-Summer Facial',
-    nameEs: 'Post Verano',
-    slug: 'post-verano',
-    description:
-      'A restorative after-summer facial that soothes sensitized skin, repairs and rebalances after sun exposure.',
-    descriptionEs:
-      'Un facial reparador tras el verano que calma la piel sensibilizada, repara y devuelve el equilibrio después de la exposición solar.',
-    durationMinutes: 50,
-  },
-];
-
-const ALL: Seed[] = [...FOCALIZADO, ...COMPLETO, ...ESPECIAL];
 
 async function seed() {
   if (getApps().length === 0) {
@@ -187,10 +162,13 @@ async function seed() {
   const db = getFirestore();
   const batch = db.batch();
 
-  ALL.forEach((s, i) => {
-    const docRef = db.collection('services').doc(s.slug);
+  REMOVE_SLUGS.forEach((slug) => {
+    batch.delete(db.collection('services').doc(slug));
+  });
+
+  SERVICES.forEach((s, i) => {
     batch.set(
-      docRef,
+      db.collection('services').doc(s.slug),
       {
         name: s.name,
         nameEs: s.nameEs,
@@ -198,8 +176,9 @@ async function seed() {
         description: s.description,
         descriptionEs: s.descriptionEs,
         category: 'facial',
+        bookingGroup: s.bookingGroup,
         durationMinutes: s.durationMinutes,
-        price: 0,
+        price: s.price,
         roomType: '',
         isActive: true,
         displayOrder: i + 1,
@@ -210,7 +189,7 @@ async function seed() {
   });
 
   await batch.commit();
-  console.log(`Seeded ${ALL.length} services.`);
+  console.log(`Seeded ${SERVICES.length} services, removed ${REMOVE_SLUGS.length} old ones.`);
 }
 
 seed()

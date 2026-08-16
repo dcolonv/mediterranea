@@ -71,6 +71,7 @@ describe('computeSlots', () => {
     duration: 60,
     businessHours: HOURS,
     intervalMinutes: 30,
+    bufferMinutes: 0,
     earliestMinutes: 0,
     staff,
     rooms: [{ id: 'r1' }],
@@ -130,6 +131,24 @@ describe('computeSlots', () => {
     });
     expect(slots).toEqual([]);
   });
+
+  it('enforces a cool-down buffer around an appointment', () => {
+    // A 60-min appt at 11:00 (ends 12:00) with a 30-min buffer.
+    const slots = computeSlots({
+      ...base,
+      bufferMinutes: 30,
+      dayAppointments: [{ staffId: 's1', appointmentTime: '11:00', durationMinutes: 60 }],
+    });
+    const times = slots.map((s) => s.time);
+    // After: appt ends 12:00, buffer clears at 12:30.
+    expect(times).not.toContain('11:30'); // overlaps the appt
+    expect(times).not.toContain('12:00'); // within the 30-min buffer
+    expect(times).toContain('12:30'); // buffer cleared → bookable
+    // Before: a 60-min slot must end ≥30 min before 11:00, i.e. start ≤09:30.
+    expect(times).not.toContain('10:30'); // ends 11:30, overlaps
+    expect(times).not.toContain('10:00'); // ends 11:00, no gap before the appt
+    expect(times).toContain('09:30'); // ends 10:30, exactly a 30-min gap → ok
+  });
 });
 
 describe('detectConflicts', () => {
@@ -159,5 +178,16 @@ describe('detectConflicts', () => {
     expect(
       detectConflicts(existing, { start: 600, end: 660, staffId: 's1', roomId: 'r1', ignoreId: 'a1' })
     ).toEqual({ staffClash: false, roomClash: false });
+  });
+
+  it('flags a clash inside the cool-down buffer', () => {
+    // existing appt 10:00-11:00; a new 11:00-12:00 booking sits in the 30-min
+    // buffer, so it clashes when a buffer is applied but not without one.
+    const target = { start: 660, end: 720, staffId: 's1', roomId: 'r1' };
+    expect(detectConflicts(existing, target)).toEqual({ staffClash: false, roomClash: false });
+    expect(detectConflicts(existing, { ...target, bufferMinutes: 30 })).toEqual({
+      staffClash: true,
+      roomClash: true,
+    });
   });
 });

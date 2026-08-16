@@ -2,6 +2,13 @@ import type { Timestamp } from 'firebase/firestore';
 
 export type ServiceCategory = 'facial' | 'treatment';
 
+/**
+ * Top-level grouping for the public booking flow. `custom` books directly;
+ * `focus` and `indiba` present a submenu of their members before booking.
+ * Unset = not surfaced as a bookable group on the public booking page.
+ */
+export type BookingGroup = 'custom' | 'focus' | 'indiba';
+
 export interface Service {
   id: string;
   name: string;
@@ -12,6 +19,8 @@ export interface Service {
   /** Optional Spanish description; falls back to `description` when unset. */
   descriptionEs?: string;
   category: ServiceCategory;
+  /** Public booking-flow group (custom / focus / indiba); unset = ungrouped. */
+  bookingGroup?: BookingGroup;
   durationMinutes: number;
   price: number;
   isActive: boolean;
@@ -165,6 +174,8 @@ export interface BookingRules {
   maxAdvanceDays: number;
   /** Granularity of the bookable time grid, in minutes. */
   slotIntervalMinutes: number;
+  /** Cool-down/preparation gap enforced between consecutive appointments, in minutes. */
+  bufferMinutes: number;
 }
 
 export interface CancellationPolicy {
