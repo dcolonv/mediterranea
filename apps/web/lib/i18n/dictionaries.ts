@@ -53,7 +53,7 @@ const en = {
     customName: 'Custom Facial',
     customDuration: '1.5–2 hours',
     customDesc:
-      'A fully personalized session that blends the treatments your skin needs, from hydration and even tone to anti-aging, for complete, tailored care.',
+      'We analyze your skin in the studio and design a session around what it needs, from hydration and firming to even tone, fading marks and softening expression lines, for complete, tailored care.',
     focusName: 'Focus Facial',
     focusDuration: '45 minutes',
     focusDesc:
@@ -268,11 +268,11 @@ const es: typeof en = {
   services: {
     eyebrow: 'Lo Que Ofrecemos',
     title: 'Tres formas de cuidar tu piel',
-    subtitle: 'Una sesión totalmente personalizada, un tratamiento único y focalizado, o un facial INDIBA específico.',
+    subtitle: 'Una sesión personalizada, un tratamiento único y focalizado, o un facial INDIBA específico.',
     customName: 'Facial Personalizado',
     customDuration: '1,5–2 horas',
     customDesc:
-      'Una sesión totalmente personalizada que combina los tratamientos que tu piel necesita, desde hidratación y unificación del tono hasta antiedad, para un cuidado completo y a medida.',
+      'Analizamos tu piel en el estudio y diseñamos una sesión según lo que necesita, desde hidratación y reafirmación hasta unificación del tono, atenuar marcas y suavizar las líneas de expresión, para un cuidado completo y a medida.',
     focusName: 'Facial Focalizado',
     focusDuration: '45 minutos',
     focusDesc:
