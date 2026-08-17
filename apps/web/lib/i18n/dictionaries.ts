@@ -148,7 +148,7 @@ const en = {
           'A warm phase preps the skin to absorb active ingredients, while the cold phase soothes, calms and tightens.',
       },
       {
-        name: 'Microneedling — Dr. Pen',
+        name: 'Microneedling',
         description:
           'Micro-stimulation that encourages the skin’s natural renewal and helps serums penetrate for firmer, refined skin.',
       },
@@ -420,7 +420,7 @@ const es: typeof en = {
           'Una fase caliente prepara la piel para absorber los principios activos, y la fase fría calma, descongestiona y tensa.',
       },
       {
-        name: 'Microneedling — Dr. Pen',
+        name: 'Microneedling',
         description:
           'Microestimulación que favorece la renovación natural de la piel y ayuda a que los sérums penetren para una piel más firme y afinada.',
       },
