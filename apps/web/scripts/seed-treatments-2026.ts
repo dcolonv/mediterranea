@@ -107,6 +107,30 @@ const SERVICES: Seed[] = [
     durationMinutes: 45,
     price: 75,
   },
+  {
+    slug: 'peeling-focalizado',
+    name: 'Peeling Focus',
+    nameEs: 'Peeling Focalizado',
+    description:
+      'A focused peeling that renews the skin’s surface, smoothing texture and reviving a fresh, luminous glow.',
+    descriptionEs:
+      'Un peeling focalizado que renueva la superficie de la piel, suaviza la textura y devuelve una luminosidad fresca.',
+    bookingGroup: 'focus',
+    durationMinutes: 45,
+    price: 75,
+  },
+  {
+    slug: 'focus-help',
+    name: 'Help Me Choose',
+    nameEs: 'Te Ayudamos a Elegir',
+    description:
+      'Not sure which facial you need? Book a focus session and we’ll assess your skin together and choose the right treatment for you on the day.',
+    descriptionEs:
+      '¿No sabes qué facial necesitas? Reserva una sesión focus y valoramos tu piel juntas para elegir el tratamiento más adecuado para ti en el momento.',
+    bookingGroup: 'focus',
+    durationMinutes: 45,
+    price: 75,
+  },
 
   // ── INDIBA (submenu) ──────────────────────────────────────────────────────
   {
