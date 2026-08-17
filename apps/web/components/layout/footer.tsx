@@ -95,11 +95,7 @@ export function Footer() {
                 <span>{BUSINESS_HOURS.monday?.open} - {BUSINESS_HOURS.monday?.close}</span>
               </li>
               <li className="flex justify-between">
-                <span>{dict.footer.saturday}</span>
-                <span>{BUSINESS_HOURS.saturday?.open} - {BUSINESS_HOURS.saturday?.close}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>{dict.footer.sunday}</span>
+                <span>{dict.footer.satSun}</span>
                 <span>{dict.footer.closed}</span>
               </li>
             </ul>

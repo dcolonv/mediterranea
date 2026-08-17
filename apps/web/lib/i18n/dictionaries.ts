@@ -22,6 +22,7 @@ const en = {
     monFri: 'Mon - Fri',
     saturday: 'Saturday',
     sunday: 'Sunday',
+    satSun: 'Sat - Sun',
     closed: 'Closed',
     rights: (year: number) => `© ${year} Mediterránea Face Studio. All rights reserved.`,
   },
@@ -102,6 +103,7 @@ const en = {
     monFri: 'Mon - Fri',
     saturday: 'Saturday',
     sunday: 'Sunday',
+    satSun: 'Sat - Sun',
     closed: 'Closed',
   },
   treatments: {
@@ -244,6 +246,7 @@ const es: typeof en = {
     monFri: 'Lun - Vie',
     saturday: 'Sábado',
     sunday: 'Domingo',
+    satSun: 'Sáb - Dom',
     closed: 'Cerrado',
     rights: (year: number) => `© ${year} Mediterránea Face Studio. Todos los derechos reservados.`,
   },
@@ -324,6 +327,7 @@ const es: typeof en = {
     monFri: 'Lun - Vie',
     saturday: 'Sábado',
     sunday: 'Domingo',
+    satSun: 'Sáb - Dom',
     closed: 'Cerrado',
   },
   treatments: {
