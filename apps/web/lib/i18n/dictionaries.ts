@@ -121,6 +121,54 @@ const en = {
     back: 'All treatments',
     book: 'Book this treatment',
   },
+  technology: {
+    eyebrow: 'What We Use',
+    title: 'Treatment Technology',
+    subtitle:
+      'The tools and technology behind every Mediterránea facial, combined and tailored to what your skin needs.',
+    items: [
+      {
+        name: 'LED Light Therapy',
+        description:
+          'Targeted red and blue light to calm the skin, even out tone and boost a healthy glow.',
+      },
+      {
+        name: 'Diamond Tip Microdermabrasion',
+        description:
+          'Gentle diamond-tip exfoliation that lifts away dead cells and refines texture for smoother, brighter skin.',
+      },
+      {
+        name: 'Zemits Hot & Cold Galvanic Therapy',
+        description:
+          'A warm phase preps the skin to absorb active ingredients, while the cold phase soothes, calms and tightens.',
+      },
+      {
+        name: 'Microneedling — Dr. Pen',
+        description:
+          'Micro-stimulation that encourages the skin’s natural renewal and helps serums penetrate for firmer, refined skin.',
+      },
+      {
+        name: 'Zemits Sonosilk Ultrasonic Skin Scrubber',
+        description:
+          'Ultrasonic vibrations for a deep yet delicate cleanse, lifting away impurities and dead skin.',
+      },
+      {
+        name: 'Zemits Elastistrom Microcurrent Gloves',
+        description:
+          'Low-level microcurrent that tones and lifts the facial muscles for a firmer, more defined contour.',
+      },
+      {
+        name: 'High Frequency',
+        description:
+          'A gentle high-frequency current that purifies, helps calm blemish-prone skin and boosts circulation for a fresh glow.',
+      },
+      {
+        name: 'INDIBA',
+        description:
+          'Radiofrequency that works from within to boost circulation and collagen, for firmer, revitalized skin.',
+      },
+    ],
+  },
   contactPage: {
     eyebrow: 'Visit Us',
     title: 'Contact & Hours',
@@ -344,6 +392,54 @@ const es: typeof en = {
   treatmentDetail: {
     back: 'Todos los tratamientos',
     book: 'Reservar este tratamiento',
+  },
+  technology: {
+    eyebrow: 'Lo Que Usamos',
+    title: 'Tecnología de Tratamiento',
+    subtitle:
+      'Las herramientas y la tecnología detrás de cada facial de Mediterránea, combinadas y adaptadas a lo que tu piel necesita.',
+    items: [
+      {
+        name: 'Fototerapia LED',
+        description:
+          'Luz roja y azul dirigida para calmar la piel, unificar el tono y potenciar una luminosidad saludable.',
+      },
+      {
+        name: 'Microdermoabrasión con Punta de Diamante',
+        description:
+          'Exfoliación suave con punta de diamante que retira las células muertas y afina la textura para una piel más lisa y luminosa.',
+      },
+      {
+        name: 'Terapia Galvánica Frío-Calor Zemits',
+        description:
+          'Una fase caliente prepara la piel para absorber los principios activos, y la fase fría calma, descongestiona y tensa.',
+      },
+      {
+        name: 'Microneedling — Dr. Pen',
+        description:
+          'Microestimulación que favorece la renovación natural de la piel y ayuda a que los sérums penetren para una piel más firme y afinada.',
+      },
+      {
+        name: 'Zemits Sonosilk — Espátula Ultrasónica',
+        description:
+          'Vibraciones ultrasónicas para una limpieza profunda y delicada que elimina impurezas y células muertas.',
+      },
+      {
+        name: 'Guantes de Microcorriente Zemits Elastistrom',
+        description:
+          'Microcorriente de baja intensidad que tonifica y eleva los músculos faciales para un contorno más firme y definido.',
+      },
+      {
+        name: 'Alta Frecuencia',
+        description:
+          'Una suave corriente de alta frecuencia que purifica, ayuda a calmar la piel con imperfecciones y activa la circulación para una piel radiante.',
+      },
+      {
+        name: 'INDIBA',
+        description:
+          'Radiofrecuencia que actúa desde el interior para activar la circulación y el colágeno, para una piel más firme y revitalizada.',
+      },
+    ],
   },
   contactPage: {
     eyebrow: 'Visítanos',
