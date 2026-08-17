@@ -62,6 +62,7 @@ function downloadIcs(opts: {
 export function BookingFlow({
   services,
   initialService,
+  startGroup,
   policyText,
   businessHours,
   maxAdvanceDays,
@@ -69,6 +70,8 @@ export function BookingFlow({
 }: {
   services: PublicService[];
   initialService: PublicService | null;
+  /** Pre-open a group's submenu (focus / indiba) when no specific service is given. */
+  startGroup?: 'focus' | 'indiba';
   policyText: string;
   businessHours: WorkingHours;
   maxAdvanceDays: number;
@@ -93,8 +96,9 @@ export function BookingFlow({
     { key: 'details', label: b.stepDetails },
   ];
 
-  const initialGroup = (initialService?.bookingGroup as Group | undefined) ?? null;
-  const [step, setStep] = useState<Step>(initialService ? 'time' : 'type');
+  const initialGroup = (initialService?.bookingGroup as Group | undefined) ?? startGroup ?? null;
+  const initialStep: Step = initialService ? 'time' : startGroup ? 'sub' : 'type';
+  const [step, setStep] = useState<Step>(initialStep);
   const [group, setGroup] = useState<Group | null>(initialGroup);
   const [service, setService] = useState<PublicService | null>(initialService);
 
@@ -245,7 +249,7 @@ export function BookingFlow({
     setPhone(prefill?.phone ?? '');
     setNotes('');
     setError(null);
-    setStep(initialService ? 'time' : 'type');
+    setStep(initialStep);
   }
 
   // ── Confirmation ─────────────────────────────────────────────────────────────

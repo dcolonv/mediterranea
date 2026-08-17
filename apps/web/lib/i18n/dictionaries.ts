@@ -3,6 +3,7 @@ import type { Locale } from './config';
 const en = {
   nav: {
     home: 'Home',
+    services: 'Services',
     treatments: 'Treatments',
     about: 'About',
     contact: 'Contact',
@@ -58,7 +59,7 @@ const en = {
     focusName: 'Focus Facial',
     focusDuration: '45 minutes',
     focusDesc:
-      'A single, targeted treatment for when you know exactly what your skin needs, whether peeling, dermapen or hydration.',
+      'A single, targeted treatment focused on one concern, such as peeling, dermapen or hydration. Not sure which you need? We’ll help you choose.',
     indibaName: 'INDIBA Facial',
     indibaDuration: '45–60 minutes',
     indibaDesc:
@@ -307,6 +308,7 @@ const en = {
 const es: typeof en = {
   nav: {
     home: 'Inicio',
+    services: 'Servicios',
     treatments: 'Tratamientos',
     about: 'Nosotros',
     contact: 'Contacto',
@@ -362,7 +364,7 @@ const es: typeof en = {
     focusName: 'Facial Focalizado',
     focusDuration: '45 minutos',
     focusDesc:
-      'Un tratamiento único y focalizado para cuando sabes exactamente qué necesita tu piel, ya sea peeling, dermapen o hidratación.',
+      'Un tratamiento único y focalizado en una necesidad concreta, como peeling, dermapen o hidratación. ¿No sabes cuál necesitas? Te ayudamos a elegir.',
     indibaName: 'Facial INDIBA',
     indibaDuration: '45–60 minutos',
     indibaDesc:
