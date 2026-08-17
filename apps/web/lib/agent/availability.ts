@@ -164,6 +164,76 @@ export function computeSlots(input: ComputeSlotsInput): AvailabilitySlot[] {
   return slots;
 }
 
+export interface FixedSlot {
+  time: string;
+  available: boolean;
+  staffIds: string[];
+  roomIds: string[];
+}
+
+export interface ComputeFixedSlotsInput {
+  /** Explicit candidate start times, e.g. ['10:00','12:00', …]. */
+  candidateTimes: string[];
+  /** Overlap/block length in minutes (the service's real duration). */
+  duration: number;
+  /** Cool-down between appointments; 0 when prep is folded into the slot grid. */
+  bufferMinutes: number;
+  /** Earliest bookable start (minutes since midnight); e.g. lead cutoff for today. */
+  earliestMinutes: number;
+  date: string;
+  /** Qualified staff. Working-hours bounds are ignored (the fixed times are authoritative); time off still blocks. */
+  staff: AvailStaff[];
+  /** Active rooms of the required type. */
+  rooms: AvailRoom[];
+  /** Same-day appointments in slot-occupying statuses. */
+  dayAppointments: AvailAppt[];
+}
+
+/**
+ * Evaluate a fixed list of candidate start times, returning every candidate with
+ * an `available` flag (plus the free staff/rooms for the bookable ones). Unlike
+ * `computeSlots`, this does not derive times from business hours and does not
+ * reject a slot for running past closing — the caller's fixed times are the
+ * source of truth. Time off, existing bookings and room availability still apply.
+ */
+export function computeFixedSlots(input: ComputeFixedSlotsInput): FixedSlot[] {
+  const { duration, bufferMinutes, earliestMinutes, date } = input;
+
+  const clashes = (start: number, end: number, a: AvailAppt): boolean => {
+    const aStart = timeToMinutes(a.appointmentTime);
+    const aEnd = aStart + a.durationMinutes;
+    return rangesOverlap(start, end + bufferMinutes, aStart, aEnd + bufferMinutes);
+  };
+
+  return input.candidateTimes.map((time) => {
+    const start = timeToMinutes(time);
+    const end = start + duration;
+
+    if (start < earliestMinutes) {
+      return { time, available: false, staffIds: [], roomIds: [] };
+    }
+
+    const freeStaff = input.staff
+      .filter((s) => {
+        if (staffOffAt(s, date, start, end)) return false;
+        return !input.dayAppointments.some((a) => a.staffId === s.id && clashes(start, end, a));
+      })
+      .map((s) => s.id);
+
+    const freeRooms = input.rooms
+      .filter((r) => !input.dayAppointments.some((a) => a.roomId === r.id && clashes(start, end, a)))
+      .map((r) => r.id);
+
+    const available = freeStaff.length > 0 && freeRooms.length > 0;
+    return {
+      time,
+      available,
+      staffIds: available ? freeStaff : [],
+      roomIds: available ? freeRooms : [],
+    };
+  });
+}
+
 /**
  * Detect whether a target slot collides with existing appointments for the same
  * staff member or room. `ignoreId` excludes the appointment being updated.

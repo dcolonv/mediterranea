@@ -8,9 +8,11 @@ import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
 import { useLang } from '@/components/i18n/language-provider';
 import { serviceName } from '@/lib/i18n/service';
+import { MonthCalendar } from './month-calendar';
+import type { WorkingHours } from '@mediterranea/shared/types';
 import {
   getBookingStaff,
-  getBookingAvailability,
+  getDaySlots,
   createOnlineBooking,
   type PublicService,
   type PublicStaff,
@@ -61,11 +63,15 @@ export function BookingFlow({
   services,
   initialService,
   policyText,
+  businessHours,
+  maxAdvanceDays,
   prefill,
 }: {
   services: PublicService[];
   initialService: PublicService | null;
   policyText: string;
+  businessHours: WorkingHours;
+  maxAdvanceDays: number;
   prefill?: { name: string; email: string; phone: string } | null;
 }) {
   const { locale, dict } = useLang();
@@ -96,8 +102,8 @@ export function BookingFlow({
   const [staffId, setStaffId] = useState(''); // '' = any available
 
   const [date, setDate] = useState('');
-  const [times, setTimes] = useState<string[] | null>(null);
-  const [loadingTimes, setLoadingTimes] = useState(false);
+  const [daySlots, setDaySlots] = useState<{ time: string; available: boolean }[] | null>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [time, setTime] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(service?.durationMinutes ?? 0);
 
@@ -135,7 +141,7 @@ export function BookingFlow({
     setService(s);
     setDurationMinutes(s.durationMinutes);
     setStaffId('');
-    setTimes(null);
+    setDaySlots(null);
     setTime('');
     setDate('');
     const staff = await getBookingStaff(s.id);
@@ -156,25 +162,27 @@ export function BookingFlow({
 
   function choosePractitioner(id: string) {
     setStaffId(id);
-    setTimes(null);
+    setDaySlots(null);
     setTime('');
+    setDate('');
     setStep('time');
   }
 
-  async function findTimes() {
-    if (!service || !date) return;
-    setLoadingTimes(true);
-    setError(null);
-    setTimes(null);
+  async function selectDate(d: string) {
+    if (!service) return;
+    setDate(d);
     setTime('');
-    const res = await getBookingAvailability(service.id, date, staffId || undefined);
-    setLoadingTimes(false);
+    setDaySlots(null);
+    setLoadingSlots(true);
+    setError(null);
+    const res = await getDaySlots(service.id, d);
+    setLoadingSlots(false);
     if (!res.success) {
       setError(res.error);
       return;
     }
     setDurationMinutes(res.durationMinutes);
-    setTimes(res.times);
+    setDaySlots(res.slots);
   }
 
   async function confirm() {
@@ -200,9 +208,9 @@ export function BookingFlow({
       setStep('done');
     } else {
       setError(res.error);
-      // If the slot was taken, send them back to pick another time.
-      setTimes(null);
+      // If the slot was taken, refresh the day's slots so it shows as blocked.
       setTime('');
+      if (date) void selectDate(date);
       setStep('time');
     }
   }
@@ -220,7 +228,7 @@ export function BookingFlow({
     setGroup(initialGroup);
     setStaffId('');
     setDate('');
-    setTimes(null);
+    setDaySlots(null);
     setTime('');
     setName(prefill?.name ?? '');
     setEmail(prefill?.email ?? '');
@@ -425,44 +433,56 @@ export function BookingFlow({
               {staffName(staffId) ? ` · ${staffName(staffId)}` : ''}
             </p>
 
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="w-full sm:w-auto">
-                <label className="mb-2 block text-sm font-medium tracking-wide text-white-70">{b.date}</label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => {
-                    setDate(e.target.value);
-                    setTimes(null);
-                    setTime('');
-                  }}
-                  className="h-12 w-full border border-white-10 bg-dark-800 px-4 text-white focus:border-gold focus:outline-none sm:w-56"
-                />
-              </div>
-              <Button variant="outline" onClick={findTimes} disabled={!date || loadingTimes}>
-                {loadingTimes ? b.finding : b.findTimes}
-              </Button>
-            </div>
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,20rem)_1fr]">
+              <MonthCalendar
+                businessHours={businessHours}
+                maxAdvanceDays={maxAdvanceDays}
+                locale={locale}
+                selectedDate={date}
+                onSelectDate={selectDate}
+                prevLabel={b.prevMonth}
+                nextLabel={b.nextMonth}
+              />
 
-            {times && times.length === 0 && (
-              <p className="mt-6 text-sm text-white-50">{b.noTimes}</p>
-            )}
-            {times && times.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-2">
-                {times.map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => {
-                      setTime(t);
-                      setStep('details');
-                    }}
-                    className="border border-white-10 px-4 py-2 text-sm text-white-70 transition-colors hover:border-gold/40 hover:text-white"
-                  >
-                    {t}
-                  </button>
-                ))}
+              <div>
+                {!date && <p className="text-sm text-white-50">{b.selectDatePrompt}</p>}
+                {date && loadingSlots && <p className="text-sm text-white-50">{b.finding}</p>}
+                {date && !loadingSlots && daySlots && daySlots.length === 0 && (
+                  <p className="text-sm text-white-50">{b.noTimes}</p>
+                )}
+                {date && !loadingSlots && daySlots && daySlots.length > 0 && (
+                  <>
+                    <div className="mb-5 flex items-center gap-5 text-xs text-white-50">
+                      <span className="flex items-center gap-2">
+                        <span className="h-3 w-3 border border-gold/50" /> {b.slotAvailable}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <span className="h-3 w-3 border border-white-10 bg-white-10" /> {b.slotBooked}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      {daySlots.map((s) => (
+                        <button
+                          key={s.time}
+                          disabled={!s.available}
+                          onClick={() => {
+                            setTime(s.time);
+                            setStep('details');
+                          }}
+                          className={`border px-3 py-2 text-sm transition-colors ${
+                            s.available
+                              ? 'border-white-10 text-white-70 hover:border-gold/40 hover:text-white'
+                              : 'cursor-not-allowed border-white-10/50 text-white-20 line-through'
+                          }`}
+                        >
+                          {s.time}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-            )}
+            </div>
 
             <div className="mt-8">
               <Button

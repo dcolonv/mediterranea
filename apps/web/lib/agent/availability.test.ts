@@ -7,6 +7,7 @@ import {
   addDaysStr,
   staffOffAt,
   computeSlots,
+  computeFixedSlots,
   detectConflicts,
   type AvailStaff,
 } from './availability';
@@ -148,6 +149,58 @@ describe('computeSlots', () => {
     expect(times).not.toContain('10:30'); // ends 11:30, overlaps
     expect(times).not.toContain('10:00'); // ends 11:00, no gap before the appt
     expect(times).toContain('09:30'); // ends 10:30, exactly a 30-min gap → ok
+  });
+});
+
+describe('computeFixedSlots', () => {
+  const staff: AvailStaff[] = [{ id: 's1', workingHours: { tuesday: HOURS } }];
+  const base = {
+    candidateTimes: ['10:00', '12:00', '14:00', '16:00', '18:00'], // custom
+    duration: 120,
+    bufferMinutes: 0,
+    earliestMinutes: 0,
+    date: '2026-09-08',
+    staff,
+    rooms: [{ id: 'r1' }],
+    dayAppointments: [],
+  };
+
+  it('returns every candidate, all available when nothing is booked', () => {
+    const slots = computeFixedSlots(base);
+    expect(slots.map((s) => s.time)).toEqual(['10:00', '12:00', '14:00', '16:00', '18:00']);
+    expect(slots.every((s) => s.available)).toBe(true);
+  });
+
+  it('allows a slot that runs past the studio close time (18:00 → 20:00)', () => {
+    const slots = computeFixedSlots(base);
+    expect(slots.find((s) => s.time === '18:00')?.available).toBe(true);
+  });
+
+  it('blocks candidates that overlap an existing booking', () => {
+    // A focus booking 11:00–11:45 overlaps the custom 10:00–12:00 slot.
+    const slots = computeFixedSlots({
+      ...base,
+      dayAppointments: [{ staffId: 's1', roomId: 'r1', appointmentTime: '11:00', durationMinutes: 45 }],
+    });
+    const byTime = Object.fromEntries(slots.map((s) => [s.time, s.available]));
+    expect(byTime['10:00']).toBe(false); // 10:00–12:00 overlaps 11:00–11:45
+    expect(byTime['12:00']).toBe(true); // 12:00–14:00 is clear
+  });
+
+  it('marks past candidates unavailable via earliestMinutes', () => {
+    const slots = computeFixedSlots({ ...base, earliestMinutes: 13 * 60 });
+    const byTime = Object.fromEntries(slots.map((s) => [s.time, s.available]));
+    expect(byTime['10:00']).toBe(false);
+    expect(byTime['12:00']).toBe(false);
+    expect(byTime['14:00']).toBe(true);
+  });
+
+  it('drops the slot when the practitioner is on time off', () => {
+    const slots = computeFixedSlots({
+      ...base,
+      staff: [{ id: 's1', workingHours: { tuesday: HOURS }, timeOff: [{ date: '2026-09-08' }] }],
+    });
+    expect(slots.every((s) => !s.available)).toBe(true);
   });
 });
 

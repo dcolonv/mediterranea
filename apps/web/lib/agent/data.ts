@@ -9,14 +9,16 @@
 import { Timestamp, type DocumentSnapshot } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { upsertCustomerForAppointment } from '@/actions/customers';
-import { DEFAULT_STUDIO_SETTINGS } from '@mediterranea/shared/constants';
+import { DEFAULT_STUDIO_SETTINGS, BOOKING_SLOT_TIMES } from '@mediterranea/shared/constants';
 import {
   timeToMinutes,
   weekdayOf,
   addDaysStr,
   computeSlots,
+  computeFixedSlots,
   detectConflicts,
   type AvailAppt,
+  type FixedSlot,
 } from '@/lib/agent/availability';
 import type {
   Service,
@@ -164,17 +166,31 @@ export interface AvailabilityResult {
   slots: AvailabilitySlot[];
 }
 
+/** A day's full slot list, each candidate marked available or not. */
+export interface DaySlotsResult {
+  serviceId: string;
+  serviceName: string;
+  date: string;
+  durationMinutes: number;
+  slots: FixedSlot[];
+}
+
+const FIXED_GROUPS = new Set(Object.keys(BOOKING_SLOT_TIMES));
+
 /**
- * Compute bookable start times for a service on a date, intersecting: service
- * duration + slot grid, each qualified staff member's hours (minus time off and
- * their booked appointments), and a free room of the required type. Fetches the
- * records, then delegates the pure computation to `computeSlots`.
+ * Evaluate every candidate slot for a service on a date, returning each with an
+ * `available` flag and (for the bookable ones) its free staff/rooms.
+ *
+ * Services in a fixed booking group (custom / focus / indiba) use their group's
+ * fixed start times — prep is folded into those times, so no extra buffer — and
+ * ignore the studio close time. Any other service falls back to the business-hours
+ * slot grid. Time off, existing bookings and room availability apply either way.
  */
-export async function findAvailability(input: {
+async function evaluateDay(input: {
   serviceId: string;
   date: string;
   staffId?: string;
-}): Promise<AvailabilityResult | { error: string }> {
+}): Promise<DaySlotsResult | { error: string }> {
   const service = await getService(input.serviceId);
   if (!service) return { error: `No service found for "${input.serviceId}".` };
 
@@ -182,15 +198,15 @@ export async function findAvailability(input: {
   const weekday = weekdayOf(input.date);
   const settings = await getStudioSettings();
 
-  const empty = {
+  const base = {
     serviceId: service.id,
     serviceName: service.name,
     date: input.date,
     durationMinutes: duration,
-    slots: [] as AvailabilitySlot[],
   };
+  const empty = { ...base, slots: [] as FixedSlot[] };
 
-  // Booking window: no past dates, no dates beyond maxAdvanceDays.
+  // Booking window: no past dates, no dates beyond maxAdvanceDays, studio open.
   const now = malagaNow();
   const maxDate = addDaysStr(now.date, settings.booking.maxAdvanceDays);
   if (input.date < now.date || input.date > maxDate) return empty;
@@ -205,35 +221,82 @@ export async function findAvailability(input: {
     (r) => !service.roomType || r.type === service.roomType
   );
 
-  const dayAppts = (await listAppointments({ date: input.date })).filter((a) =>
-    ACTIVE_STATUSES.includes(a.status)
-  );
-
-  const slots = computeSlots({
-    date: input.date,
-    weekday,
-    duration,
-    businessHours: bh,
-    intervalMinutes: settings.booking.slotIntervalMinutes,
-    bufferMinutes: settings.booking.bufferMinutes ?? 0,
-    earliestMinutes: input.date === now.date ? now.minutes + settings.booking.minLeadHours * 60 : 0,
-    staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
-    rooms: rooms.map((r) => ({ id: r.id })),
-    dayAppointments: dayAppts.map((a) => ({
+  const dayAppts = (await listAppointments({ date: input.date }))
+    .filter((a) => ACTIVE_STATUSES.includes(a.status))
+    .map((a) => ({
       staffId: a.staffId,
       roomId: a.roomId,
       appointmentTime: a.appointmentTime,
       durationMinutes: a.durationMinutes,
-    })),
-  });
+    }));
 
+  const earliestMinutes =
+    input.date === now.date ? now.minutes + settings.booking.minLeadHours * 60 : 0;
+
+  const group = service.bookingGroup;
+  let slots: FixedSlot[];
+
+  if (group && FIXED_GROUPS.has(group)) {
+    slots = computeFixedSlots({
+      candidateTimes: BOOKING_SLOT_TIMES[group as keyof typeof BOOKING_SLOT_TIMES],
+      duration,
+      bufferMinutes: 0, // prep is folded into the fixed slot spacing
+      earliestMinutes,
+      date: input.date,
+      staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
+      rooms: rooms.map((r) => ({ id: r.id })),
+      dayAppointments: dayAppts,
+    });
+  } else {
+    // Fallback: business-hours grid; every generated slot is by definition free.
+    slots = computeSlots({
+      date: input.date,
+      weekday,
+      duration,
+      businessHours: bh,
+      intervalMinutes: settings.booking.slotIntervalMinutes,
+      bufferMinutes: settings.booking.bufferMinutes ?? 0,
+      earliestMinutes,
+      staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
+      rooms: rooms.map((r) => ({ id: r.id })),
+      dayAppointments: dayAppts,
+    }).map((s) => ({ time: s.time, available: true, staffIds: s.staffIds, roomIds: s.roomIds }));
+  }
+
+  return { ...base, slots };
+}
+
+/**
+ * Bookable start times for a service on a date (only the free slots), each with
+ * its assignable staff/rooms. Used for booking creation and admin scheduling.
+ */
+export async function findAvailability(input: {
+  serviceId: string;
+  date: string;
+  staffId?: string;
+}): Promise<AvailabilityResult | { error: string }> {
+  const res = await evaluateDay(input);
+  if ('error' in res) return res;
   return {
-    serviceId: service.id,
-    serviceName: service.name,
-    date: input.date,
-    durationMinutes: duration,
-    slots,
+    serviceId: res.serviceId,
+    serviceName: res.serviceName,
+    date: res.date,
+    durationMinutes: res.durationMinutes,
+    slots: res.slots
+      .filter((s) => s.available)
+      .map((s) => ({ time: s.time, staffIds: s.staffIds, roomIds: s.roomIds })),
   };
+}
+
+/**
+ * Every candidate slot for a service on a date with an availability flag — for
+ * the public month-calendar UI, which shows both open and blocked times.
+ */
+export async function findDaySlots(input: {
+  serviceId: string;
+  date: string;
+}): Promise<DaySlotsResult | { error: string }> {
+  return evaluateDay(input);
 }
 
 // ── Appointment writes (transactional conflict guard) ────────────────────────────

@@ -97,17 +97,39 @@ export async function getBookingAvailability(
   return { success: true, durationMinutes: res.durationMinutes, times: res.slots.map((s) => s.time) };
 }
 
-/** The cancellation policy + business hours, for display on public pages. */
+/** All fixed slots for a service on a date, each flagged available or blocked (for the calendar UI). */
+export async function getDaySlots(
+  serviceId: string,
+  date: string
+): Promise<
+  | { success: true; durationMinutes: number; slots: { time: string; available: boolean }[] }
+  | { success: false; error: string }
+> {
+  if (!(await allowAction(`avail:ip:${await clientIp()}`, 120, 10 * 60))) {
+    return { success: false, error: 'Too many requests. Please slow down.' };
+  }
+  const res = await data.findDaySlots({ serviceId, date });
+  if ('error' in res) return { success: false, error: res.error };
+  return {
+    success: true,
+    durationMinutes: res.durationMinutes,
+    slots: res.slots.map((s) => ({ time: s.time, available: s.available })),
+  };
+}
+
+/** The cancellation policy + business hours + booking window, for public pages. */
 export async function getPublicPolicy(): Promise<{
   policyText: string;
   cutoffHours: number;
   businessHours: WorkingHours;
+  maxAdvanceDays: number;
 }> {
   const settings = await data.getStudioSettings();
   return {
     policyText: settings.cancellation.policyText,
     cutoffHours: settings.cancellation.cutoffHours,
     businessHours: settings.businessHours ?? {},
+    maxAdvanceDays: settings.booking.maxAdvanceDays,
   };
 }
 
