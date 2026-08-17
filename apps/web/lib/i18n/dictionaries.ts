@@ -55,7 +55,7 @@ const en = {
     customName: 'Custom Facial',
     customDuration: '1.5–2 hours',
     customDesc:
-      'A fully personalized session. After assessing your skin, we apply whichever of these treatments it needs, from hydration and purifying to peeling, even tone and firmness, even several combined in one visit.',
+      'A fully personalized session. After assessing your skin, we apply whichever of these treatments it needs, from hydration, purifying and peeling to even tone and firmness, often combining several in a single visit.',
     focusName: 'Focus Facial',
     focusDuration: '45 minutes',
     focusDesc:
