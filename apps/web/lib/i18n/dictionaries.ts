@@ -169,6 +169,33 @@ const en = {
       },
     ],
   },
+  products: {
+    eyebrow: 'Products We Work With',
+    title: 'Brands We Trust',
+    subtitle:
+      'Professional skincare lines we combine to get the best results for your skin.',
+    visit: 'Visit site',
+    items: [
+      {
+        name: 'Omorovicza',
+        description:
+          'Luxury Hungarian skincare drawing on mineral-rich healing thermal waters.',
+        url: 'https://www.omorovicza.eu/',
+      },
+      {
+        name: 'Mesoestetic',
+        description:
+          'Spanish professional-grade cosmeceuticals for advanced, results-driven skin care.',
+        url: 'https://www.mesoestetic.es/',
+      },
+      {
+        name: 'Esthemax',
+        description:
+          'Professional skincare known for its nourishing hydrojelly masks and active treatments.',
+        url: 'https://esthemaxeuropa.com/',
+      },
+    ],
+  },
   contactPage: {
     eyebrow: 'Visit Us',
     title: 'Contact & Hours',
@@ -438,6 +465,33 @@ const es: typeof en = {
         name: 'Alta Frecuencia',
         description:
           'Una suave corriente de alta frecuencia que purifica, ayuda a calmar la piel con imperfecciones y activa la circulación para una piel radiante.',
+      },
+    ],
+  },
+  products: {
+    eyebrow: 'Con Qué Trabajamos',
+    title: 'Marcas en las que Confiamos',
+    subtitle:
+      'Líneas de cosmética profesional que combinamos para conseguir los mejores resultados para tu piel.',
+    visit: 'Visitar sitio',
+    items: [
+      {
+        name: 'Omorovicza',
+        description:
+          'Cosmética de lujo húngara basada en aguas termales curativas ricas en minerales.',
+        url: 'https://www.omorovicza.eu/',
+      },
+      {
+        name: 'Mesoestetic',
+        description:
+          'Cosmecéuticos profesionales españoles para un cuidado de la piel avanzado y con resultados.',
+        url: 'https://www.mesoestetic.es/',
+      },
+      {
+        name: 'Esthemax',
+        description:
+          'Cosmética profesional conocida por sus mascarillas hydrojelly nutritivas y sus tratamientos activos.',
+        url: 'https://esthemaxeuropa.com/',
       },
     ],
   },
