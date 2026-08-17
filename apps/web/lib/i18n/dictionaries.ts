@@ -276,7 +276,7 @@ const es: typeof en = {
   nav: {
     home: 'Inicio',
     treatments: 'Tratamientos',
-    about: 'Nosotras',
+    about: 'Nosotros',
     contact: 'Contacto',
     account: 'Mi cuenta',
     giftCards: 'Regalos',
@@ -289,7 +289,7 @@ const es: typeof en = {
     hours: 'Horario',
     home: 'Inicio',
     services: 'Servicios',
-    about: 'Sobre nosotras',
+    about: 'Sobre nosotros',
     book: 'Reservar cita',
     monFri: 'Lun - Vie',
     saturday: 'Sábado',
