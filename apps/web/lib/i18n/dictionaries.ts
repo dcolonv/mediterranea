@@ -55,7 +55,7 @@ const en = {
     customName: 'Custom Facial',
     customDuration: '1.5–2 hours',
     customDesc:
-      'We analyze your skin in the studio and design a session around what it needs, from hydration and firming to even tone, fading marks and softening expression lines, for complete, tailored care.',
+      'A fully personalized session. After assessing your skin, we apply whichever of these treatments it needs, from hydration and purifying to peeling, even tone and firmness, even several combined in one visit.',
     focusName: 'Focus Facial',
     focusDuration: '45 minutes',
     focusDesc:
@@ -66,6 +66,44 @@ const en = {
       'A radiofrequency facial that boosts circulation and collagen from within, for firmer, revitalized skin with a natural glow.',
     cta: 'Book Your Facial',
     minutes: 'min',
+  },
+  facialTreatments: {
+    eyebrow: 'The Treatments',
+    title: 'What each facial does',
+    subtitle:
+      'A Focus facial is one of these treatments; a Custom facial blends several, chosen for your skin.',
+    items: [
+      {
+        name: 'Hydration',
+        description:
+          'Replenishes water and nutrients to relieve tightness and leave the skin soft, plump and comfortable.',
+      },
+      {
+        name: 'Purifying',
+        description:
+          'Deeply cleanses and decongests pores to rebalance oily or congested skin.',
+      },
+      {
+        name: 'Brightening',
+        description:
+          'Revives dull skin, restoring luminosity and a fresh, radiant tone.',
+      },
+      {
+        name: 'Even Tone',
+        description:
+          'Softens spots and marks for a more uniform, luminous complexion.',
+      },
+      {
+        name: 'Lines & Firmness',
+        description:
+          'Works on expression lines and laxity to redensify the skin for a firmer, smoother look.',
+      },
+      {
+        name: 'Peeling',
+        description:
+          'A gentle resurfacing that renews the skin’s surface, smoothing texture and reviving glow.',
+      },
+    ],
   },
   about: {
     storyEyebrow: 'Our Story',
@@ -360,7 +398,7 @@ const es: typeof en = {
     customName: 'Facial Personalizado',
     customDuration: '1,5–2 horas',
     customDesc:
-      'Analizamos tu piel en el estudio y diseñamos una sesión según lo que necesita, desde hidratación y reafirmación hasta unificación del tono, atenuar marcas y suavizar las líneas de expresión, para un cuidado completo y a medida.',
+      'Una sesión totalmente personalizada. Tras valorar tu piel, aplicamos los tratamientos que necesita, desde hidratación y purificante hasta peeling, unificación del tono y firmeza, incluso varios combinados en una misma sesión.',
     focusName: 'Facial Focalizado',
     focusDuration: '45 minutos',
     focusDesc:
@@ -371,6 +409,44 @@ const es: typeof en = {
       'Un facial de radiofrecuencia que activa la circulación y el colágeno desde el interior, para una piel más firme, revitalizada y con luminosidad natural.',
     cta: 'Reserva tu cita',
     minutes: 'min',
+  },
+  facialTreatments: {
+    eyebrow: 'Los Tratamientos',
+    title: 'Qué hace cada facial',
+    subtitle:
+      'Un facial Focus es uno de estos tratamientos; un facial Personalizado combina varios, elegidos para tu piel.',
+    items: [
+      {
+        name: 'Hidratación',
+        description:
+          'Repone agua y nutrientes para aliviar la tirantez y dejar la piel suave, jugosa y confortable.',
+      },
+      {
+        name: 'Purificante',
+        description:
+          'Limpia en profundidad y descongestiona los poros para equilibrar la piel grasa o congestionada.',
+      },
+      {
+        name: 'Iluminador',
+        description:
+          'Revitaliza la piel apagada y devuelve luminosidad y un tono fresco y radiante.',
+      },
+      {
+        name: 'Tono Uniforme',
+        description:
+          'Atenúa manchas y marcas para un tono más homogéneo y luminoso.',
+      },
+      {
+        name: 'Líneas & Firmeza',
+        description:
+          'Trabaja las líneas de expresión y la laxitud para redensificar la piel con un efecto más firme y liso.',
+      },
+      {
+        name: 'Peeling',
+        description:
+          'Una renovación suave que regenera la superficie de la piel, alisa la textura y devuelve la luminosidad.',
+      },
+    ],
   },
   about: {
     storyEyebrow: 'Nuestra Historia',

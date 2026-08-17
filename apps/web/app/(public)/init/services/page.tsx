@@ -14,6 +14,7 @@ export const metadata = {
 export default async function ServicesPage() {
   const [services, { dict }] = await Promise.all([getBookingServices(), getServerDictionary()]);
   const s = dict.services;
+  const ft = dict.facialTreatments;
 
   const b = dict.booking;
 
@@ -90,6 +91,32 @@ export default async function ServicesPage() {
               </Link>
             </div>
           ))}
+        </div>
+
+        {/* What each facial does */}
+        <div className="mt-28">
+          <div className="mb-14 text-center">
+            <div className="mb-6 flex items-center justify-center gap-5">
+              <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
+              <span className="text-[11px] uppercase tracking-[0.4em] text-gold font-semibold">
+                {ft.eyebrow}
+              </span>
+              <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />
+            </div>
+            <h2 className="font-serif text-3xl tracking-wide text-white sm:text-4xl">{ft.title}</h2>
+            <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-white-50">{ft.subtitle}</p>
+          </div>
+
+          <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
+            {ft.items.map((item) => (
+              <div key={item.name} className="border-l border-gold/30 pl-5">
+                <h3 className="font-serif text-lg text-white">{item.name}</h3>
+                <p className="mt-2 text-sm font-light leading-relaxed text-white-50">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
