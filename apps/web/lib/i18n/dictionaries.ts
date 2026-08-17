@@ -128,6 +128,11 @@ const en = {
       'The tools and technology behind every Mediterránea facial, combined and tailored to what your skin needs.',
     items: [
       {
+        name: 'INDIBA',
+        description:
+          'Radiofrequency that works from within to boost circulation and collagen, for firmer, revitalized skin.',
+      },
+      {
         name: 'LED Light Therapy',
         description:
           'Targeted red and blue light to calm the skin, even out tone and boost a healthy glow.',
@@ -161,11 +166,6 @@ const en = {
         name: 'High Frequency',
         description:
           'A gentle high-frequency current that purifies, helps calm blemish-prone skin and boosts circulation for a fresh glow.',
-      },
-      {
-        name: 'INDIBA',
-        description:
-          'Radiofrequency that works from within to boost circulation and collagen, for firmer, revitalized skin.',
       },
     ],
   },
@@ -400,6 +400,11 @@ const es: typeof en = {
       'Las herramientas y la tecnología detrás de cada facial de Mediterránea, combinadas y adaptadas a lo que tu piel necesita.',
     items: [
       {
+        name: 'INDIBA',
+        description:
+          'Radiofrecuencia que actúa desde el interior para activar la circulación y el colágeno, para una piel más firme y revitalizada.',
+      },
+      {
         name: 'Fototerapia LED',
         description:
           'Luz roja y azul dirigida para calmar la piel, unificar el tono y potenciar una luminosidad saludable.',
@@ -433,11 +438,6 @@ const es: typeof en = {
         name: 'Alta Frecuencia',
         description:
           'Una suave corriente de alta frecuencia que purifica, ayuda a calmar la piel con imperfecciones y activa la circulación para una piel radiante.',
-      },
-      {
-        name: 'INDIBA',
-        description:
-          'Radiofrecuencia que actúa desde el interior para activar la circulación y el colágeno, para una piel más firme y revitalizada.',
       },
     ],
   },
