@@ -63,7 +63,7 @@ export function AboutSnippet() {
 
               <div className="relative overflow-hidden aspect-[3/4]">
                 <Image
-                  src="https://mediterraneaskinlab.com/_assets/media/67861646c5268c0c091abd657b2b17b3.jpg"
+                  src="/founder.jpg"
                   alt="Dr. Mariana, founder of Mediterránea Face Studio"
                   fill
                   className="object-cover"
