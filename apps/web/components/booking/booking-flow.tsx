@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button, Input, Textarea } from '@/components/ui';
@@ -8,7 +8,7 @@ import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
 import { useLang } from '@/components/i18n/language-provider';
 import { serviceName } from '@/lib/i18n/service';
-import { MonthCalendar } from './month-calendar';
+import { MonthCalendar, firstSelectableDate } from './month-calendar';
 import type { WorkingHours } from '@mediterranea/shared/types';
 import {
   getBookingStaff,
@@ -168,14 +168,14 @@ export function BookingFlow({
     setStep('time');
   }
 
-  async function selectDate(d: string) {
-    if (!service) return;
+  async function selectDate(d: string, svc: PublicService | null = service) {
+    if (!svc) return;
     setDate(d);
     setTime('');
     setDaySlots(null);
     setLoadingSlots(true);
     setError(null);
-    const res = await getDaySlots(service.id, d);
+    const res = await getDaySlots(svc.id, d);
     setLoadingSlots(false);
     if (!res.success) {
       setError(res.error);
@@ -184,6 +184,16 @@ export function BookingFlow({
     setDurationMinutes(res.durationMinutes);
     setDaySlots(res.slots);
   }
+
+  // Default the calendar to today (or the next open day) as soon as we reach the date step.
+  const defaultDate = useMemo(
+    () => firstSelectableDate(businessHours, maxAdvanceDays),
+    [businessHours, maxAdvanceDays]
+  );
+  useEffect(() => {
+    if (step === 'time' && service && !date) void selectDate(defaultDate, service);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, service, date]);
 
   async function confirm() {
     if (!service || !time) return;
@@ -472,7 +482,7 @@ export function BookingFlow({
                           className={`border px-3 py-2 text-sm transition-colors ${
                             s.available
                               ? 'border-white-10 text-white-70 hover:border-gold/40 hover:text-white'
-                              : 'cursor-not-allowed border-white-10/50 text-white-20 line-through'
+                              : 'cursor-not-allowed border-white-10/50 text-white-30 line-through'
                           }`}
                         >
                           {s.time}

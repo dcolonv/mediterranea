@@ -24,6 +24,18 @@ function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/** The soonest bookable date: today if the studio is open, else the next open day in range. */
+export function firstSelectableDate(businessHours: WorkingHours, maxAdvanceDays: number): string {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let i = 0; i <= maxAdvanceDays; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    if (businessHours?.[WEEKDAY_KEYS[d.getDay()]]) return ymd(d);
+  }
+  return ymd(today);
+}
+
 /**
  * A month grid for picking a booking date. Days that are in the past, beyond the
  * booking window, or on a closed weekday are disabled. Monday-first, localized.
@@ -60,7 +72,10 @@ export function MonthCalendar({
   }, [today, maxAdvanceDays]);
   const maxStr = ymd(maxDate);
 
-  const [view, setView] = useState(() => ({ year: today.getFullYear(), month: today.getMonth() }));
+  const [view, setView] = useState(() => {
+    const init = selectedDate ? new Date(`${selectedDate}T00:00:00`) : today;
+    return { year: init.getFullYear(), month: init.getMonth() };
+  });
 
   const monthTitle = useMemo(() => {
     const d = new Date(view.year, view.month, 1);
@@ -149,7 +164,7 @@ export function MonthCalendar({
                   ? 'border border-gold bg-gold/15 text-white'
                   : selectable
                     ? 'border border-transparent text-white-70 hover:border-gold/40 hover:text-white'
-                    : 'cursor-not-allowed text-white-20'
+                    : 'cursor-not-allowed text-white-30'
               }`}
             >
               {d.getDate()}
