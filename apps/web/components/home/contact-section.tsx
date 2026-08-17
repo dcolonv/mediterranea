@@ -130,11 +130,7 @@ export function ContactSection() {
                   {dict.contactSection.monFri}: {BUSINESS_HOURS.monday?.open} -{' '}
                   {BUSINESS_HOURS.monday?.close}
                 </p>
-                <p>
-                  {dict.contactSection.saturday}: {BUSINESS_HOURS.saturday?.open} -{' '}
-                  {BUSINESS_HOURS.saturday?.close}
-                </p>
-                <p>{dict.contactSection.sunday}: {dict.contactSection.closed}</p>
+                <p>{dict.contactSection.satSun}: {dict.contactSection.closed}</p>
               </div>
             </div>
           </ScrollReveal>

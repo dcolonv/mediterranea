@@ -3,6 +3,7 @@ import type { Locale } from './config';
 const en = {
   nav: {
     home: 'Home',
+    services: 'Services',
     treatments: 'Treatments',
     about: 'About',
     contact: 'Contact',
@@ -16,12 +17,13 @@ const en = {
     contact: 'Contact',
     hours: 'Hours',
     home: 'Home',
-    services: 'Services',
+    services: 'Treatments',
     about: 'About Us',
     book: 'Book Appointment',
     monFri: 'Mon - Fri',
     saturday: 'Saturday',
     sunday: 'Sunday',
+    satSun: 'Sat - Sun',
     closed: 'Closed',
     rights: (year: number) => `© ${year} Mediterránea Face Studio. All rights reserved.`,
   },
@@ -53,17 +55,55 @@ const en = {
     customName: 'Custom Facial',
     customDuration: '1.5–2 hours',
     customDesc:
-      'We analyze your skin in the studio and design a session around what it needs, from hydration and firming to even tone, fading marks and softening expression lines, for complete, tailored care.',
+      'A fully personalized session. After assessing your skin, we apply whichever of these treatments it needs, from hydration, purifying and peeling to even tone and firmness, often combining several in a single visit.',
     focusName: 'Focus Facial',
     focusDuration: '45 minutes',
     focusDesc:
-      'A single, targeted treatment for when you know exactly what your skin needs, whether peeling, dermapen or hydration.',
+      'A single, targeted treatment focused on one concern, such as peeling, dermapen or hydration. Not sure which you need? We’ll help you choose.',
     indibaName: 'INDIBA Facial',
     indibaDuration: '45–60 minutes',
     indibaDesc:
       'A radiofrequency facial that boosts circulation and collagen from within, for firmer, revitalized skin with a natural glow.',
     cta: 'Book Your Facial',
     minutes: 'min',
+  },
+  facialTreatments: {
+    eyebrow: 'The Treatments',
+    title: 'What each facial does',
+    subtitle:
+      'A Focus facial is one of these treatments; a Custom facial blends several, chosen for your skin.',
+    items: [
+      {
+        name: 'Hydration',
+        description:
+          'Replenishes water and nutrients to relieve tightness and leave the skin soft, plump and comfortable.',
+      },
+      {
+        name: 'Purifying',
+        description:
+          'Deeply cleanses and decongests pores to rebalance oily or congested skin.',
+      },
+      {
+        name: 'Brightening',
+        description:
+          'Revives dull skin, restoring luminosity and a fresh, radiant tone.',
+      },
+      {
+        name: 'Even Tone',
+        description:
+          'Softens spots and marks for a more uniform, luminous complexion.',
+      },
+      {
+        name: 'Lines & Firmness',
+        description:
+          'Works on expression lines and laxity to redensify the skin for a firmer, smoother look.',
+      },
+      {
+        name: 'Peeling',
+        description:
+          'A gentle resurfacing that renews the skin’s surface, smoothing texture and reviving glow.',
+      },
+    ],
   },
   about: {
     storyEyebrow: 'Our Story',
@@ -102,6 +142,7 @@ const en = {
     monFri: 'Mon - Fri',
     saturday: 'Saturday',
     sunday: 'Sunday',
+    satSun: 'Sat - Sun',
     closed: 'Closed',
   },
   treatments: {
@@ -118,6 +159,81 @@ const en = {
   treatmentDetail: {
     back: 'All treatments',
     book: 'Book this treatment',
+  },
+  technology: {
+    eyebrow: 'What We Use',
+    title: 'Treatment Technology',
+    subtitle:
+      'The tools and technology behind every Mediterránea facial, combined and tailored to what your skin needs.',
+    items: [
+      {
+        name: 'INDIBA',
+        description:
+          'Radiofrequency that works from within to boost circulation and collagen, for firmer, revitalized skin.',
+      },
+      {
+        name: 'LED Light Therapy',
+        description:
+          'Targeted red and blue light to calm the skin, even out tone and boost a healthy glow.',
+      },
+      {
+        name: 'Diamond Tip Microdermabrasion',
+        description:
+          'Gentle diamond-tip exfoliation that lifts away dead cells and refines texture for smoother, brighter skin.',
+      },
+      {
+        name: 'Zemits Hot & Cold Galvanic Therapy',
+        description:
+          'A warm phase preps the skin to absorb active ingredients, while the cold phase soothes, calms and tightens.',
+      },
+      {
+        name: 'Microneedling',
+        description:
+          'Micro-stimulation that encourages the skin’s natural renewal and helps serums penetrate for firmer, refined skin.',
+      },
+      {
+        name: 'Zemits Sonosilk Ultrasonic Skin Scrubber',
+        description:
+          'Ultrasonic vibrations for a deep yet delicate cleanse, lifting away impurities and dead skin.',
+      },
+      {
+        name: 'Zemits Elastistrom Microcurrent Gloves',
+        description:
+          'Low-level microcurrent that tones and lifts the facial muscles for a firmer, more defined contour.',
+      },
+      {
+        name: 'High Frequency',
+        description:
+          'A gentle high-frequency current that purifies, helps calm blemish-prone skin and boosts circulation for a fresh glow.',
+      },
+    ],
+  },
+  products: {
+    eyebrow: 'Products We Work With',
+    title: 'Brands We Trust',
+    subtitle:
+      'Professional skincare lines we combine to get the best results for your skin.',
+    visit: 'Visit site',
+    items: [
+      {
+        name: 'Omorovicza',
+        description:
+          'Luxury Hungarian skincare drawing on mineral-rich healing thermal waters.',
+        url: 'https://www.omorovicza.eu/',
+      },
+      {
+        name: 'Mesoestetic',
+        description:
+          'Spanish professional-grade cosmeceuticals for advanced, results-driven skin care.',
+        url: 'https://www.mesoestetic.es/',
+      },
+      {
+        name: 'Esthemax',
+        description:
+          'Professional skincare known for its nourishing hydrojelly masks and active treatments.',
+        url: 'https://esthemaxeuropa.com/',
+      },
+    ],
   },
   contactPage: {
     eyebrow: 'Visit Us',
@@ -143,7 +259,10 @@ const en = {
     stepPractitioner: 'Practitioner',
     stepTime: 'Date & time',
     stepDetails: 'Your details',
-    chooseTreatment: 'Choose a treatment',
+    chooseTreatment: 'Choose your facial',
+    chooseFocus: 'Choose a focus treatment',
+    chooseIndiba: 'Choose an INDIBA option',
+    from: 'from',
     noTreatments: 'No treatments are available to book right now.',
     choosePractitioner: 'Choose a practitioner',
     forService: 'For',
@@ -155,6 +274,11 @@ const en = {
     findTimes: 'Find times',
     finding: 'Finding…',
     noTimes: 'No open times on this date. Try another day.',
+    selectDatePrompt: 'Select a date to see available times.',
+    slotAvailable: 'Available',
+    slotBooked: 'Booked',
+    prevMonth: 'Previous month',
+    nextMonth: 'Next month',
     back: 'Back',
     yourDetails: 'Your details',
     fullName: 'Full name',
@@ -222,8 +346,9 @@ const en = {
 const es: typeof en = {
   nav: {
     home: 'Inicio',
+    services: 'Servicios',
     treatments: 'Tratamientos',
-    about: 'Nosotras',
+    about: 'Nosotros',
     contact: 'Contacto',
     account: 'Mi cuenta',
     giftCards: 'Regalos',
@@ -235,12 +360,13 @@ const es: typeof en = {
     contact: 'Contacto',
     hours: 'Horario',
     home: 'Inicio',
-    services: 'Servicios',
-    about: 'Sobre nosotras',
+    services: 'Tratamientos',
+    about: 'Sobre nosotros',
     book: 'Reservar cita',
     monFri: 'Lun - Vie',
     saturday: 'Sábado',
     sunday: 'Domingo',
+    satSun: 'Sáb - Dom',
     closed: 'Cerrado',
     rights: (year: number) => `© ${year} Mediterránea Face Studio. Todos los derechos reservados.`,
   },
@@ -272,17 +398,55 @@ const es: typeof en = {
     customName: 'Facial Personalizado',
     customDuration: '1,5–2 horas',
     customDesc:
-      'Analizamos tu piel en el estudio y diseñamos una sesión según lo que necesita, desde hidratación y reafirmación hasta unificación del tono, atenuar marcas y suavizar las líneas de expresión, para un cuidado completo y a medida.',
+      'Una sesión totalmente personalizada. Tras valorar tu piel, aplicamos los tratamientos que necesita, desde hidratación y purificante hasta peeling, unificación del tono y firmeza, incluso varios combinados en una misma sesión.',
     focusName: 'Facial Focalizado',
     focusDuration: '45 minutos',
     focusDesc:
-      'Un tratamiento único y focalizado para cuando sabes exactamente qué necesita tu piel, ya sea peeling, dermapen o hidratación.',
+      'Un tratamiento único y focalizado en una necesidad concreta, como peeling, dermapen o hidratación. ¿No sabes cuál necesitas? Te ayudamos a elegir.',
     indibaName: 'Facial INDIBA',
     indibaDuration: '45–60 minutos',
     indibaDesc:
       'Un facial de radiofrecuencia que activa la circulación y el colágeno desde el interior, para una piel más firme, revitalizada y con luminosidad natural.',
     cta: 'Reserva tu cita',
     minutes: 'min',
+  },
+  facialTreatments: {
+    eyebrow: 'Los Tratamientos',
+    title: 'Qué hace cada facial',
+    subtitle:
+      'Un facial Focus es uno de estos tratamientos; un facial Personalizado combina varios, elegidos para tu piel.',
+    items: [
+      {
+        name: 'Hidratación',
+        description:
+          'Repone agua y nutrientes para aliviar la tirantez y dejar la piel suave, jugosa y confortable.',
+      },
+      {
+        name: 'Purificante',
+        description:
+          'Limpia en profundidad y descongestiona los poros para equilibrar la piel grasa o congestionada.',
+      },
+      {
+        name: 'Iluminador',
+        description:
+          'Revitaliza la piel apagada y devuelve luminosidad y un tono fresco y radiante.',
+      },
+      {
+        name: 'Tono Uniforme',
+        description:
+          'Atenúa manchas y marcas para un tono más homogéneo y luminoso.',
+      },
+      {
+        name: 'Líneas & Firmeza',
+        description:
+          'Trabaja las líneas de expresión y la laxitud para redensificar la piel con un efecto más firme y liso.',
+      },
+      {
+        name: 'Peeling',
+        description:
+          'Una renovación suave que regenera la superficie de la piel, alisa la textura y devuelve la luminosidad.',
+      },
+    ],
   },
   about: {
     storyEyebrow: 'Nuestra Historia',
@@ -321,6 +485,7 @@ const es: typeof en = {
     monFri: 'Lun - Vie',
     saturday: 'Sábado',
     sunday: 'Domingo',
+    satSun: 'Sáb - Dom',
     closed: 'Cerrado',
   },
   treatments: {
@@ -337,6 +502,81 @@ const es: typeof en = {
   treatmentDetail: {
     back: 'Todos los tratamientos',
     book: 'Reservar este tratamiento',
+  },
+  technology: {
+    eyebrow: 'Lo Que Usamos',
+    title: 'Tecnología de Tratamiento',
+    subtitle:
+      'Las herramientas y la tecnología detrás de cada facial de Mediterránea, combinadas y adaptadas a lo que tu piel necesita.',
+    items: [
+      {
+        name: 'INDIBA',
+        description:
+          'Radiofrecuencia que actúa desde el interior para activar la circulación y el colágeno, para una piel más firme y revitalizada.',
+      },
+      {
+        name: 'Fototerapia LED',
+        description:
+          'Luz roja y azul dirigida para calmar la piel, unificar el tono y potenciar una luminosidad saludable.',
+      },
+      {
+        name: 'Microdermoabrasión con Punta de Diamante',
+        description:
+          'Exfoliación suave con punta de diamante que retira las células muertas y afina la textura para una piel más lisa y luminosa.',
+      },
+      {
+        name: 'Terapia Galvánica Frío-Calor Zemits',
+        description:
+          'Una fase caliente prepara la piel para absorber los principios activos, y la fase fría calma, descongestiona y tensa.',
+      },
+      {
+        name: 'Microneedling',
+        description:
+          'Microestimulación que favorece la renovación natural de la piel y ayuda a que los sérums penetren para una piel más firme y afinada.',
+      },
+      {
+        name: 'Zemits Sonosilk — Espátula Ultrasónica',
+        description:
+          'Vibraciones ultrasónicas para una limpieza profunda y delicada que elimina impurezas y células muertas.',
+      },
+      {
+        name: 'Guantes de Microcorriente Zemits Elastistrom',
+        description:
+          'Microcorriente de baja intensidad que tonifica y eleva los músculos faciales para un contorno más firme y definido.',
+      },
+      {
+        name: 'Alta Frecuencia',
+        description:
+          'Una suave corriente de alta frecuencia que purifica, ayuda a calmar la piel con imperfecciones y activa la circulación para una piel radiante.',
+      },
+    ],
+  },
+  products: {
+    eyebrow: 'Con Qué Trabajamos',
+    title: 'Marcas en las que Confiamos',
+    subtitle:
+      'Líneas de cosmética profesional que combinamos para conseguir los mejores resultados para tu piel.',
+    visit: 'Visitar sitio',
+    items: [
+      {
+        name: 'Omorovicza',
+        description:
+          'Cosmética de lujo húngara basada en aguas termales curativas ricas en minerales.',
+        url: 'https://www.omorovicza.eu/',
+      },
+      {
+        name: 'Mesoestetic',
+        description:
+          'Cosmecéuticos profesionales españoles para un cuidado de la piel avanzado y con resultados.',
+        url: 'https://www.mesoestetic.es/',
+      },
+      {
+        name: 'Esthemax',
+        description:
+          'Cosmética profesional conocida por sus mascarillas hydrojelly nutritivas y sus tratamientos activos.',
+        url: 'https://esthemaxeuropa.com/',
+      },
+    ],
   },
   contactPage: {
     eyebrow: 'Visítanos',
@@ -362,7 +602,10 @@ const es: typeof en = {
     stepPractitioner: 'Especialista',
     stepTime: 'Fecha y hora',
     stepDetails: 'Tus datos',
-    chooseTreatment: 'Elige un tratamiento',
+    chooseTreatment: 'Elige tu facial',
+    chooseFocus: 'Elige un tratamiento focalizado',
+    chooseIndiba: 'Elige una opción INDIBA',
+    from: 'desde',
     noTreatments: 'No hay tratamientos disponibles para reservar en este momento.',
     choosePractitioner: 'Elige una especialista',
     forService: 'Para',
@@ -374,6 +617,11 @@ const es: typeof en = {
     findTimes: 'Buscar horarios',
     finding: 'Buscando…',
     noTimes: 'No hay horarios disponibles esta fecha. Prueba otro día.',
+    selectDatePrompt: 'Selecciona una fecha para ver los horarios disponibles.',
+    slotAvailable: 'Disponible',
+    slotBooked: 'Reservado',
+    prevMonth: 'Mes anterior',
+    nextMonth: 'Mes siguiente',
     back: 'Atrás',
     yourDetails: 'Tus datos',
     fullName: 'Nombre completo',

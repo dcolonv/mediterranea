@@ -22,6 +22,7 @@ interface FormState {
   description: string;
   descriptionEs: string;
   category: ServiceCategory;
+  bookingGroup: string;
   durationMinutes: string;
   price: string;
   roomType: string;
@@ -36,6 +37,7 @@ const EMPTY_FORM: FormState = {
   description: '',
   descriptionEs: '',
   category: 'facial',
+  bookingGroup: '',
   durationMinutes: '60',
   price: '0',
   roomType: '',
@@ -99,6 +101,7 @@ export function BackofficeServices() {
       description: svc.description,
       descriptionEs: svc.descriptionEs ?? '',
       category: svc.category,
+      bookingGroup: svc.bookingGroup ?? '',
       durationMinutes: String(svc.durationMinutes),
       price: String(svc.price),
       roomType: svc.roomType ?? '',
@@ -147,6 +150,7 @@ export function BackofficeServices() {
       description: form.description.trim(),
       descriptionEs: form.descriptionEs.trim(),
       category: form.category,
+      bookingGroup: form.bookingGroup as ServiceFormData['bookingGroup'],
       durationMinutes: duration,
       price,
       roomType: form.roomType,
@@ -274,6 +278,19 @@ export function BackofficeServices() {
               ]}
             />
           </div>
+
+          <Select
+            id="svc-booking-group"
+            label="Booking group (public booking page)"
+            value={form.bookingGroup}
+            onChange={(e) => setForm({ ...form, bookingGroup: e.target.value })}
+            options={[
+              { value: '', label: 'Not on booking page' },
+              { value: 'custom', label: 'Custom — books directly' },
+              { value: 'focus', label: 'Focus — shown in the Focus submenu' },
+              { value: 'indiba', label: 'INDIBA — shown in the INDIBA submenu' },
+            ]}
+          />
 
           <div className="grid grid-cols-3 gap-4">
             <Input

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Marcellus, Jost } from 'next/font/google';
 import { AuthProvider } from '@/components/providers';
+import { AnalyticsTracker } from '@/components/analytics/analytics-tracker';
 import './globals.css';
 
 const marcellus = Marcellus({
@@ -31,6 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${marcellus.variable} ${jost.variable}`}>
       <body className={`${jost.className} antialiased`}>
+        <AnalyticsTracker />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

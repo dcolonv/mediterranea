@@ -13,18 +13,23 @@ export const metadata = {
 export default async function BookPage({
   searchParams,
 }: {
-  searchParams: Promise<{ service?: string }>;
+  searchParams: Promise<{ service?: string; group?: string }>;
 }) {
-  const { service: serviceSlug } = await searchParams;
+  const { service: serviceSlug, group } = await searchParams;
   const [services, policy, customer, { dict }] = await Promise.all([
     getBookingServices(),
     getPublicPolicy(),
     getCurrentCustomer(),
     getServerDictionary(),
   ]);
+  // A specific service slug, or `?group=custom` resolving to the single Custom Facial.
   const initialService = serviceSlug
     ? (services.find((s) => s.slug === serviceSlug) ?? null)
-    : null;
+    : group === 'custom'
+      ? (services.find((s) => s.bookingGroup === 'custom') ?? null)
+      : null;
+  // Focus / INDIBA open straight into their submenu.
+  const startGroup = group === 'focus' || group === 'indiba' ? group : undefined;
   const prefill = customer
     ? { name: customer.name, email: customer.email, phone: customer.phone }
     : null;
@@ -46,7 +51,10 @@ export default async function BookPage({
         <BookingFlow
           services={services}
           initialService={initialService}
+          startGroup={startGroup}
           policyText={policy.policyText}
+          businessHours={policy.businessHours}
+          maxAdvanceDays={policy.maxAdvanceDays}
           prefill={prefill}
         />
       </div>

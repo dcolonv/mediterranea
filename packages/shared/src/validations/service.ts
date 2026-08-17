@@ -10,6 +10,8 @@ export const serviceSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   descriptionEs: z.string().optional().default(''),
   category: z.enum(['facial', 'treatment']),
+  /** Public booking-flow group; empty string = ungrouped (not on booking page). */
+  bookingGroup: z.enum(['custom', 'focus', 'indiba', '']).optional().default(''),
   durationMinutes: z.number().int().min(1, 'Duration must be at least 1 minute'),
   price: z.number().min(0, 'Price must be zero or greater'),
   /** Room type this treatment requires; empty string = any active room. */
