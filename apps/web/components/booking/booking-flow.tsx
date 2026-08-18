@@ -237,6 +237,16 @@ export function BookingFlow({
     else setStep('type');
   }
 
+  // A single top-left Back control, driven by the current step.
+  const isDeepLinkEntry = Boolean(initialService) && (step === 'time' || step === 'practitioner');
+  const canGoBack = step !== 'type' && step !== 'done' && !isDeepLinkEntry;
+  function goBack() {
+    if (step === 'sub') setStep('type');
+    else if (step === 'practitioner') setStep(group && group !== 'custom' ? 'sub' : 'type');
+    else if (step === 'time') backFromTime();
+    else if (step === 'details') setStep('time');
+  }
+
   function resetToStart() {
     setService(initialService);
     setGroup(initialGroup);
@@ -315,6 +325,14 @@ export function BookingFlow({
       </div>
 
       <div className="border border-white-10 bg-dark-800/50 p-8 sm:p-12">
+        {canGoBack && (
+          <button
+            onClick={goBack}
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium tracking-wide text-white-70 transition-colors hover:text-gold"
+          >
+            <span aria-hidden className="text-base leading-none">‹</span> {b.back}
+          </button>
+        )}
         {error && <p className="mb-6 text-sm text-red-400">{error}</p>}
 
         {/* Step: choose facial type (Custom / Focus / INDIBA) */}
@@ -390,11 +408,6 @@ export function BookingFlow({
                 </button>
               ))}
             </div>
-            <div className="mt-8">
-              <Button variant="ghost" size="sm" onClick={() => setStep('type')}>
-                ‹ {b.back}
-              </Button>
-            </div>
           </div>
         )}
 
@@ -423,17 +436,6 @@ export function BookingFlow({
                   <span className="mt-1 block text-xs text-white-30">{s.role}</span>
                 </button>
               ))}
-            </div>
-            <div className="mt-8">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStep(group && group !== 'custom' ? 'sub' : 'type')}
-                disabled={Boolean(initialService)}
-                className={initialService ? 'opacity-0 pointer-events-none' : ''}
-              >
-                ‹ {b.back}
-              </Button>
             </div>
           </div>
         )}
@@ -497,18 +499,6 @@ export function BookingFlow({
                 )}
               </div>
             </div>
-
-            <div className="mt-8">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={backFromTime}
-                disabled={Boolean(initialService)}
-                className={initialService ? 'opacity-0 pointer-events-none' : ''}
-              >
-                ‹ {b.back}
-              </Button>
-            </div>
           </div>
         )}
 
@@ -541,12 +531,9 @@ export function BookingFlow({
               <p className="mt-6 text-xs leading-relaxed text-white-30">{policyText}</p>
             )}
 
-            <div className="mt-8 flex items-center gap-3">
+            <div className="mt-8">
               <Button variant="elegant" onClick={confirm} disabled={submitting}>
                 {submitting ? b.booking : b.confirm}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setStep('time')} disabled={submitting}>
-                ‹ {b.back}
               </Button>
             </div>
           </div>
