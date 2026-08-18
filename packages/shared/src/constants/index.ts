@@ -90,6 +90,9 @@ export const TIME_SLOTS = [
  * cool-down/preparation time between appointments, so no extra buffer is added.
  * The overlap/block length still comes from each service's real duration.
  */
+/** Earliest date the studio accepts bookings for (opening day). 'YYYY-MM-DD'. */
+export const BOOKING_OPENS_DATE = '2026-09-08';
+
 export const BOOKING_SLOT_TIMES: Record<'custom' | 'focus' | 'indiba', string[]> = {
   custom: ['10:00', '12:00', '14:00', '16:00', '18:00'],
   focus: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],

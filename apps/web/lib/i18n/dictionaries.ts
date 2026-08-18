@@ -38,6 +38,8 @@ const en = {
     minutes: 'Minutes',
     seconds: 'Seconds',
     open: 'We’re open. Welcome.',
+    preBook: 'Pre-book your appointment',
+    preBookNote: 'Reserve your first visit from opening day.',
   },
   hero: {
     eyebrow: 'Personalized Facial Treatments',
@@ -381,6 +383,8 @@ const es: typeof en = {
     minutes: 'Minutos',
     seconds: 'Segundos',
     open: 'Ya estamos abiertos. Te esperamos.',
+    preBook: 'Reserva tu cita anticipada',
+    preBookNote: 'Reserva tu primera visita desde el día de apertura.',
   },
   hero: {
     eyebrow: 'Tratamientos Faciales Personalizados',

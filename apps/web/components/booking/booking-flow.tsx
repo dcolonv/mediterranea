@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button, Input, Textarea } from '@/components/ui';
 import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
-import { CONTACT_INFO } from '@mediterranea/shared/constants';
+import { CONTACT_INFO, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import { useLang } from '@/components/i18n/language-provider';
 import { serviceName } from '@/lib/i18n/service';
 import { MonthCalendar, firstSelectableDate } from './month-calendar';
@@ -192,7 +192,7 @@ export function BookingFlow({
 
   // Default the calendar to today (or the next open day) as soon as we reach the date step.
   const defaultDate = useMemo(
-    () => firstSelectableDate(businessHours, maxAdvanceDays),
+    () => firstSelectableDate(businessHours, maxAdvanceDays, BOOKING_OPENS_DATE),
     [businessHours, maxAdvanceDays]
   );
   useEffect(() => {
@@ -454,6 +454,7 @@ export function BookingFlow({
               <MonthCalendar
                 businessHours={businessHours}
                 maxAdvanceDays={maxAdvanceDays}
+                minDate={BOOKING_OPENS_DATE}
                 locale={locale}
                 selectedDate={date}
                 onSelectDate={selectDate}

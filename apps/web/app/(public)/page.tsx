@@ -1,8 +1,10 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
 import { WhatsAppLink } from '@/components/whatsapp-link';
 import { CountdownTimer } from '@/components/home/countdown-timer';
 import { LanguageToggle } from '@/components/i18n/language-toggle';
+import { Button } from '@/components/ui';
 import { getServerDictionary } from '@/lib/i18n/server';
 
 export default async function ComingSoonPage() {
@@ -65,6 +67,16 @@ export default async function ComingSoonPage() {
         {/* Countdown */}
         <div className="mt-12">
           <CountdownTimer />
+        </div>
+
+        {/* Pre-book CTA */}
+        <div className="mt-12">
+          <Link href="/book">
+            <Button variant="elegant" size="lg">
+              {dict.comingSoon.preBook}
+            </Button>
+          </Link>
+          <p className="mt-4 text-xs tracking-wide text-white-30">{dict.comingSoon.preBookNote}</p>
         </div>
 
         {/* Divider */}

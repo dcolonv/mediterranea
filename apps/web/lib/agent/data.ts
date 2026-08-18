@@ -9,7 +9,7 @@
 import { Timestamp, type DocumentSnapshot } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { upsertCustomerForAppointment } from '@/actions/customers';
-import { DEFAULT_STUDIO_SETTINGS, BOOKING_SLOT_TIMES } from '@mediterranea/shared/constants';
+import { DEFAULT_STUDIO_SETTINGS, BOOKING_SLOT_TIMES, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import {
   timeToMinutes,
   weekdayOf,
@@ -206,10 +206,12 @@ async function evaluateDay(input: {
   };
   const empty = { ...base, slots: [] as FixedSlot[] };
 
-  // Booking window: no past dates, no dates beyond maxAdvanceDays, studio open.
+  // Booking window: not before the opening date (or today, whichever is later),
+  // no dates beyond maxAdvanceDays, studio open.
   const now = malagaNow();
+  const earliestDate = now.date > BOOKING_OPENS_DATE ? now.date : BOOKING_OPENS_DATE;
   const maxDate = addDaysStr(now.date, settings.booking.maxAdvanceDays);
-  if (input.date < now.date || input.date > maxDate) return empty;
+  if (input.date < earliestDate || input.date > maxDate) return empty;
 
   const bh = settings.businessHours?.[weekday] ?? null;
   if (!bh) return empty;

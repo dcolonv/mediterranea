@@ -32,21 +32,21 @@ export default async function ServicesPage() {
       duration: s.customDuration,
       description: s.customDesc,
       price: customPrice === null ? '' : formatPrice(customPrice),
-      href: '/init/book?group=custom',
+      href: '/book?group=custom',
     },
     {
       name: s.focusName,
       duration: s.focusDuration,
       description: s.focusDesc,
       price: focusPrice === null ? '' : `${b.from} ${formatPrice(focusPrice)}`,
-      href: '/init/book?group=focus',
+      href: '/book?group=focus',
     },
     {
       name: s.indibaName,
       duration: s.indibaDuration,
       description: s.indibaDesc,
       price: indibaPrice === null ? '' : `${b.from} ${formatPrice(indibaPrice)}`,
-      href: '/init/book?group=indiba',
+      href: '/book?group=indiba',
     },
   ];
 

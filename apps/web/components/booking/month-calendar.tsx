@@ -25,16 +25,21 @@ function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** The soonest bookable date: today if the studio is open, else the next open day in range. */
-export function firstSelectableDate(businessHours: WorkingHours, maxAdvanceDays: number): string {
+/** The soonest bookable date: the first open day that is today-or-later and ≥ minDate. */
+export function firstSelectableDate(
+  businessHours: WorkingHours,
+  maxAdvanceDays: number,
+  minDate = ''
+): string {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   for (let i = 0; i <= maxAdvanceDays; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
-    if (businessHours?.[WEEKDAY_KEYS[d.getDay()]]) return ymd(d);
+    const ds = ymd(d);
+    if (ds >= minDate && businessHours?.[WEEKDAY_KEYS[d.getDay()]]) return ds;
   }
-  return ymd(today);
+  return minDate || ymd(today);
 }
 
 /**
@@ -44,6 +49,7 @@ export function firstSelectableDate(businessHours: WorkingHours, maxAdvanceDays:
 export function MonthCalendar({
   businessHours,
   maxAdvanceDays,
+  minDate = '',
   locale,
   selectedDate,
   onSelectDate,
@@ -52,6 +58,8 @@ export function MonthCalendar({
 }: {
   businessHours: WorkingHours;
   maxAdvanceDays: number;
+  /** Earliest selectable date (e.g. the opening date), 'YYYY-MM-DD'. */
+  minDate?: string;
   locale: 'es' | 'en';
   selectedDate: string;
   onSelectDate: (date: string) => void;
@@ -66,6 +74,7 @@ export function MonthCalendar({
     return d;
   }, []);
   const todayStr = ymd(today);
+  const floorStr = minDate && minDate > todayStr ? minDate : todayStr;
   const maxDate = useMemo(() => {
     const d = new Date(today);
     d.setDate(d.getDate() + maxAdvanceDays);
@@ -100,7 +109,10 @@ export function MonthCalendar({
   ];
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const canPrev = view.year > today.getFullYear() || view.month > today.getMonth();
+  const floorDate = new Date(`${floorStr}T00:00:00`);
+  const canPrev =
+    view.year > floorDate.getFullYear() ||
+    (view.year === floorDate.getFullYear() && view.month > floorDate.getMonth());
   const canNext =
     view.year < maxDate.getFullYear() ||
     (view.year === maxDate.getFullYear() && view.month < maxDate.getMonth());
@@ -152,7 +164,7 @@ export function MonthCalendar({
         {cells.map((d, i) => {
           if (!d) return <span key={i} />;
           const ds = ymd(d);
-          const selectable = ds >= todayStr && ds <= maxStr && isOpenDay(d);
+          const selectable = ds >= floorStr && ds <= maxStr && isOpenDay(d);
           const isSelected = ds === selectedDate;
           return (
             <button
