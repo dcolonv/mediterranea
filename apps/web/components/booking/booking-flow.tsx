@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { LuChevronLeft } from 'react-icons/lu';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button, Input, Textarea } from '@/components/ui';
@@ -330,7 +331,7 @@ export function BookingFlow({
             onClick={goBack}
             className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium tracking-wide text-white-70 transition-colors hover:text-gold"
           >
-            <span aria-hidden className="text-base leading-none">‹</span> {b.back}
+            <LuChevronLeft className="h-4 w-4" aria-hidden /> {b.back}
           </button>
         )}
         {error && <p className="mb-6 text-sm text-red-400">{error}</p>}

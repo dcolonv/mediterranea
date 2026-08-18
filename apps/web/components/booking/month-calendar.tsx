@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 import type { WorkingHours, Weekday } from '@mediterranea/shared/types';
 
 const WEEKDAY_KEYS: Weekday[] = [
@@ -125,7 +126,7 @@ export function MonthCalendar({
           aria-label={prevLabel}
           className="flex h-9 w-9 items-center justify-center border border-white-10 text-white-70 transition-colors hover:border-gold/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white-10"
         >
-          ‹
+          <LuChevronLeft className="h-4 w-4" aria-hidden />
         </button>
         <span className="font-serif text-lg tracking-wide text-white">{monthTitle}</span>
         <button
@@ -135,7 +136,7 @@ export function MonthCalendar({
           aria-label={nextLabel}
           className="flex h-9 w-9 items-center justify-center border border-white-10 text-white-70 transition-colors hover:border-gold/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white-10"
         >
-          ›
+          <LuChevronRight className="h-4 w-4" aria-hidden />
         </button>
       </div>
 
