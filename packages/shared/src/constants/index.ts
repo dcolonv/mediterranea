@@ -102,6 +102,7 @@ export const APPOINTMENT_STATUSES = {
   'checked-in': { label: 'Checked In', color: 'bg-purple-100 text-purple-800' },
   completed: { label: 'Completed', color: 'bg-green-100 text-green-800' },
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800' },
+  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800' },
   'no-show': { label: 'No Show', color: 'bg-gray-100 text-gray-800' },
 } as const;
 

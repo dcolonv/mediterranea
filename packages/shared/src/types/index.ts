@@ -82,6 +82,7 @@ export type AppointmentStatus =
   | 'checked-in'
   | 'completed'
   | 'cancelled'
+  | 'rejected'
   | 'no-show';
 
 export interface Appointment {

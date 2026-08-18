@@ -67,6 +67,7 @@ export const STATUS_STYLES: Record<AppointmentStatus, StatusStyle> = {
   'checked-in': { label: 'Checked In', color: '#7a4fa3', tint: 'rgba(122,79,163,0.14)' },
   completed: { label: 'Completed', color: '#4a5d8a', tint: 'rgba(74,93,138,0.14)' },
   cancelled: { label: 'Cancelled', color: '#a23b32', tint: 'rgba(162,59,50,0.12)' },
+  rejected: { label: 'Rejected', color: '#a23b32', tint: 'rgba(162,59,50,0.12)' },
   'no-show': { label: 'No Show', color: '#6b6b6b', tint: 'rgba(107,107,107,0.12)' },
 };
 

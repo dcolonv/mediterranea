@@ -391,7 +391,8 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         appointmentTime: input.time,
         durationMinutes: service.durationMinutes,
         notes: input.notes ?? '',
-        status: 'pending' as AppointmentStatus,
+        // Bookings are auto-confirmed — no manual backoffice confirmation step.
+        status: 'confirmed' as AppointmentStatus,
         createdAt: now,
         updatedAt: now,
       });
@@ -504,7 +505,10 @@ export async function updateAppointment(
     return { success: false, error: 'Failed to update the appointment.' };
   }
 
-  if (status === 'cancelled' && existing.status !== 'cancelled') {
+  // Both cancelling and rejecting notify the customer the appointment won't happen.
+  const declined = status === 'cancelled' || status === 'rejected';
+  const wasDeclined = existing.status === 'cancelled' || existing.status === 'rejected';
+  if (declined && !wasDeclined) {
     try {
       const { notifyAppointmentCancelled } = await import('@/lib/notifications/dispatch');
       await notifyAppointmentCancelled(id);
