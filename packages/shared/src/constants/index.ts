@@ -70,11 +70,11 @@ export const SERVICES_SEED = [
 ];
 
 export const BUSINESS_HOURS = {
-  monday: { open: '10:00', close: '18:00' },
-  tuesday: { open: '10:00', close: '18:00' },
-  wednesday: { open: '10:00', close: '18:00' },
-  thursday: { open: '10:00', close: '18:00' },
-  friday: { open: '10:00', close: '18:00' },
+  monday: { open: '10:30', close: '18:30' },
+  tuesday: { open: '10:30', close: '18:30' },
+  wednesday: { open: '10:30', close: '18:30' },
+  thursday: { open: '10:30', close: '18:30' },
+  friday: { open: '10:30', close: '18:30' },
   saturday: null, // Closed
   sunday: null, // Closed
 };
@@ -94,9 +94,9 @@ export const TIME_SLOTS = [
 export const BOOKING_OPENS_DATE = '2026-09-08';
 
 export const BOOKING_SLOT_TIMES: Record<'custom' | 'focus' | 'indiba', string[]> = {
-  custom: ['10:00', '12:00', '14:00', '16:00', '18:00'],
-  focus: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
-  indiba: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+  custom: ['10:30', '12:30', '14:30', '16:30', '18:30'],
+  focus: ['10:30', '11:30', '12:30', '13:30', '14:30', '15:30', '16:30', '17:30'],
+  indiba: ['10:30', '11:30', '12:30', '13:30', '14:30', '15:30', '16:30', '17:30'],
 };
 
 export const APPOINTMENT_STATUSES = {
@@ -111,11 +111,11 @@ export const APPOINTMENT_STATUSES = {
 
 export const DEFAULT_STUDIO_SETTINGS = {
   businessHours: {
-    monday: { open: '10:00', close: '18:00' },
-    tuesday: { open: '10:00', close: '18:00' },
-    wednesday: { open: '10:00', close: '18:00' },
-    thursday: { open: '10:00', close: '18:00' },
-    friday: { open: '10:00', close: '18:00' },
+    monday: { open: '10:30', close: '18:30' },
+    tuesday: { open: '10:30', close: '18:30' },
+    wednesday: { open: '10:30', close: '18:30' },
+    thursday: { open: '10:30', close: '18:30' },
+    friday: { open: '10:30', close: '18:30' },
     saturday: null,
     sunday: null,
   },
