@@ -4,6 +4,7 @@ import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { Timestamp } from 'firebase-admin/firestore';
 import { db } from '@/lib/firebase/config';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { serviceSchema, type ServiceFormData } from '@mediterranea/shared/validations';
 import type { Service } from '@mediterranea/shared/types';
 
@@ -40,7 +41,7 @@ export async function getAllServices() {
 
     const services = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      ...serializeDoc(doc.data()),
     })) as Service[];
 
     return { success: true, data: services };

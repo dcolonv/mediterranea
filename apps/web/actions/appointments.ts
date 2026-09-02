@@ -4,6 +4,7 @@ import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { Timestamp as AdminTimestamp, type Query } from 'firebase-admin/firestore';
 import { db } from '@/lib/firebase/config';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { appointmentSchema, type AppointmentFormData } from '@mediterranea/shared/validations';
 import { SERVICES_SEED, BUSINESS_HOURS, TIME_SLOTS } from '@mediterranea/shared/constants';
 import { upsertCustomerForAppointment } from '@/actions/customers';
@@ -146,7 +147,7 @@ export async function getAppointments(filters?: {
     const snapshot = await q.get();
     const appointments: Appointment[] = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      ...serializeDoc(doc.data()),
     })) as Appointment[];
 
     return { success: true, data: appointments };

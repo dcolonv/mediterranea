@@ -2,6 +2,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import * as data from '@/lib/agent/data';
 import { waitlistSchema, type WaitlistFormData } from '@mediterranea/shared/validations';
 import type { WaitlistEntry, WaitlistStatus, Appointment } from '@mediterranea/shared/types';
@@ -43,7 +44,8 @@ export async function getWaitlist() {
     const snap = await getAdminDb().collection(COLLECTION).get();
     const entries = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }) as WaitlistEntry)
-      .sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
+      .sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0))
+      .map((e) => serializeDoc(e));
     return { success: true as const, data: entries };
   } catch (error) {
     console.error('Error loading waitlist:', error);

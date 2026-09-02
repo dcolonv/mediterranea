@@ -2,6 +2,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { staffSchema, type StaffFormData } from '@mediterranea/shared/validations';
 import type { Staff } from '@mediterranea/shared/types';
 
@@ -10,7 +11,7 @@ const COLLECTION = 'staff';
 export async function getStaffList() {
   try {
     const snap = await getAdminDb().collection(COLLECTION).orderBy('name', 'asc').get();
-    const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Staff[];
+    const data = snap.docs.map((d) => ({ id: d.id, ...serializeDoc(d.data()) })) as Staff[];
     return { success: true, data };
   } catch (error) {
     console.error('Error fetching staff:', error);

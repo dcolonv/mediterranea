@@ -2,6 +2,7 @@
 
 import { Timestamp, type DocumentData } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { blogPostSchema, type BlogPostFormData } from '@mediterranea/shared/validations';
 import type { BlogPost } from '@mediterranea/shared/types';
 
@@ -72,7 +73,8 @@ export async function getAllPosts() {
     const snap = await getAdminDb().collection(COLLECTION).get();
     const posts = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }) as BlogPost)
-      .sort((a, b) => (b.updatedAt?.toMillis?.() ?? 0) - (a.updatedAt?.toMillis?.() ?? 0));
+      .sort((a, b) => (b.updatedAt?.toMillis?.() ?? 0) - (a.updatedAt?.toMillis?.() ?? 0))
+      .map((p) => serializeDoc(p));
     return { success: true as const, data: posts };
   } catch (error) {
     console.error('getAllPosts failed:', error);
