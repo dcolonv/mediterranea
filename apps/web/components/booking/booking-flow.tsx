@@ -67,6 +67,7 @@ export function BookingFlow({
   policyText,
   businessHours,
   maxAdvanceDays,
+  blockedDates = [],
   prefill,
 }: {
   services: PublicService[];
@@ -76,6 +77,8 @@ export function BookingFlow({
   policyText: string;
   businessHours: WorkingHours;
   maxAdvanceDays: number;
+  /** Dates fully closed (e.g. holidays) to disable in the calendar. */
+  blockedDates?: string[];
   prefill?: { name: string; email: string; phone: string } | null;
 }) {
   const { locale, dict } = useLang();
@@ -194,8 +197,8 @@ export function BookingFlow({
 
   // Default the calendar to today (or the next open day) as soon as we reach the date step.
   const defaultDate = useMemo(
-    () => firstSelectableDate(businessHours, maxAdvanceDays, BOOKING_OPENS_DATE),
-    [businessHours, maxAdvanceDays]
+    () => firstSelectableDate(businessHours, maxAdvanceDays, BOOKING_OPENS_DATE, blockedDates),
+    [businessHours, maxAdvanceDays, blockedDates]
   );
   useEffect(() => {
     if (step === 'time' && service && !date) void selectDate(defaultDate, service);
@@ -474,6 +477,7 @@ export function BookingFlow({
                 businessHours={businessHours}
                 maxAdvanceDays={maxAdvanceDays}
                 minDate={BOOKING_OPENS_DATE}
+                blockedDates={blockedDates}
                 locale={locale}
                 selectedDate={date}
                 onSelectDate={selectDate}

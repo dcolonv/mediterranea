@@ -44,6 +44,7 @@ export function BackofficeStaff() {
   const [timeOff, setTimeOff] = useState<TimeOff[]>([]);
   // Draft inputs for a new time-off entry.
   const [toDate, setToDate] = useState('');
+  const [toEndDate, setToEndDate] = useState('');
   const [toStart, setToStart] = useState('');
   const [toEnd, setToEnd] = useState('');
   const [toReason, setToReason] = useState('');
@@ -53,6 +54,7 @@ export function BackofficeStaff() {
   function addTimeOff() {
     if (!toDate) return;
     const entry: TimeOff = { date: toDate };
+    if (toEndDate && toEndDate > toDate) entry.endDate = toEndDate;
     if (toStart && toEnd) {
       entry.start = toStart;
       entry.end = toEnd;
@@ -60,6 +62,7 @@ export function BackofficeStaff() {
     if (toReason.trim()) entry.reason = toReason.trim();
     setTimeOff((prev) => [...prev, entry].sort((a, b) => a.date.localeCompare(b.date)));
     setToDate('');
+    setToEndDate('');
     setToStart('');
     setToEnd('');
     setToReason('');
@@ -275,8 +278,8 @@ export function BackofficeStaff() {
           <div>
             <p className="mb-1 text-sm font-medium tracking-wide text-white-70">Time off / holidays</p>
             <p className="mb-3 text-xs text-white-30">
-              Block dates when you’re away. Leave the times empty to block the whole day; set From/To to
-              block only part of a day.
+              Block dates when you’re away. Add a “To date” for a multi-day range. Leave the times empty
+              to block whole days; set From/To to block only part of a single day.
             </p>
 
             {timeOff.length > 0 && (
@@ -286,7 +289,9 @@ export function BackofficeStaff() {
                     key={`${t.date}-${i}`}
                     className="flex items-center gap-3 border border-white-10 bg-dark-900 px-4 py-2 text-sm"
                   >
-                    <span className="text-white">{t.date}</span>
+                    <span className="text-white">
+                      {t.endDate ? `${t.date} → ${t.endDate}` : t.date}
+                    </span>
                     <span className="text-white-50">
                       {t.start && t.end ? `${t.start}–${t.end}` : 'All day'}
                     </span>
@@ -310,6 +315,16 @@ export function BackofficeStaff() {
                   type="date"
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
+                  className="h-10 border border-white-10 bg-dark-800 px-3 text-white focus:border-gold focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-white-50">To date (optional)</label>
+                <input
+                  type="date"
+                  value={toEndDate}
+                  min={toDate || undefined}
+                  onChange={(e) => setToEndDate(e.target.value)}
                   className="h-10 border border-white-10 bg-dark-800 px-3 text-white focus:border-gold focus:outline-none"
                 />
               </div>

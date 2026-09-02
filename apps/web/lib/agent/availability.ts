@@ -44,6 +44,8 @@ export function addDaysStr(date: string, days: number): string {
 
 export interface AvailTimeOff {
   date: string;
+  /** Inclusive end date of a multi-day range; omit for a single day. */
+  endDate?: string;
   start?: string;
   end?: string;
 }
@@ -75,8 +77,9 @@ export function staffOffAt(
 ): boolean {
   if (!staff.timeOff) return false;
   return staff.timeOff.some((t) => {
-    if (t.date !== date) return false;
-    if (!t.start || !t.end) return true; // whole day off
+    // Single day when endDate is unset; otherwise an inclusive [date, endDate] range.
+    if (date < t.date || date > (t.endDate || t.date)) return false;
+    if (!t.start || !t.end) return true; // whole day(s) off
     return rangesOverlap(start, end, timeToMinutes(t.start), timeToMinutes(t.end));
   });
 }

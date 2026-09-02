@@ -66,6 +66,7 @@ export default async function BookPage({
           policyText={policy.policyText}
           businessHours={policy.businessHours}
           maxAdvanceDays={policy.maxAdvanceDays}
+          blockedDates={policy.blockedDates}
           prefill={prefill}
         />
       </div>

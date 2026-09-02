@@ -25,19 +25,21 @@ function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** The soonest bookable date: the first open day that is today-or-later and ≥ minDate. */
+/** The soonest bookable date: the first open, non-blocked day that is today-or-later and ≥ minDate. */
 export function firstSelectableDate(
   businessHours: WorkingHours,
   maxAdvanceDays: number,
-  minDate = ''
+  minDate = '',
+  blockedDates: string[] = []
 ): string {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const blocked = new Set(blockedDates);
   for (let i = 0; i <= maxAdvanceDays; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     const ds = ymd(d);
-    if (ds >= minDate && businessHours?.[WEEKDAY_KEYS[d.getDay()]]) return ds;
+    if (ds >= minDate && !blocked.has(ds) && businessHours?.[WEEKDAY_KEYS[d.getDay()]]) return ds;
   }
   return minDate || ymd(today);
 }
@@ -50,6 +52,7 @@ export function MonthCalendar({
   businessHours,
   maxAdvanceDays,
   minDate = '',
+  blockedDates = [],
   locale,
   selectedDate,
   onSelectDate,
@@ -60,12 +63,15 @@ export function MonthCalendar({
   maxAdvanceDays: number;
   /** Earliest selectable date (e.g. the opening date), 'YYYY-MM-DD'. */
   minDate?: string;
+  /** Fully-closed dates (e.g. holidays) to disable. */
+  blockedDates?: string[];
   locale: 'es' | 'en';
   selectedDate: string;
   onSelectDate: (date: string) => void;
   prevLabel: string;
   nextLabel: string;
 }) {
+  const blocked = useMemo(() => new Set(blockedDates), [blockedDates]);
   const intlLocale = locale === 'es' ? 'es-ES' : 'en-GB';
 
   const today = useMemo(() => {
@@ -164,7 +170,7 @@ export function MonthCalendar({
         {cells.map((d, i) => {
           if (!d) return <span key={i} />;
           const ds = ymd(d);
-          const selectable = ds >= floorStr && ds <= maxStr && isOpenDay(d);
+          const selectable = ds >= floorStr && ds <= maxStr && isOpenDay(d) && !blocked.has(ds);
           const isSelected = ds === selectedDate;
           return (
             <button

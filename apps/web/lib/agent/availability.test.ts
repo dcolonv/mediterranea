@@ -62,6 +62,17 @@ describe('staffOffAt', () => {
   it('ignores other days', () => {
     expect(staffOffAt(staff, '2026-09-12', 540, 600)).toBe(false);
   });
+  it('blocks every day in a multi-day range', () => {
+    const onHoliday: AvailStaff = {
+      id: 's1',
+      timeOff: [{ date: '2026-09-14', endDate: '2026-09-18' }], // a week off
+    };
+    expect(staffOffAt(onHoliday, '2026-09-14', 540, 600)).toBe(true); // first day
+    expect(staffOffAt(onHoliday, '2026-09-16', 540, 600)).toBe(true); // mid-range
+    expect(staffOffAt(onHoliday, '2026-09-18', 540, 600)).toBe(true); // last day (inclusive)
+    expect(staffOffAt(onHoliday, '2026-09-19', 540, 600)).toBe(false); // day after
+    expect(staffOffAt(onHoliday, '2026-09-13', 540, 600)).toBe(false); // day before
+  });
 });
 
 describe('computeSlots', () => {

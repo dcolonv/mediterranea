@@ -301,6 +301,39 @@ export async function findDaySlots(input: {
   return evaluateDay(input);
 }
 
+/**
+ * Dates within the booking window that are fully closed — i.e. every active
+ * practitioner has a whole-day time off. Used to grey them out in the calendar.
+ */
+export async function getFullyBlockedDates(): Promise<string[]> {
+  const staff = await listStaff(true);
+  if (staff.length === 0) return [];
+
+  const settings = await getStudioSettings();
+  const now = malagaNow();
+  const start = now.date > BOOKING_OPENS_DATE ? now.date : BOOKING_OPENS_DATE;
+  const end = addDaysStr(now.date, settings.booking.maxAdvanceDays);
+
+  // Full-day-off dates per practitioner, clamped to the window.
+  const perStaff = staff.map((s) => {
+    const set = new Set<string>();
+    (s.timeOff ?? []).forEach((t) => {
+      if (t.start && t.end) return; // partial day — doesn't close the whole day
+      const last = t.endDate || t.date;
+      let d = t.date;
+      for (let i = 0; d <= last && d <= end && i < 400; i++) {
+        if (d >= start) set.add(d);
+        d = addDaysStr(d, 1);
+      }
+    });
+    return set;
+  });
+
+  // A date is fully closed only when every active practitioner is off that day.
+  const [first, ...rest] = perStaff;
+  return [...first].filter((d) => rest.every((s) => s.has(d))).sort();
+}
+
 // ── Appointment writes (transactional conflict guard) ────────────────────────────
 
 export interface CreateAppointmentInput {

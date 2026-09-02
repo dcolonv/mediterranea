@@ -127,13 +127,18 @@ export async function getPublicPolicy(): Promise<{
   cutoffHours: number;
   businessHours: WorkingHours;
   maxAdvanceDays: number;
+  blockedDates: string[];
 }> {
-  const settings = await data.getStudioSettings();
+  const [settings, blockedDates] = await Promise.all([
+    data.getStudioSettings(),
+    data.getFullyBlockedDates(),
+  ]);
   return {
     policyText: settings.cancellation.policyText,
     cutoffHours: settings.cancellation.cutoffHours,
     businessHours: settings.businessHours ?? {},
     maxAdvanceDays: settings.booking.maxAdvanceDays,
+    blockedDates,
   };
 }
 

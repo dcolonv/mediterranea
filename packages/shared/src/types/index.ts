@@ -50,7 +50,9 @@ export interface DayHours {
 export type WorkingHours = Partial<Record<Weekday, DayHours | null>>;
 
 export interface TimeOff {
-  date: string; // 'YYYY-MM-DD'
+  date: string; // 'YYYY-MM-DD' (start date)
+  /** Last date of a multi-day range (inclusive); omit for a single day. */
+  endDate?: string; // 'YYYY-MM-DD'
   start?: string; // 'HH:MM' — omit for a full day off
   end?: string; // 'HH:MM'
   reason?: string;
