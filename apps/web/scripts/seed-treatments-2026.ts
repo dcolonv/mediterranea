@@ -134,18 +134,6 @@ const SERVICES: Seed[] = [
 
   // ── INDIBA (submenu) ──────────────────────────────────────────────────────
   {
-    slug: 'indiba-focus',
-    name: 'INDIBA Focus',
-    nameEs: 'INDIBA Focalizado',
-    description:
-      'A focused INDIBA radiofrequency facial that boosts circulation and collagen for firmer, revitalized skin.',
-    descriptionEs:
-      'Un facial focalizado de radiofrecuencia INDIBA que activa la circulación y el colágeno para una piel más firme y revitalizada.',
-    bookingGroup: 'indiba',
-    durationMinutes: 45,
-    price: 65,
-  },
-  {
     slug: 'indiba-full',
     name: 'INDIBA Full',
     nameEs: 'INDIBA Completo',
@@ -156,6 +144,18 @@ const SERVICES: Seed[] = [
     bookingGroup: 'indiba',
     durationMinutes: 75,
     price: 100,
+  },
+  {
+    slug: 'indiba-focus',
+    name: 'INDIBA Focus',
+    nameEs: 'INDIBA Focalizado',
+    description:
+      'A focused INDIBA radiofrequency facial that boosts circulation and collagen for firmer, revitalized skin.',
+    descriptionEs:
+      'Un facial focalizado de radiofrecuencia INDIBA que activa la circulación y el colágeno para una piel más firme y revitalizada.',
+    bookingGroup: 'indiba',
+    durationMinutes: 45,
+    price: 65,
   },
 ];
 
