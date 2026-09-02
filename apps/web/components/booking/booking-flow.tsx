@@ -226,9 +226,14 @@ export function BookingFlow({
     setSubmitting(false);
     if (res.success) {
       setStep('done');
-    } else {
-      setError(res.error);
-      // If the slot was taken, refresh the day's slots so it shows as blocked.
+      return;
+    }
+
+    setError(res.error);
+    // Only send them back to pick another time when this slot is genuinely gone;
+    // for any other failure stay on the form so their details aren't lost.
+    const slotTaken = /no longer available|conflicts|already/i.test(res.error ?? '');
+    if (slotTaken) {
       setTime('');
       if (date) void selectDate(date);
       setStep('time');
