@@ -58,7 +58,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/init/book"
+                  href="/book"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   {dict.footer.book}

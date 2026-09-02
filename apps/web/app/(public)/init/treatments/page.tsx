@@ -87,7 +87,7 @@ export default async function TreatmentsPage() {
         </div>
 
         <div className="mt-16 text-center">
-          <Link href="/init/book">
+          <Link href="/book">
             <Button variant="elegant" size="lg">
               {dict.services.cta}
             </Button>

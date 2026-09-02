@@ -2,6 +2,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { roomSchema, type RoomFormData } from '@mediterranea/shared/validations';
 import type { Room } from '@mediterranea/shared/types';
 
@@ -10,7 +11,7 @@ const COLLECTION = 'rooms';
 export async function getRoomsList() {
   try {
     const snap = await getAdminDb().collection(COLLECTION).orderBy('name', 'asc').get();
-    const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Room[];
+    const data = snap.docs.map((d) => ({ id: d.id, ...serializeDoc(d.data()) })) as Room[];
     return { success: true, data };
   } catch (error) {
     console.error('Error fetching rooms:', error);

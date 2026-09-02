@@ -3,6 +3,7 @@
 import { randomInt } from 'crypto';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { getStripe, stripeConfigured, toCents, siteUrl } from '@/lib/stripe/client';
 import type { DocumentData } from 'firebase-admin/firestore';
 import { formatPrice } from '@mediterranea/shared/utils';
@@ -163,7 +164,8 @@ export async function getGiftCards() {
     const snap = await getAdminDb().collection(COLLECTION).get();
     const cards = snap.docs
       .map((d) => toDTO(d.id, d.data()))
-      .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+      .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0))
+      .map((c) => serializeDoc(c));
     return { success: true as const, data: cards };
   } catch (error) {
     console.error('getGiftCards failed:', error);

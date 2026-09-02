@@ -2,6 +2,7 @@
 
 import { Timestamp, type QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { customerSchema, type CustomerFormData } from '@mediterranea/shared/validations';
 import type { Customer, Appointment } from '@mediterranea/shared/types';
 
@@ -17,7 +18,7 @@ export async function getCustomers(search?: string) {
 
     let customers = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      ...serializeDoc(doc.data()),
     })) as Customer[];
 
     if (search?.trim()) {
@@ -43,7 +44,7 @@ export async function getCustomer(id: string) {
     if (!doc.exists) {
       return { success: false, error: 'Customer not found.' };
     }
-    return { success: true, data: { id: doc.id, ...doc.data() } as Customer };
+    return { success: true, data: { id: doc.id, ...serializeDoc(doc.data()) } as Customer };
   } catch (error) {
     console.error('Error fetching customer:', error);
     return { success: false, error: 'Failed to fetch customer.' };
@@ -59,7 +60,8 @@ export async function getCustomerAppointments(customerId: string) {
 
     const appointments = snapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() }) as Appointment)
-      .sort((a, b) => b.appointmentDate.localeCompare(a.appointmentDate));
+      .sort((a, b) => b.appointmentDate.localeCompare(a.appointmentDate))
+      .map((a) => serializeDoc(a));
 
     return { success: true, data: appointments };
   } catch (error) {

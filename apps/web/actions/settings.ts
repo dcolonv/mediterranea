@@ -2,6 +2,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { studioSettingsSchema, type StudioSettingsFormData } from '@mediterranea/shared/validations';
 import { DEFAULT_STUDIO_SETTINGS } from '@mediterranea/shared/constants';
 import type { StudioSettings } from '@mediterranea/shared/types';
@@ -19,7 +20,7 @@ export async function getSettings(): Promise<
   try {
     const snap = await docRef().get();
     const data = snap.exists
-      ? ({ ...DEFAULT_STUDIO_SETTINGS, ...snap.data() } as StudioSettings)
+      ? serializeDoc({ ...DEFAULT_STUDIO_SETTINGS, ...snap.data() } as StudioSettings)
       : (DEFAULT_STUDIO_SETTINGS as unknown as StudioSettings);
     return { success: true, data };
   } catch (error) {

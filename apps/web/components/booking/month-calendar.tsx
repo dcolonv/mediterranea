@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 import type { WorkingHours, Weekday } from '@mediterranea/shared/types';
 
 const WEEKDAY_KEYS: Weekday[] = [
@@ -24,16 +25,23 @@ function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** The soonest bookable date: today if the studio is open, else the next open day in range. */
-export function firstSelectableDate(businessHours: WorkingHours, maxAdvanceDays: number): string {
+/** The soonest bookable date: the first open, non-blocked day that is today-or-later and ≥ minDate. */
+export function firstSelectableDate(
+  businessHours: WorkingHours,
+  maxAdvanceDays: number,
+  minDate = '',
+  blockedDates: string[] = []
+): string {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const blocked = new Set(blockedDates);
   for (let i = 0; i <= maxAdvanceDays; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
-    if (businessHours?.[WEEKDAY_KEYS[d.getDay()]]) return ymd(d);
+    const ds = ymd(d);
+    if (ds >= minDate && !blocked.has(ds) && businessHours?.[WEEKDAY_KEYS[d.getDay()]]) return ds;
   }
-  return ymd(today);
+  return minDate || ymd(today);
 }
 
 /**
@@ -43,6 +51,8 @@ export function firstSelectableDate(businessHours: WorkingHours, maxAdvanceDays:
 export function MonthCalendar({
   businessHours,
   maxAdvanceDays,
+  minDate = '',
+  blockedDates = [],
   locale,
   selectedDate,
   onSelectDate,
@@ -51,12 +61,17 @@ export function MonthCalendar({
 }: {
   businessHours: WorkingHours;
   maxAdvanceDays: number;
+  /** Earliest selectable date (e.g. the opening date), 'YYYY-MM-DD'. */
+  minDate?: string;
+  /** Fully-closed dates (e.g. holidays) to disable. */
+  blockedDates?: string[];
   locale: 'es' | 'en';
   selectedDate: string;
   onSelectDate: (date: string) => void;
   prevLabel: string;
   nextLabel: string;
 }) {
+  const blocked = useMemo(() => new Set(blockedDates), [blockedDates]);
   const intlLocale = locale === 'es' ? 'es-ES' : 'en-GB';
 
   const today = useMemo(() => {
@@ -65,6 +80,7 @@ export function MonthCalendar({
     return d;
   }, []);
   const todayStr = ymd(today);
+  const floorStr = minDate && minDate > todayStr ? minDate : todayStr;
   const maxDate = useMemo(() => {
     const d = new Date(today);
     d.setDate(d.getDate() + maxAdvanceDays);
@@ -99,7 +115,10 @@ export function MonthCalendar({
   ];
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const canPrev = view.year > today.getFullYear() || view.month > today.getMonth();
+  const floorDate = new Date(`${floorStr}T00:00:00`);
+  const canPrev =
+    view.year > floorDate.getFullYear() ||
+    (view.year === floorDate.getFullYear() && view.month > floorDate.getMonth());
   const canNext =
     view.year < maxDate.getFullYear() ||
     (view.year === maxDate.getFullYear() && view.month < maxDate.getMonth());
@@ -125,7 +144,7 @@ export function MonthCalendar({
           aria-label={prevLabel}
           className="flex h-9 w-9 items-center justify-center border border-white-10 text-white-70 transition-colors hover:border-gold/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white-10"
         >
-          ‹
+          <LuChevronLeft className="h-4 w-4" aria-hidden />
         </button>
         <span className="font-serif text-lg tracking-wide text-white">{monthTitle}</span>
         <button
@@ -135,7 +154,7 @@ export function MonthCalendar({
           aria-label={nextLabel}
           className="flex h-9 w-9 items-center justify-center border border-white-10 text-white-70 transition-colors hover:border-gold/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white-10"
         >
-          ›
+          <LuChevronRight className="h-4 w-4" aria-hidden />
         </button>
       </div>
 
@@ -151,7 +170,7 @@ export function MonthCalendar({
         {cells.map((d, i) => {
           if (!d) return <span key={i} />;
           const ds = ymd(d);
-          const selectable = ds >= todayStr && ds <= maxStr && isOpenDay(d);
+          const selectable = ds >= floorStr && ds <= maxStr && isOpenDay(d) && !blocked.has(ds);
           const isSelected = ds === selectedDate;
           return (
             <button

@@ -71,7 +71,7 @@ export function ServicesOverview() {
         {/* CTA */}
         <ScrollReveal>
           <div className="mt-16 text-center">
-            <Link href="/init/book">
+            <Link href="/book">
               <Button variant="elegant" size="lg">
                 {s.cta}
               </Button>

@@ -43,7 +43,7 @@ export default async function AccountPage() {
                 Profile
               </Button>
             </Link>
-            <Link href="/init/book">
+            <Link href="/book">
               <Button variant="elegant" size="sm">
                 Book
               </Button>

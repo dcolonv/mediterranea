@@ -2,6 +2,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { getCurrentCustomer } from '@/lib/auth/customer';
 import * as data from '@/lib/agent/data';
 import { reviewSchema, type ReviewFormData } from '@mediterranea/shared/validations';
@@ -112,7 +113,8 @@ export async function getAllReviews() {
         const at = a.createdAt?.toMillis?.() ?? 0;
         const bt = b.createdAt?.toMillis?.() ?? 0;
         return bt - at;
-      });
+      })
+      .map((r) => serializeDoc(r));
     return { success: true as const, data: reviews };
   } catch (error) {
     console.error('Error loading reviews:', error);

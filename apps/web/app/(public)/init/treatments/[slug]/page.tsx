@@ -62,7 +62,7 @@ export default async function TreatmentDetailPage({
           </p>
 
           <div className="mt-12 border-t border-white-10 pt-10">
-            <Link href={`/init/book?service=${service.slug}`}>
+            <Link href={`/book?service=${service.slug}`}>
               <Button variant="elegant" size="lg">
                 {dict.treatmentDetail.book}
               </Button>

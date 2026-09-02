@@ -1,6 +1,7 @@
 'use server';
 
 import * as data from '@/lib/agent/data';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { getCustomers } from '@/actions/customers';
 import type { Appointment, Service, Staff, Room, AppointmentStatus } from '@mediterranea/shared/types';
 
@@ -14,9 +15,9 @@ export async function getSchedulingRefs() {
     ]);
     return {
       success: true as const,
-      services: services as Service[],
-      staff: staff as Staff[],
-      rooms: rooms as Room[],
+      services: (services as Service[]).map((s) => serializeDoc(s)),
+      staff: (staff as Staff[]).map((s) => serializeDoc(s)),
+      rooms: (rooms as Room[]).map((r) => serializeDoc(r)),
     };
   } catch (error) {
     console.error('Error loading scheduling refs:', error);
@@ -34,7 +35,7 @@ export async function getCalendarAppointments(filters: {
 }) {
   try {
     const data_ = await data.listAppointments(filters);
-    return { success: true as const, data: data_ as Appointment[] };
+    return { success: true as const, data: data_.map((a) => serializeDoc(a)) as Appointment[] };
   } catch (error) {
     console.error('Error loading calendar:', error);
     return { success: false as const, error: 'Failed to load appointments.' };

@@ -70,11 +70,11 @@ export const SERVICES_SEED = [
 ];
 
 export const BUSINESS_HOURS = {
-  monday: { open: '10:00', close: '18:00' },
-  tuesday: { open: '10:00', close: '18:00' },
-  wednesday: { open: '10:00', close: '18:00' },
-  thursday: { open: '10:00', close: '18:00' },
-  friday: { open: '10:00', close: '18:00' },
+  monday: { open: '10:30', close: '18:30' },
+  tuesday: { open: '10:30', close: '18:30' },
+  wednesday: { open: '10:30', close: '18:30' },
+  thursday: { open: '10:30', close: '18:30' },
+  friday: { open: '10:30', close: '18:30' },
   saturday: null, // Closed
   sunday: null, // Closed
 };
@@ -90,10 +90,13 @@ export const TIME_SLOTS = [
  * cool-down/preparation time between appointments, so no extra buffer is added.
  * The overlap/block length still comes from each service's real duration.
  */
+/** Earliest date the studio accepts bookings for (opening day). 'YYYY-MM-DD'. */
+export const BOOKING_OPENS_DATE = '2026-09-08';
+
 export const BOOKING_SLOT_TIMES: Record<'custom' | 'focus' | 'indiba', string[]> = {
-  custom: ['10:00', '12:00', '14:00', '16:00', '18:00'],
-  focus: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
-  indiba: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+  custom: ['10:30', '12:30', '14:30', '16:30', '18:30'],
+  focus: ['10:30', '11:30', '12:30', '13:30', '14:30', '15:30', '16:30', '17:30'],
+  indiba: ['10:30', '11:30', '12:30', '13:30', '14:30', '15:30', '16:30', '17:30'],
 };
 
 export const APPOINTMENT_STATUSES = {
@@ -102,16 +105,17 @@ export const APPOINTMENT_STATUSES = {
   'checked-in': { label: 'Checked In', color: 'bg-purple-100 text-purple-800' },
   completed: { label: 'Completed', color: 'bg-green-100 text-green-800' },
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800' },
+  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800' },
   'no-show': { label: 'No Show', color: 'bg-gray-100 text-gray-800' },
 } as const;
 
 export const DEFAULT_STUDIO_SETTINGS = {
   businessHours: {
-    monday: { open: '10:00', close: '18:00' },
-    tuesday: { open: '10:00', close: '18:00' },
-    wednesday: { open: '10:00', close: '18:00' },
-    thursday: { open: '10:00', close: '18:00' },
-    friday: { open: '10:00', close: '18:00' },
+    monday: { open: '10:30', close: '18:30' },
+    tuesday: { open: '10:30', close: '18:30' },
+    wednesday: { open: '10:30', close: '18:30' },
+    thursday: { open: '10:30', close: '18:30' },
+    friday: { open: '10:30', close: '18:30' },
     saturday: null,
     sunday: null,
   },

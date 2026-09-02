@@ -1,4 +1,7 @@
+import Link from 'next/link';
+import Image from 'next/image';
 import { BookingFlow } from '@/components/booking/booking-flow';
+import { LanguageToggle } from '@/components/i18n/language-toggle';
 import { getBookingServices, getPublicPolicy } from '@/actions/public-booking';
 import { getCurrentCustomer } from '@/lib/auth/customer';
 import { getServerDictionary } from '@/lib/i18n/server';
@@ -7,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Book an Appointment | Mediterránea Face Studio',
-  description: 'Book your treatment online — choose a service, practitioner, and time.',
+  description: 'Pre-book your treatment online — choose a service, practitioner, and time.',
 };
 
 export default async function BookPage({
@@ -35,7 +38,15 @@ export default async function BookPage({
     : null;
 
   return (
-    <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-36 lg:px-8">
+    <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-8 lg:px-8">
+      {/* Standalone top bar (this page lives outside the /init header/footer). */}
+      <div className="mx-auto mb-12 flex max-w-5xl items-center justify-between">
+        <Link href="/" aria-label="Mediterránea Face Studio">
+          <Image src="/logo_light.png" alt="Mediterránea Face Studio" width={110} height={50} priority />
+        </Link>
+        <LanguageToggle />
+      </div>
+
       <div className="mx-auto max-w-3xl">
         <div className="mb-12 text-center">
           <div className="mb-6 flex items-center justify-center gap-5">
@@ -55,6 +66,7 @@ export default async function BookPage({
           policyText={policy.policyText}
           businessHours={policy.businessHours}
           maxAdvanceDays={policy.maxAdvanceDays}
+          blockedDates={policy.blockedDates}
           prefill={prefill}
         />
       </div>

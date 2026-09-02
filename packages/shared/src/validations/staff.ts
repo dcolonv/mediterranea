@@ -9,6 +9,7 @@ export const dayHoursSchema = z.object({
 
 export const timeOffSchema = z.object({
   date: z.string().min(1),
+  endDate: z.string().optional(),
   start: z.string().optional(),
   end: z.string().optional(),
   reason: z.string().optional(),

@@ -24,7 +24,10 @@ interface FormState {
   category: ServiceCategory;
   bookingGroup: string;
   durationMinutes: string;
+  blockMinutes: string;
   price: string;
+  firstVisitPrice: string;
+  temporary: boolean;
   roomType: string;
   displayOrder: string;
   isActive: boolean;
@@ -39,7 +42,10 @@ const EMPTY_FORM: FormState = {
   category: 'facial',
   bookingGroup: '',
   durationMinutes: '60',
+  blockMinutes: '0',
   price: '0',
+  firstVisitPrice: '0',
+  temporary: false,
   roomType: '',
   displayOrder: '0',
   isActive: true,
@@ -103,7 +109,10 @@ export function BackofficeServices() {
       category: svc.category,
       bookingGroup: svc.bookingGroup ?? '',
       durationMinutes: String(svc.durationMinutes),
+      blockMinutes: String(svc.blockMinutes ?? 0),
       price: String(svc.price),
+      firstVisitPrice: String(svc.firstVisitPrice ?? 0),
+      temporary: svc.temporary ?? false,
       roomType: svc.roomType ?? '',
       displayOrder: String(svc.displayOrder ?? 0),
       isActive: svc.isActive,
@@ -152,7 +161,10 @@ export function BackofficeServices() {
       category: form.category,
       bookingGroup: form.bookingGroup as ServiceFormData['bookingGroup'],
       durationMinutes: duration,
+      blockMinutes: Number(form.blockMinutes) || 0,
       price,
+      firstVisitPrice: Number(form.firstVisitPrice) || 0,
+      temporary: form.temporary,
       roomType: form.roomType,
       isActive: form.isActive,
       displayOrder: Number(form.displayOrder) || 0,
@@ -292,7 +304,7 @@ export function BackofficeServices() {
             ]}
           />
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Input
               id="svc-duration"
               label="Duration (min)"
@@ -306,6 +318,20 @@ export function BackofficeServices() {
               type="number"
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
+            />
+            <Input
+              id="svc-block"
+              label="Calendar block (min, 0 = same)"
+              type="number"
+              value={form.blockMinutes}
+              onChange={(e) => setForm({ ...form, blockMinutes: e.target.value })}
+            />
+            <Input
+              id="svc-first-price"
+              label="First-visit (€, 0 = none)"
+              type="number"
+              value={form.firstVisitPrice}
+              onChange={(e) => setForm({ ...form, firstVisitPrice: e.target.value })}
             />
             <Input
               id="svc-order"
@@ -356,6 +382,16 @@ export function BackofficeServices() {
               className="h-4 w-4 accent-gold"
             />
             <span className="text-sm">Active (bookable)</span>
+          </label>
+
+          <label className="flex items-center gap-3 text-white-70">
+            <input
+              type="checkbox"
+              checked={form.temporary}
+              onChange={(e) => setForm({ ...form, temporary: e.target.checked })}
+              className="h-4 w-4 accent-gold"
+            />
+            <span className="text-sm">Seasonal (limited-time — shows a badge)</span>
           </label>
 
           {error && <p className="text-sm text-red-400">{error}</p>}

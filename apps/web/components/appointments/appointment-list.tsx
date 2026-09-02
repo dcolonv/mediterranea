@@ -61,11 +61,13 @@ export function AppointmentList() {
   const statusActions: Record<AppointmentStatus, { next: AppointmentStatus; label: string }[]> = {
     pending: [
       { next: 'confirmed', label: 'Confirm' },
+      { next: 'rejected', label: 'Reject' },
       { next: 'cancelled', label: 'Cancel' },
     ],
     confirmed: [
       { next: 'checked-in', label: 'Check In' },
       { next: 'no-show', label: 'No-show' },
+      { next: 'rejected', label: 'Reject' },
       { next: 'cancelled', label: 'Cancel' },
     ],
     'checked-in': [
@@ -74,6 +76,7 @@ export function AppointmentList() {
     ],
     completed: [],
     cancelled: [],
+    rejected: [],
     'no-show': [],
   };
 

@@ -9,7 +9,7 @@
 import { Timestamp, type DocumentSnapshot } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { upsertCustomerForAppointment } from '@/actions/customers';
-import { DEFAULT_STUDIO_SETTINGS, BOOKING_SLOT_TIMES } from '@mediterranea/shared/constants';
+import { DEFAULT_STUDIO_SETTINGS, BOOKING_SLOT_TIMES, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import {
   timeToMinutes,
   weekdayOf,
@@ -194,7 +194,8 @@ async function evaluateDay(input: {
   const service = await getService(input.serviceId);
   if (!service) return { error: `No service found for "${input.serviceId}".` };
 
-  const duration = service.durationMinutes;
+  // Calendar block length can exceed the treatment's display duration.
+  const duration = service.blockMinutes || service.durationMinutes;
   const weekday = weekdayOf(input.date);
   const settings = await getStudioSettings();
 
@@ -206,10 +207,12 @@ async function evaluateDay(input: {
   };
   const empty = { ...base, slots: [] as FixedSlot[] };
 
-  // Booking window: no past dates, no dates beyond maxAdvanceDays, studio open.
+  // Booking window: not before the opening date (or today, whichever is later),
+  // no dates beyond maxAdvanceDays, studio open.
   const now = malagaNow();
+  const earliestDate = now.date > BOOKING_OPENS_DATE ? now.date : BOOKING_OPENS_DATE;
   const maxDate = addDaysStr(now.date, settings.booking.maxAdvanceDays);
-  if (input.date < now.date || input.date > maxDate) return empty;
+  if (input.date < earliestDate || input.date > maxDate) return empty;
 
   const bh = settings.businessHours?.[weekday] ?? null;
   if (!bh) return empty;
@@ -299,6 +302,39 @@ export async function findDaySlots(input: {
   return evaluateDay(input);
 }
 
+/**
+ * Dates within the booking window that are fully closed — i.e. every active
+ * practitioner has a whole-day time off. Used to grey them out in the calendar.
+ */
+export async function getFullyBlockedDates(): Promise<string[]> {
+  const staff = await listStaff(true);
+  if (staff.length === 0) return [];
+
+  const settings = await getStudioSettings();
+  const now = malagaNow();
+  const start = now.date > BOOKING_OPENS_DATE ? now.date : BOOKING_OPENS_DATE;
+  const end = addDaysStr(now.date, settings.booking.maxAdvanceDays);
+
+  // Full-day-off dates per practitioner, clamped to the window.
+  const perStaff = staff.map((s) => {
+    const set = new Set<string>();
+    (s.timeOff ?? []).forEach((t) => {
+      if (t.start && t.end) return; // partial day — doesn't close the whole day
+      const last = t.endDate || t.date;
+      let d = t.date;
+      for (let i = 0; d <= last && d <= end && i < 400; i++) {
+        if (d >= start) set.add(d);
+        d = addDaysStr(d, 1);
+      }
+    });
+    return set;
+  });
+
+  // A date is fully closed only when every active practitioner is off that day.
+  const [first, ...rest] = perStaff;
+  return [...first].filter((d) => rest.every((s) => s.has(d))).sort();
+}
+
 // ── Appointment writes (transactional conflict guard) ────────────────────────────
 
 export interface CreateAppointmentInput {
@@ -343,8 +379,10 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
     return { success: false, error: `${room.name} is not a ${service.roomType} room.` };
   }
 
+  // Reserve the calendar block (may exceed the treatment's display duration).
+  const blockMinutes = service.blockMinutes || service.durationMinutes;
   const start = timeToMinutes(input.time);
-  const end = start + service.durationMinutes;
+  const end = start + blockMinutes;
   const bufferMinutes = (await getStudioSettings()).booking.bufferMinutes ?? 0;
 
   // Link/refresh the customer record before the transaction.
@@ -389,9 +427,13 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         source: input.source ?? 'agent',
         appointmentDate: input.date,
         appointmentTime: input.time,
-        durationMinutes: service.durationMinutes,
+        // Calendar occupancy — the block, so overlap checks reserve the full time.
+        durationMinutes: blockMinutes,
+        // The treatment's own length, for display.
+        serviceMinutes: service.durationMinutes,
         notes: input.notes ?? '',
-        status: 'pending' as AppointmentStatus,
+        // Bookings are auto-confirmed — no manual backoffice confirmation step.
+        status: 'confirmed' as AppointmentStatus,
         createdAt: now,
         updatedAt: now,
       });
@@ -504,7 +546,10 @@ export async function updateAppointment(
     return { success: false, error: 'Failed to update the appointment.' };
   }
 
-  if (status === 'cancelled' && existing.status !== 'cancelled') {
+  // Both cancelling and rejecting notify the customer the appointment won't happen.
+  const declined = status === 'cancelled' || status === 'rejected';
+  const wasDeclined = existing.status === 'cancelled' || existing.status === 'rejected';
+  if (declined && !wasDeclined) {
     try {
       const { notifyAppointmentCancelled } = await import('@/lib/notifications/dispatch');
       await notifyAppointmentCancelled(id);

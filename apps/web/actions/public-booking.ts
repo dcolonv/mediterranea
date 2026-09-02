@@ -32,6 +32,10 @@ export interface PublicService {
   bookingGroup: string;
   durationMinutes: number;
   price: number;
+  /** Intro price for a first appointment; 0 = none. */
+  firstVisitPrice: number;
+  /** Limited-time / seasonal treatment. */
+  temporary: boolean;
 }
 
 export interface PublicStaff {
@@ -51,6 +55,8 @@ function toPublicService(s: {
   bookingGroup?: string;
   durationMinutes: number;
   price: number;
+  firstVisitPrice?: number;
+  temporary?: boolean;
 }): PublicService {
   return {
     id: s.id,
@@ -63,6 +69,8 @@ function toPublicService(s: {
     bookingGroup: s.bookingGroup ?? '',
     durationMinutes: s.durationMinutes,
     price: s.price,
+    firstVisitPrice: s.firstVisitPrice ?? 0,
+    temporary: s.temporary ?? false,
   };
 }
 
@@ -123,13 +131,18 @@ export async function getPublicPolicy(): Promise<{
   cutoffHours: number;
   businessHours: WorkingHours;
   maxAdvanceDays: number;
+  blockedDates: string[];
 }> {
-  const settings = await data.getStudioSettings();
+  const [settings, blockedDates] = await Promise.all([
+    data.getStudioSettings(),
+    data.getFullyBlockedDates(),
+  ]);
   return {
     policyText: settings.cancellation.policyText,
     cutoffHours: settings.cancellation.cutoffHours,
     businessHours: settings.businessHours ?? {},
     maxAdvanceDays: settings.booking.maxAdvanceDays,
+    blockedDates,
   };
 }
 

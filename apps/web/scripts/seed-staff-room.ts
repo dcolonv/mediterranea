@@ -20,11 +20,11 @@ async function main() {
   const serviceIds = (await db.collection('services').get()).docs.map((d) => d.id);
 
   const wh = {
-    monday: { open: '10:00', close: '18:00' },
-    tuesday: { open: '10:00', close: '18:00' },
-    wednesday: { open: '10:00', close: '18:00' },
-    thursday: { open: '10:00', close: '18:00' },
-    friday: { open: '10:00', close: '18:00' },
+    monday: { open: '10:30', close: '18:30' },
+    tuesday: { open: '10:30', close: '18:30' },
+    wednesday: { open: '10:30', close: '18:30' },
+    thursday: { open: '10:30', close: '18:30' },
+    friday: { open: '10:30', close: '18:30' },
     saturday: null,
     sunday: null,
   };

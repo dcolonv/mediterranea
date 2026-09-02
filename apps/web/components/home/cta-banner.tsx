@@ -29,7 +29,7 @@ export function CtaBanner() {
             {dict.cta.body}
           </p>
           <div className="mt-12">
-            <Link href="/init/book">
+            <Link href="/book">
               <Button variant="elegant" size="lg">
                 {dict.cta.button}
               </Button>

@@ -42,8 +42,35 @@ export function BackofficeStaff() {
   const [serviceIds, setServiceIds] = useState<string[]>([]);
   const [hours, setHours] = useState<HoursMap>(DEFAULT_HOURS);
   const [timeOff, setTimeOff] = useState<TimeOff[]>([]);
+  // Draft inputs for a new time-off entry.
+  const [toDate, setToDate] = useState('');
+  const [toEndDate, setToEndDate] = useState('');
+  const [toStart, setToStart] = useState('');
+  const [toEnd, setToEnd] = useState('');
+  const [toReason, setToReason] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function addTimeOff() {
+    if (!toDate) return;
+    const entry: TimeOff = { date: toDate };
+    if (toEndDate && toEndDate > toDate) entry.endDate = toEndDate;
+    if (toStart && toEnd) {
+      entry.start = toStart;
+      entry.end = toEnd;
+    }
+    if (toReason.trim()) entry.reason = toReason.trim();
+    setTimeOff((prev) => [...prev, entry].sort((a, b) => a.date.localeCompare(b.date)));
+    setToDate('');
+    setToEndDate('');
+    setToStart('');
+    setToEnd('');
+    setToReason('');
+  }
+
+  function removeTimeOff(index: number) {
+    setTimeOff((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function load() {
     setLoading(true);
@@ -244,6 +271,94 @@ export function BackofficeStaff() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Time off / holidays */}
+          <div>
+            <p className="mb-1 text-sm font-medium tracking-wide text-white-70">Time off / holidays</p>
+            <p className="mb-3 text-xs text-white-30">
+              Block dates when you’re away. Add a “To date” for a multi-day range. Leave the times empty
+              to block whole days; set From/To to block only part of a single day.
+            </p>
+
+            {timeOff.length > 0 && (
+              <div className="mb-3 space-y-2">
+                {timeOff.map((t, i) => (
+                  <div
+                    key={`${t.date}-${i}`}
+                    className="flex items-center gap-3 border border-white-10 bg-dark-900 px-4 py-2 text-sm"
+                  >
+                    <span className="text-white">
+                      {t.endDate ? `${t.date} → ${t.endDate}` : t.date}
+                    </span>
+                    <span className="text-white-50">
+                      {t.start && t.end ? `${t.start}–${t.end}` : 'All day'}
+                    </span>
+                    {t.reason && <span className="text-white-30">· {t.reason}</span>}
+                    <button
+                      type="button"
+                      onClick={() => removeTimeOff(i)}
+                      className="ml-auto cursor-pointer text-red-400 transition-colors hover:text-red-300"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-end gap-2 border border-white-10 bg-dark-900 p-3">
+              <div>
+                <label className="mb-1 block text-xs text-white-50">Date</label>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="h-10 border border-white-10 bg-dark-800 px-3 text-white focus:border-gold focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-white-50">To date (optional)</label>
+                <input
+                  type="date"
+                  value={toEndDate}
+                  min={toDate || undefined}
+                  onChange={(e) => setToEndDate(e.target.value)}
+                  className="h-10 border border-white-10 bg-dark-800 px-3 text-white focus:border-gold focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-white-50">From</label>
+                <input
+                  type="time"
+                  value={toStart}
+                  onChange={(e) => setToStart(e.target.value)}
+                  className="h-10 border border-white-10 bg-dark-800 px-3 text-white focus:border-gold focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-white-50">To</label>
+                <input
+                  type="time"
+                  value={toEnd}
+                  onChange={(e) => setToEnd(e.target.value)}
+                  className="h-10 border border-white-10 bg-dark-800 px-3 text-white focus:border-gold focus:outline-none"
+                />
+              </div>
+              <div className="min-w-[8rem] flex-1">
+                <label className="mb-1 block text-xs text-white-50">Reason (optional)</label>
+                <input
+                  type="text"
+                  value={toReason}
+                  onChange={(e) => setToReason(e.target.value)}
+                  placeholder="Vacation"
+                  className="h-10 w-full border border-white-10 bg-dark-800 px-3 text-white focus:border-gold focus:outline-none"
+                />
+              </div>
+              <Button variant="outline" size="sm" onClick={addTimeOff} disabled={!toDate}>
+                Add
+              </Button>
             </div>
           </div>
 

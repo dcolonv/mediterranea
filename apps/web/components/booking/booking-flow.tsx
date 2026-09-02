@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { LuChevronLeft } from 'react-icons/lu';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Button, Input, Textarea } from '@/components/ui';
-import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
-import { CONTACT_INFO } from '@mediterranea/shared/constants';
+import { Button, Input, Textarea, PriceTag } from '@/components/ui';
+import { formatDuration } from '@mediterranea/shared/utils';
+import { CONTACT_INFO, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import { useLang } from '@/components/i18n/language-provider';
 import { serviceName } from '@/lib/i18n/service';
 import { MonthCalendar, firstSelectableDate } from './month-calendar';
@@ -66,6 +67,7 @@ export function BookingFlow({
   policyText,
   businessHours,
   maxAdvanceDays,
+  blockedDates = [],
   prefill,
 }: {
   services: PublicService[];
@@ -75,6 +77,8 @@ export function BookingFlow({
   policyText: string;
   businessHours: WorkingHours;
   maxAdvanceDays: number;
+  /** Dates fully closed (e.g. holidays) to disable in the calendar. */
+  blockedDates?: string[];
   prefill?: { name: string; email: string; phone: string } | null;
 }) {
   const { locale, dict } = useLang();
@@ -123,6 +127,8 @@ export function BookingFlow({
   const staffName = (id: string) => staffList.find((s) => s.id === id)?.name;
   const minPrice = (list: PublicService[]) =>
     list.reduce((min, s) => Math.min(min, s.price), Infinity);
+  const minFirstPrice = (list: PublicService[]) =>
+    list.reduce((min, s) => Math.min(min, s.firstVisitPrice || s.price), Infinity);
 
   // For a deep-linked service, resolve whether the practitioner step is needed.
   useEffect(() => {
@@ -191,8 +197,8 @@ export function BookingFlow({
 
   // Default the calendar to today (or the next open day) as soon as we reach the date step.
   const defaultDate = useMemo(
-    () => firstSelectableDate(businessHours, maxAdvanceDays),
-    [businessHours, maxAdvanceDays]
+    () => firstSelectableDate(businessHours, maxAdvanceDays, BOOKING_OPENS_DATE, blockedDates),
+    [businessHours, maxAdvanceDays, blockedDates]
   );
   useEffect(() => {
     if (step === 'time' && service && !date) void selectDate(defaultDate, service);
@@ -220,9 +226,14 @@ export function BookingFlow({
     setSubmitting(false);
     if (res.success) {
       setStep('done');
-    } else {
-      setError(res.error);
-      // If the slot was taken, refresh the day's slots so it shows as blocked.
+      return;
+    }
+
+    setError(res.error);
+    // Only send them back to pick another time when this slot is genuinely gone;
+    // for any other failure stay on the form so their details aren't lost.
+    const slotTaken = /no longer available|conflicts|already/i.test(res.error ?? '');
+    if (slotTaken) {
       setTime('');
       if (date) void selectDate(date);
       setStep('time');
@@ -235,6 +246,16 @@ export function BookingFlow({
     if (staffList.length >= 2) setStep('practitioner');
     else if (group && group !== 'custom') setStep('sub');
     else setStep('type');
+  }
+
+  // A single top-left Back control, driven by the current step.
+  const isDeepLinkEntry = Boolean(initialService) && (step === 'time' || step === 'practitioner');
+  const canGoBack = step !== 'type' && step !== 'done' && !isDeepLinkEntry;
+  function goBack() {
+    if (step === 'sub') setStep('type');
+    else if (step === 'practitioner') setStep(group && group !== 'custom' ? 'sub' : 'type');
+    else if (step === 'time') backFromTime();
+    else if (step === 'details') setStep('time');
   }
 
   function resetToStart() {
@@ -315,6 +336,14 @@ export function BookingFlow({
       </div>
 
       <div className="border border-white-10 bg-dark-800/50 p-8 sm:p-12">
+        {canGoBack && (
+          <button
+            onClick={goBack}
+            className="mb-6 inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium tracking-wide text-white-70 transition-colors hover:text-gold"
+          >
+            <LuChevronLeft className="h-4 w-4" aria-hidden /> {b.back}
+          </button>
+        )}
         {error && <p className="mb-6 text-sm text-red-400">{error}</p>}
 
         {/* Step: choose facial type (Custom / Focus / INDIBA) */}
@@ -330,7 +359,9 @@ export function BookingFlow({
                     title={svcName(customService)}
                     hint={copy.customDuration}
                     description={svcName(customService) === copy.customName ? copy.customDesc : customService.description}
-                    price={formatPrice(customService.price)}
+                    price={customService.price}
+                    firstPrice={customService.firstVisitPrice}
+                    firstLabel={copy.firstVisit}
                     onClick={() => chooseGroup('custom')}
                   />
                 )}
@@ -339,7 +370,11 @@ export function BookingFlow({
                     title={copy.focusName}
                     hint={copy.focusDuration}
                     description={copy.focusDesc}
-                    price={`${b.from} ${formatPrice(minPrice(focusServices))}`}
+                    price={minPrice(focusServices)}
+                    firstPrice={minFirstPrice(focusServices)}
+                    from
+                    fromLabel={b.from}
+                    firstLabel={copy.firstVisit}
                     onClick={() => chooseGroup('focus')}
                   />
                 )}
@@ -348,7 +383,11 @@ export function BookingFlow({
                     title={copy.indibaName}
                     hint={copy.indibaDuration}
                     description={copy.indibaDesc}
-                    price={`${b.from} ${formatPrice(minPrice(indibaServices))}`}
+                    price={minPrice(indibaServices)}
+                    firstPrice={minFirstPrice(indibaServices)}
+                    from
+                    fromLabel={b.from}
+                    firstLabel={copy.firstVisit}
                     onClick={() => chooseGroup('indiba')}
                   />
                 )}
@@ -357,8 +396,11 @@ export function BookingFlow({
                     key={s.id}
                     title={svcName(s)}
                     hint={formatDuration(s.durationMinutes)}
-                    description={s.description}
-                    price={formatPrice(s.price)}
+                    description={locale === 'es' && s.descriptionEs ? s.descriptionEs : s.description}
+                    price={s.price}
+                    firstPrice={s.firstVisitPrice}
+                    firstLabel={copy.firstVisit}
+                    badge={s.temporary ? copy.seasonal : undefined}
                     onClick={() => void chooseService(s)}
                   />
                 ))}
@@ -382,18 +424,18 @@ export function BookingFlow({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <span className="font-serif text-lg text-white">{svcName(s)}</span>
-                    <span className="shrink-0 text-gold">{formatPrice(s.price)}</span>
+                    <PriceTag
+                      price={s.price}
+                      firstPrice={s.firstVisitPrice}
+                      firstLabel={copy.firstVisit}
+                      className="shrink-0"
+                    />
                   </div>
                   <span className="mt-1 text-xs uppercase tracking-wider text-white-30">
                     {formatDuration(s.durationMinutes)}
                   </span>
                 </button>
               ))}
-            </div>
-            <div className="mt-8">
-              <Button variant="ghost" size="sm" onClick={() => setStep('type')}>
-                ‹ {b.back}
-              </Button>
             </div>
           </div>
         )}
@@ -424,17 +466,6 @@ export function BookingFlow({
                 </button>
               ))}
             </div>
-            <div className="mt-8">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStep(group && group !== 'custom' ? 'sub' : 'type')}
-                disabled={Boolean(initialService)}
-                className={initialService ? 'opacity-0 pointer-events-none' : ''}
-              >
-                ‹ {b.back}
-              </Button>
-            </div>
           </div>
         )}
 
@@ -451,6 +482,8 @@ export function BookingFlow({
               <MonthCalendar
                 businessHours={businessHours}
                 maxAdvanceDays={maxAdvanceDays}
+                minDate={BOOKING_OPENS_DATE}
+                blockedDates={blockedDates}
                 locale={locale}
                 selectedDate={date}
                 onSelectDate={selectDate}
@@ -497,18 +530,6 @@ export function BookingFlow({
                 )}
               </div>
             </div>
-
-            <div className="mt-8">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={backFromTime}
-                disabled={Boolean(initialService)}
-                className={initialService ? 'opacity-0 pointer-events-none' : ''}
-              >
-                ‹ {b.back}
-              </Button>
-            </div>
           </div>
         )}
 
@@ -541,12 +562,9 @@ export function BookingFlow({
               <p className="mt-6 text-xs leading-relaxed text-white-30">{policyText}</p>
             )}
 
-            <div className="mt-8 flex items-center gap-3">
+            <div className="mt-8">
               <Button variant="elegant" onClick={confirm} disabled={submitting}>
                 {submitting ? b.booking : b.confirm}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setStep('time')} disabled={submitting}>
-                ‹ {b.back}
               </Button>
             </div>
           </div>
@@ -561,12 +579,23 @@ function GroupCard({
   hint,
   description,
   price,
+  firstPrice,
+  from,
+  fromLabel,
+  firstLabel,
+  badge,
   onClick,
 }: {
   title: string;
   hint: string;
   description: string;
-  price: string;
+  price: number;
+  firstPrice?: number;
+  from?: boolean;
+  fromLabel?: string;
+  firstLabel: string;
+  /** Optional tag shown above the title (e.g. "Seasonal"). */
+  badge?: string;
   onClick: () => void;
 }) {
   return (
@@ -574,11 +603,23 @@ function GroupCard({
       onClick={onClick}
       className="group flex h-full flex-col border border-white-10 p-6 text-left transition-colors hover:border-gold/40"
     >
+      {badge && (
+        <span className="mb-2 inline-flex w-fit border border-gold/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-gold">
+          {badge}
+        </span>
+      )}
       <div className="flex items-start justify-between gap-3">
         <span className="font-serif text-lg text-white transition-colors group-hover:text-gold">
           {title}
         </span>
-        <span className="shrink-0 text-gold">{price}</span>
+        <PriceTag
+          price={price}
+          firstPrice={firstPrice}
+          from={from}
+          fromLabel={fromLabel}
+          firstLabel={firstLabel}
+          className="shrink-0"
+        />
       </div>
       <span className="mt-1 text-xs uppercase tracking-wider text-white-30">{hint}</span>
       <span className="mt-3 text-sm font-light leading-relaxed text-white-50">{description}</span>

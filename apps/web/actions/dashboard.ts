@@ -2,6 +2,7 @@
 
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
 import * as data from '@/lib/agent/data';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import type { Appointment, Service, Staff, Room } from '@mediterranea/shared/types';
 
 function todayInMalaga(): string {
@@ -83,11 +84,11 @@ export async function getDashboard(): Promise<
       success: true,
       data: {
         today,
-        todayAppointments: todayAppts,
+        todayAppointments: todayAppts.map((a) => serializeDoc(a)),
         metrics,
-        services: services as Service[],
-        staff: staff as Staff[],
-        rooms: rooms as Room[],
+        services: (services as Service[]).map((s) => serializeDoc(s)),
+        staff: (staff as Staff[]).map((s) => serializeDoc(s)),
+        rooms: (rooms as Room[]).map((r) => serializeDoc(r)),
       },
     };
   } catch (error) {

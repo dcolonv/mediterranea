@@ -89,7 +89,7 @@ export function Hero() {
                   : 'opacity-0 translate-y-6'
               }`}
             >
-              <Link href="/init/book">
+              <Link href="/book">
                 <Button variant="elegant" size="lg">
                   {dict.hero.book}
                 </Button>

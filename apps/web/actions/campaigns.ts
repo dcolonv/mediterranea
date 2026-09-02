@@ -2,6 +2,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
+import { serializeDoc } from '@/lib/firebase/serialize';
 import { normalizePhone } from '@mediterranea/shared/utils';
 import type {
   Campaign,
@@ -85,7 +86,8 @@ export async function getCampaigns() {
     const snap = await getAdminDb().collection(COLLECTION).get();
     const items = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }) as Campaign)
-      .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+      .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0))
+      .map((c) => serializeDoc(c));
     return { success: true as const, data: items };
   } catch (error) {
     console.error('getCampaigns failed:', error);

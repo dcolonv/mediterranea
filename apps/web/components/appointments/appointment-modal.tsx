@@ -29,11 +29,13 @@ const statusActions: Record<
 > = {
   pending: [
     { next: 'confirmed', label: 'Confirm', tone: 'primary' },
+    { next: 'rejected', label: 'Reject', tone: 'danger' },
     { next: 'cancelled', label: 'Cancel', tone: 'danger' },
   ],
   confirmed: [
     { next: 'checked-in', label: 'Check In', tone: 'primary' },
     { next: 'no-show', label: 'No-show', tone: 'neutral' },
+    { next: 'rejected', label: 'Reject', tone: 'danger' },
     { next: 'cancelled', label: 'Cancel', tone: 'danger' },
   ],
   'checked-in': [
@@ -42,6 +44,7 @@ const statusActions: Record<
   ],
   completed: [],
   cancelled: [],
+  rejected: [],
   'no-show': [],
 };
 
