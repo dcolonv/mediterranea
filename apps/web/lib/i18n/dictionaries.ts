@@ -68,7 +68,7 @@ const en = {
       'A radiofrequency facial that boosts circulation and collagen from within, for firmer, revitalized skin with a natural glow.',
     cta: 'Book Your Facial',
     minutes: 'min',
-    firstVisit: 'first visit',
+    firstVisit: 'starting price',
   },
   facialTreatments: {
     eyebrow: 'The Treatments',
@@ -414,7 +414,7 @@ const es: typeof en = {
       'Un facial de radiofrecuencia que activa la circulación y el colágeno desde el interior, para una piel más firme, revitalizada y con luminosidad natural.',
     cta: 'Reserva tu cita',
     minutes: 'min',
-    firstVisit: 'primera visita',
+    firstVisit: 'precio de salida',
   },
   facialTreatments: {
     eyebrow: 'Los Tratamientos',
