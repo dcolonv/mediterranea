@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui';
-import { formatPrice } from '@mediterranea/shared/utils';
+import { Button, PriceTag } from '@/components/ui';
 import { getBookingServices } from '@/actions/public-booking';
 import { getServerDictionary } from '@/lib/i18n/server';
 
@@ -18,34 +17,38 @@ export default async function ServicesPage() {
 
   const b = dict.booking;
 
-  const priceOf = (group: string) => {
-    const inGroup = services.filter((sv) => sv.bookingGroup === group).map((sv) => sv.price);
-    return inGroup.length ? Math.min(...inGroup) : null;
+  const groupPricing = (group: string) => {
+    const inGroup = services.filter((sv) => sv.bookingGroup === group);
+    if (!inGroup.length) return null;
+    return {
+      regular: Math.min(...inGroup.map((sv) => sv.price)),
+      first: Math.min(...inGroup.map((sv) => sv.firstVisitPrice || sv.price)),
+    };
   };
-  const customPrice = priceOf('custom');
-  const focusPrice = priceOf('focus');
-  const indibaPrice = priceOf('indiba');
 
   const cards = [
     {
       name: s.customName,
       duration: s.customDuration,
       description: s.customDesc,
-      price: customPrice === null ? '' : formatPrice(customPrice),
+      pricing: groupPricing('custom'),
+      from: false,
       href: '/book?group=custom',
     },
     {
       name: s.focusName,
       duration: s.focusDuration,
       description: s.focusDesc,
-      price: focusPrice === null ? '' : `${b.from} ${formatPrice(focusPrice)}`,
+      pricing: groupPricing('focus'),
+      from: true,
       href: '/book?group=focus',
     },
     {
       name: s.indibaName,
       duration: s.indibaDuration,
       description: s.indibaDesc,
-      price: indibaPrice === null ? '' : `${b.from} ${formatPrice(indibaPrice)}`,
+      pricing: groupPricing('indiba'),
+      from: true,
       href: '/book?group=indiba',
     },
   ];
@@ -81,7 +84,16 @@ export default async function ServicesPage() {
                 <h2 className="font-serif text-2xl text-white transition-colors duration-300 group-hover:text-gold">
                   {card.name}
                 </h2>
-                {card.price && <span className="shrink-0 text-gold">{card.price}</span>}
+                {card.pricing && (
+                  <PriceTag
+                    price={card.pricing.regular}
+                    firstPrice={card.pricing.first}
+                    from={card.from}
+                    fromLabel={b.from}
+                    firstLabel={s.firstVisit}
+                    className="shrink-0"
+                  />
+                )}
               </div>
               <p className="flex-1 text-sm font-light leading-relaxed text-white-50">{card.description}</p>
               <Link href={card.href} className="mt-8">

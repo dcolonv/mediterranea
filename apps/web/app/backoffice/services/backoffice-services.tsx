@@ -25,6 +25,7 @@ interface FormState {
   bookingGroup: string;
   durationMinutes: string;
   price: string;
+  firstVisitPrice: string;
   roomType: string;
   displayOrder: string;
   isActive: boolean;
@@ -40,6 +41,7 @@ const EMPTY_FORM: FormState = {
   bookingGroup: '',
   durationMinutes: '60',
   price: '0',
+  firstVisitPrice: '0',
   roomType: '',
   displayOrder: '0',
   isActive: true,
@@ -104,6 +106,7 @@ export function BackofficeServices() {
       bookingGroup: svc.bookingGroup ?? '',
       durationMinutes: String(svc.durationMinutes),
       price: String(svc.price),
+      firstVisitPrice: String(svc.firstVisitPrice ?? 0),
       roomType: svc.roomType ?? '',
       displayOrder: String(svc.displayOrder ?? 0),
       isActive: svc.isActive,
@@ -153,6 +156,7 @@ export function BackofficeServices() {
       bookingGroup: form.bookingGroup as ServiceFormData['bookingGroup'],
       durationMinutes: duration,
       price,
+      firstVisitPrice: Number(form.firstVisitPrice) || 0,
       roomType: form.roomType,
       isActive: form.isActive,
       displayOrder: Number(form.displayOrder) || 0,
@@ -292,7 +296,7 @@ export function BackofficeServices() {
             ]}
           />
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Input
               id="svc-duration"
               label="Duration (min)"
@@ -306,6 +310,13 @@ export function BackofficeServices() {
               type="number"
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
+            />
+            <Input
+              id="svc-first-price"
+              label="First-visit (€, 0 = none)"
+              type="number"
+              value={form.firstVisitPrice}
+              onChange={(e) => setForm({ ...form, firstVisitPrice: e.target.value })}
             />
             <Input
               id="svc-order"

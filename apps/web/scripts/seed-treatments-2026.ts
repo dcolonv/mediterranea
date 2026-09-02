@@ -143,7 +143,7 @@ const SERVICES: Seed[] = [
       'Un facial focalizado de radiofrecuencia INDIBA que activa la circulación y el colágeno para una piel más firme y revitalizada.',
     bookingGroup: 'indiba',
     durationMinutes: 45,
-    price: 75,
+    price: 65,
   },
   {
     slug: 'indiba-full',
@@ -158,6 +158,9 @@ const SERVICES: Seed[] = [
     price: 100,
   },
 ];
+
+// First-appointment intro price by regular price tier (0 = none).
+const FIRST_VISIT_BY_PRICE: Record<number, number> = { 120: 100, 100: 90, 75: 65, 65: 55 };
 
 // Slugs from the earlier menu that this booking model replaces.
 const REMOVE_SLUGS = [
@@ -203,6 +206,7 @@ async function seed() {
         bookingGroup: s.bookingGroup,
         durationMinutes: s.durationMinutes,
         price: s.price,
+        firstVisitPrice: FIRST_VISIT_BY_PRICE[s.price] ?? 0,
         roomType: '',
         isActive: true,
         displayOrder: i + 1,

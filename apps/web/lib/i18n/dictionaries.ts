@@ -57,7 +57,7 @@ const en = {
     customName: 'Custom Facial',
     customDuration: '1.5–2 hours',
     customDesc:
-      'A fully personalized session. After assessing your skin, we apply whichever of these treatments it needs, from hydration, purifying and peeling to even tone and firmness, often combining several in a single visit.',
+      'A fully personalized session. After assessing your skin, we apply whichever of these treatments it needs, from hydration, purifying and peeling to even tone and firmness, combining several in a single visit.',
     focusName: 'Focus Facial',
     focusDuration: '45 minutes',
     focusDesc:
@@ -68,6 +68,7 @@ const en = {
       'A radiofrequency facial that boosts circulation and collagen from within, for firmer, revitalized skin with a natural glow.',
     cta: 'Book Your Facial',
     minutes: 'min',
+    firstVisit: 'first visit',
   },
   facialTreatments: {
     eyebrow: 'The Treatments',
@@ -402,7 +403,7 @@ const es: typeof en = {
     customName: 'Facial Personalizado',
     customDuration: '1,5–2 horas',
     customDesc:
-      'Una sesión totalmente personalizada. Tras valorar tu piel, aplicamos los tratamientos que necesita, desde hidratación y purificante hasta peeling, unificación del tono y firmeza, incluso varios combinados en una misma sesión.',
+      'Una sesión totalmente personalizada. Tras valorar tu piel, aplicamos los tratamientos que necesita, desde hidratación y purificante hasta peeling, unificación del tono y firmeza, combinando varios en una misma sesión.',
     focusName: 'Facial Focalizado',
     focusDuration: '45 minutos',
     focusDesc:
@@ -413,6 +414,7 @@ const es: typeof en = {
       'Un facial de radiofrecuencia que activa la circulación y el colágeno desde el interior, para una piel más firme, revitalizada y con luminosidad natural.',
     cta: 'Reserva tu cita',
     minutes: 'min',
+    firstVisit: 'primera visita',
   },
   facialTreatments: {
     eyebrow: 'Los Tratamientos',

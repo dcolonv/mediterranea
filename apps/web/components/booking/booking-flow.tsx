@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { LuChevronLeft } from 'react-icons/lu';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Button, Input, Textarea } from '@/components/ui';
-import { formatPrice, formatDuration } from '@mediterranea/shared/utils';
+import { Button, Input, Textarea, PriceTag } from '@/components/ui';
+import { formatDuration } from '@mediterranea/shared/utils';
 import { CONTACT_INFO, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import { useLang } from '@/components/i18n/language-provider';
 import { serviceName } from '@/lib/i18n/service';
@@ -124,6 +124,8 @@ export function BookingFlow({
   const staffName = (id: string) => staffList.find((s) => s.id === id)?.name;
   const minPrice = (list: PublicService[]) =>
     list.reduce((min, s) => Math.min(min, s.price), Infinity);
+  const minFirstPrice = (list: PublicService[]) =>
+    list.reduce((min, s) => Math.min(min, s.firstVisitPrice || s.price), Infinity);
 
   // For a deep-linked service, resolve whether the practitioner step is needed.
   useEffect(() => {
@@ -349,7 +351,9 @@ export function BookingFlow({
                     title={svcName(customService)}
                     hint={copy.customDuration}
                     description={svcName(customService) === copy.customName ? copy.customDesc : customService.description}
-                    price={formatPrice(customService.price)}
+                    price={customService.price}
+                    firstPrice={customService.firstVisitPrice}
+                    firstLabel={copy.firstVisit}
                     onClick={() => chooseGroup('custom')}
                   />
                 )}
@@ -358,7 +362,11 @@ export function BookingFlow({
                     title={copy.focusName}
                     hint={copy.focusDuration}
                     description={copy.focusDesc}
-                    price={`${b.from} ${formatPrice(minPrice(focusServices))}`}
+                    price={minPrice(focusServices)}
+                    firstPrice={minFirstPrice(focusServices)}
+                    from
+                    fromLabel={b.from}
+                    firstLabel={copy.firstVisit}
                     onClick={() => chooseGroup('focus')}
                   />
                 )}
@@ -367,7 +375,11 @@ export function BookingFlow({
                     title={copy.indibaName}
                     hint={copy.indibaDuration}
                     description={copy.indibaDesc}
-                    price={`${b.from} ${formatPrice(minPrice(indibaServices))}`}
+                    price={minPrice(indibaServices)}
+                    firstPrice={minFirstPrice(indibaServices)}
+                    from
+                    fromLabel={b.from}
+                    firstLabel={copy.firstVisit}
                     onClick={() => chooseGroup('indiba')}
                   />
                 )}
@@ -377,7 +389,9 @@ export function BookingFlow({
                     title={svcName(s)}
                     hint={formatDuration(s.durationMinutes)}
                     description={s.description}
-                    price={formatPrice(s.price)}
+                    price={s.price}
+                    firstPrice={s.firstVisitPrice}
+                    firstLabel={copy.firstVisit}
                     onClick={() => void chooseService(s)}
                   />
                 ))}
@@ -401,7 +415,12 @@ export function BookingFlow({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <span className="font-serif text-lg text-white">{svcName(s)}</span>
-                    <span className="shrink-0 text-gold">{formatPrice(s.price)}</span>
+                    <PriceTag
+                      price={s.price}
+                      firstPrice={s.firstVisitPrice}
+                      firstLabel={copy.firstVisit}
+                      className="shrink-0"
+                    />
                   </div>
                   <span className="mt-1 text-xs uppercase tracking-wider text-white-30">
                     {formatDuration(s.durationMinutes)}
@@ -550,12 +569,20 @@ function GroupCard({
   hint,
   description,
   price,
+  firstPrice,
+  from,
+  fromLabel,
+  firstLabel,
   onClick,
 }: {
   title: string;
   hint: string;
   description: string;
-  price: string;
+  price: number;
+  firstPrice?: number;
+  from?: boolean;
+  fromLabel?: string;
+  firstLabel: string;
   onClick: () => void;
 }) {
   return (
@@ -567,7 +594,14 @@ function GroupCard({
         <span className="font-serif text-lg text-white transition-colors group-hover:text-gold">
           {title}
         </span>
-        <span className="shrink-0 text-gold">{price}</span>
+        <PriceTag
+          price={price}
+          firstPrice={firstPrice}
+          from={from}
+          fromLabel={fromLabel}
+          firstLabel={firstLabel}
+          className="shrink-0"
+        />
       </div>
       <span className="mt-1 text-xs uppercase tracking-wider text-white-30">{hint}</span>
       <span className="mt-3 text-sm font-light leading-relaxed text-white-50">{description}</span>

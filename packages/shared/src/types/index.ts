@@ -23,6 +23,8 @@ export interface Service {
   bookingGroup?: BookingGroup;
   durationMinutes: number;
   price: number;
+  /** Intro price for a client's first appointment; unset/0 = no first-visit price. */
+  firstVisitPrice?: number;
   isActive: boolean;
   displayOrder: number;
   /** Room type this treatment requires; when unset, any active room qualifies. */

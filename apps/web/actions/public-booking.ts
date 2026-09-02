@@ -32,6 +32,8 @@ export interface PublicService {
   bookingGroup: string;
   durationMinutes: number;
   price: number;
+  /** Intro price for a first appointment; 0 = none. */
+  firstVisitPrice: number;
 }
 
 export interface PublicStaff {
@@ -51,6 +53,7 @@ function toPublicService(s: {
   bookingGroup?: string;
   durationMinutes: number;
   price: number;
+  firstVisitPrice?: number;
 }): PublicService {
   return {
     id: s.id,
@@ -63,6 +66,7 @@ function toPublicService(s: {
     bookingGroup: s.bookingGroup ?? '',
     durationMinutes: s.durationMinutes,
     price: s.price,
+    firstVisitPrice: s.firstVisitPrice ?? 0,
   };
 }
 
