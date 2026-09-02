@@ -195,6 +195,8 @@ export interface CancellationPolicy {
   cutoffHours: number;
   /** Policy text shown to customers at booking. */
   policyText: string;
+  /** Spanish policy text; falls back to `policyText` when empty. */
+  policyTextEs?: string;
 }
 
 export interface LoyaltyRules {

@@ -125,6 +125,8 @@ export const DEFAULT_STUDIO_SETTINGS = {
     cutoffHours: 24,
     policyText:
       'Please give at least 24 hours’ notice to cancel or reschedule. Later changes may incur a fee.',
+    policyTextEs:
+      'Avísanos con al menos 24 horas de antelación para cancelar o cambiar tu cita. Los cambios posteriores pueden conllevar un cargo.',
   },
   loyalty: {
     enabled: false,

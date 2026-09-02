@@ -25,6 +25,7 @@ export function BackofficeSettings() {
   const [bufferMinutes, setBufferMinutes] = useState('30');
   const [cutoffHours, setCutoffHours] = useState('24');
   const [policyText, setPolicyText] = useState('');
+  const [policyTextEs, setPolicyTextEs] = useState('');
 
   const [loyaltyEnabled, setLoyaltyEnabled] = useState(false);
   const [earnRate, setEarnRate] = useState('1');
@@ -51,6 +52,7 @@ export function BackofficeSettings() {
         setBufferMinutes(String(s.booking.bufferMinutes ?? 30));
         setCutoffHours(String(s.cancellation.cutoffHours));
         setPolicyText(s.cancellation.policyText);
+        setPolicyTextEs(s.cancellation.policyTextEs ?? '');
         setLoyaltyEnabled(s.loyalty?.enabled ?? false);
         setEarnRate(String(s.loyalty?.earnPointsPerEuro ?? 1));
         setRedeemRate(String(s.loyalty?.redeemPointsPerEuro ?? 20));
@@ -102,6 +104,7 @@ export function BackofficeSettings() {
       cancellation: {
         cutoffHours: Number(cutoffHours),
         policyText: policyText.trim(),
+        policyTextEs: policyTextEs.trim(),
       },
     };
 
@@ -232,9 +235,16 @@ export function BackofficeSettings() {
           </div>
           <Textarea
             id="policy-text"
-            label="Policy text"
+            label="Policy text (English)"
             value={policyText}
             onChange={(e) => setPolicyText(e.target.value)}
+            rows={3}
+          />
+          <Textarea
+            id="policy-text-es"
+            label="Policy text (Spanish) — falls back to English when empty"
+            value={policyTextEs}
+            onChange={(e) => setPolicyTextEs(e.target.value)}
             rows={3}
           />
         </div>
