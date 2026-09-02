@@ -29,16 +29,33 @@ async function main() {
     sunday: null,
   };
 
-  await db.collection('staff').doc('mariana').set(
-    { name: 'Mariana', role: 'Esteticista', active: true, serviceIds, workingHours: wh, timeOff: [], createdAt: now, updatedAt: now },
-    { merge: true }
-  );
+  // Never clobber availability edited in the backoffice: working hours and time
+  // off are only written when creating the practitioner. On re-runs we just
+  // refresh the service qualifications (the reason to run this again).
+  const staffRef = db.collection('staff').doc('mariana');
+  const existing = await staffRef.get();
 
-  await db.collection('rooms').doc('cabina-1').set(
-    { name: 'Cabina 1', type: 'facial', isActive: true, createdAt: now },
-    { merge: true }
-  );
+  if (existing.exists) {
+    await staffRef.update({ serviceIds, updatedAt: now });
+    console.log(`Practitioner exists — refreshed ${serviceIds.length} qualifications (hours/time off untouched).`);
+  } else {
+    await staffRef.set({
+      name: 'Mariana',
+      role: 'Esteticista',
+      active: true,
+      serviceIds,
+      workingHours: wh,
+      timeOff: [],
+      createdAt: now,
+      updatedAt: now,
+    });
+    console.log(`Created practitioner qualified for ${serviceIds.length} services.`);
+  }
 
-  console.log(`Seeded practitioner (qualified for ${serviceIds.length} services) + 1 room.`);
+  const roomRef = db.collection('rooms').doc('cabina-1');
+  if (!(await roomRef.get()).exists) {
+    await roomRef.set({ name: 'Cabina 1', type: 'facial', isActive: true, createdAt: now });
+    console.log('Created room "Cabina 1".');
+  }
 }
 main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });
