@@ -423,13 +423,13 @@ export function BookingFlow({
                   onClick={() => void chooseService(s)}
                   className="flex flex-col border border-white-10 p-5 text-left transition-colors hover:border-gold/40"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                     <span className="font-serif text-lg text-white">{svcName(s)}</span>
                     <PriceTag
                       price={s.price}
                       firstPrice={s.firstVisitPrice}
                       firstLabel={copy.firstVisit}
-                      className="shrink-0"
+                      className="shrink-0 text-left sm:text-right"
                     />
                   </div>
                   <span className="mt-1 text-xs uppercase tracking-wider text-white-30">
@@ -609,7 +609,8 @@ function GroupCard({
           {badge}
         </span>
       )}
-      <div className="flex items-start justify-between gap-3">
+      {/* Stacked on small screens so long names and the price never collide. */}
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <span className="font-serif text-lg text-white transition-colors group-hover:text-gold">
           {title}
         </span>
@@ -619,7 +620,7 @@ function GroupCard({
           from={from}
           fromLabel={fromLabel}
           firstLabel={firstLabel}
-          className="shrink-0"
+          className="shrink-0 text-left sm:text-right"
         />
       </div>
       <span className="mt-1 text-xs uppercase tracking-wider text-white-30">{hint}</span>
