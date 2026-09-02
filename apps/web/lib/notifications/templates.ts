@@ -6,6 +6,9 @@ import { CONTACT_INFO } from '@mediterranea/shared/constants';
 
 const STUDIO = 'Mediterránea Face Studio';
 
+/** Language a message is rendered in — the one the client booked in. */
+export type NotificationLocale = 'en' | 'es';
+
 export interface NotificationContext {
   clientName: string;
   serviceName: string;
@@ -13,6 +16,7 @@ export interface NotificationContext {
   time: string; // HH:MM
   staffName?: string | null;
   policyText?: string;
+  locale?: NotificationLocale;
 }
 
 export interface RenderedMessage {
@@ -22,10 +26,10 @@ export interface RenderedMessage {
   sms: string;
 }
 
-function prettyDate(date: string): string {
-  // e.g. "Friday, 8 August 2026" — server-locale, timezone-agnostic (date-only).
+function prettyDate(date: string, locale: NotificationLocale = 'en'): string {
+  // e.g. "Friday, 8 August 2026" / "viernes, 8 de agosto de 2026" — date-only.
   const d = new Date(`${date}T00:00:00`);
-  return d.toLocaleDateString('en-GB', {
+  return d.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-GB', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -45,12 +49,38 @@ function shell(title: string, bodyHtml: string): string {
 }
 
 function line(ctx: NotificationContext): string {
-  const withStaff = ctx.staffName ? ` with ${ctx.staffName}` : '';
-  return `${ctx.serviceName}${withStaff} on ${prettyDate(ctx.date)} at ${ctx.time}`;
+  const es = ctx.locale === 'es';
+  const withStaff = ctx.staffName ? (es ? ` con ${ctx.staffName}` : ` with ${ctx.staffName}`) : '';
+  const when = prettyDate(ctx.date, ctx.locale);
+  return es
+    ? `${ctx.serviceName}${withStaff} el ${when} a las ${ctx.time}`
+    : `${ctx.serviceName}${withStaff} on ${when} at ${ctx.time}`;
 }
 
 export function bookingConfirmed(ctx: NotificationContext): RenderedMessage {
   const summary = line(ctx);
+  const policy = ctx.policyText
+    ? `<p style="font-size:12px;color:#8a8378">${ctx.policyText}</p>`
+    : '';
+
+  if (ctx.locale === 'es') {
+    return {
+      subject: `Tu cita en ${STUDIO} está confirmada`,
+      html: shell(
+        'Cita confirmada',
+        `<p>Hola ${ctx.clientName}:</p>
+         <p>Tu cita está reservada:</p>
+         <p style="font-size:16px"><strong>${summary}</strong></p>
+         ${policy}
+         <p>Te esperamos.</p>`
+      ),
+      text: `Hola ${ctx.clientName}, tu cita en ${STUDIO} está confirmada: ${summary}.${
+        ctx.policyText ? ` ${ctx.policyText}` : ''
+      }`,
+      sms: `${STUDIO}: tu cita está confirmada — ${summary}.`,
+    };
+  }
+
   return {
     subject: `Your appointment at ${STUDIO} is confirmed`,
     html: shell(
@@ -58,7 +88,7 @@ export function bookingConfirmed(ctx: NotificationContext): RenderedMessage {
       `<p>Hi ${ctx.clientName},</p>
        <p>Your appointment is booked:</p>
        <p style="font-size:16px"><strong>${summary}</strong></p>
-       ${ctx.policyText ? `<p style="font-size:12px;color:#8a8378">${ctx.policyText}</p>` : ''}
+       ${policy}
        <p>We look forward to seeing you.</p>`
     ),
     text: `Hi ${ctx.clientName}, your appointment at ${STUDIO} is confirmed: ${summary}.${
@@ -70,6 +100,23 @@ export function bookingConfirmed(ctx: NotificationContext): RenderedMessage {
 
 export function appointmentCancelled(ctx: NotificationContext): RenderedMessage {
   const summary = line(ctx);
+  const when = prettyDate(ctx.date, ctx.locale);
+
+  if (ctx.locale === 'es') {
+    return {
+      subject: `Tu cita en ${STUDIO} ha sido cancelada`,
+      html: shell(
+        'Cita cancelada',
+        `<p>Hola ${ctx.clientName}:</p>
+         <p>Tu cita ha sido cancelada:</p>
+         <p style="font-size:16px"><strong>${summary}</strong></p>
+         <p>Para reservar de nuevo, visita nuestra web o llámanos.</p>`
+      ),
+      text: `Hola ${ctx.clientName}, tu cita en ${STUDIO} (${summary}) ha sido cancelada. Para reservar de nuevo, llama al ${CONTACT_INFO.phone}.`,
+      sms: `${STUDIO}: tu cita del ${when} a las ${ctx.time} ha sido cancelada. Llama al ${CONTACT_INFO.phone} para reservar de nuevo.`,
+    };
+  }
+
   return {
     subject: `Your appointment at ${STUDIO} was cancelled`,
     html: shell(
@@ -80,7 +127,7 @@ export function appointmentCancelled(ctx: NotificationContext): RenderedMessage 
        <p>To rebook, visit our website or call us.</p>`
     ),
     text: `Hi ${ctx.clientName}, your appointment at ${STUDIO} (${summary}) has been cancelled. To rebook, call ${CONTACT_INFO.phone}.`,
-    sms: `${STUDIO}: your appointment on ${prettyDate(ctx.date)} at ${ctx.time} was cancelled. Call ${CONTACT_INFO.phone} to rebook.`,
+    sms: `${STUDIO}: your appointment on ${when} at ${ctx.time} was cancelled. Call ${CONTACT_INFO.phone} to rebook.`,
   };
 }
 
@@ -108,6 +155,22 @@ export function giftCardIssued(input: {
 }
 
 export function waitlistSlotOpened(ctx: NotificationContext): RenderedMessage {
+  if (ctx.locale === 'es') {
+    const cuando = `${prettyDate(ctx.date, 'es')} a las ${ctx.time}`;
+    return {
+      subject: `Se ha liberado una cita en ${STUDIO}`,
+      html: shell(
+        'Se ha liberado una cita',
+        `<p>Hola ${ctx.clientName}:</p>
+         <p>Buenas noticias: se ha liberado una cita para <strong>${ctx.serviceName}</strong> el
+         <strong>${cuando}</strong>.</p>
+         <p>Las citas vuelan. Para reservarla, responde a este correo o llámanos cuanto antes.</p>`
+      ),
+      text: `Hola ${ctx.clientName}, se ha liberado una cita para ${ctx.serviceName} el ${cuando} en ${STUDIO}. Llama al ${CONTACT_INFO.phone} para reservarla.`,
+      sms: `${STUDIO}: se ha liberado una cita para ${ctx.serviceName} el ${cuando}. Llama al ${CONTACT_INFO.phone} — ¡vuelan!`,
+    };
+  }
+
   const when = `${prettyDate(ctx.date)} at ${ctx.time}`;
   return {
     subject: `A spot just opened at ${STUDIO}`,
@@ -125,6 +188,25 @@ export function waitlistSlotOpened(ctx: NotificationContext): RenderedMessage {
 
 export function appointmentReminder(ctx: NotificationContext): RenderedMessage {
   const summary = line(ctx);
+  const policy = ctx.policyText
+    ? `<p style="font-size:12px;color:#8a8378">${ctx.policyText}</p>`
+    : '';
+
+  if (ctx.locale === 'es') {
+    return {
+      subject: `Recordatorio: tu cita mañana en ${STUDIO}`,
+      html: shell(
+        'Recordatorio de cita',
+        `<p>Hola ${ctx.clientName}:</p>
+         <p>Te recordamos tu cita de mañana:</p>
+         <p style="font-size:16px"><strong>${summary}</strong></p>
+         ${policy}`
+      ),
+      text: `Recordatorio de ${STUDIO}: ${summary}.${ctx.policyText ? ` ${ctx.policyText}` : ''}`,
+      sms: `Recordatorio de ${STUDIO}: ${summary}.`,
+    };
+  }
+
   return {
     subject: `Reminder: your appointment at ${STUDIO} tomorrow`,
     html: shell(
@@ -132,7 +214,7 @@ export function appointmentReminder(ctx: NotificationContext): RenderedMessage {
       `<p>Hi ${ctx.clientName},</p>
        <p>This is a friendly reminder of your appointment tomorrow:</p>
        <p style="font-size:16px"><strong>${summary}</strong></p>
-       ${ctx.policyText ? `<p style="font-size:12px;color:#8a8378">${ctx.policyText}</p>` : ''}`
+       ${policy}`
     ),
     text: `Reminder from ${STUDIO}: ${summary}.${ctx.policyText ? ` ${ctx.policyText}` : ''}`,
     sms: `${STUDIO} reminder: ${summary}.`,

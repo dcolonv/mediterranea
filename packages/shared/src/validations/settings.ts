@@ -16,6 +16,7 @@ export const studioSettingsSchema = z.object({
   cancellation: z.object({
     cutoffHours: z.number().int().min(0).max(720),
     policyText: z.string().max(1000),
+    policyTextEs: z.string().max(1000).optional().default(''),
   }),
   loyalty: z
     .object({

@@ -107,6 +107,8 @@ export interface Appointment {
   roomId?: string;
   /** How the appointment was created. */
   source?: 'online' | 'walk-in' | 'agent';
+  /** Language the client booked in; notifications are sent in it. */
+  locale?: 'en' | 'es';
   appointmentDate: string;
   appointmentTime: string;
   /** Calendar occupancy in minutes (the reserved block). */
@@ -195,6 +197,8 @@ export interface CancellationPolicy {
   cutoffHours: number;
   /** Policy text shown to customers at booking. */
   policyText: string;
+  /** Spanish policy text; falls back to `policyText` when empty. */
+  policyTextEs?: string;
 }
 
 export interface LoyaltyRules {

@@ -80,7 +80,7 @@ export default async function ServicesPage() {
                 </svg>
                 {card.duration}
               </div>
-              <div className="mb-4 flex items-start justify-between gap-3">
+              <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                 <h2 className="font-serif text-2xl text-white transition-colors duration-300 group-hover:text-gold">
                   {card.name}
                 </h2>
@@ -91,7 +91,7 @@ export default async function ServicesPage() {
                     from={card.from}
                     fromLabel={b.from}
                     firstLabel={s.firstVisit}
-                    className="shrink-0"
+                    className="shrink-0 text-left sm:text-right"
                   />
                 )}
               </div>

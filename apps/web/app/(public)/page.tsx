@@ -65,12 +65,12 @@ export default async function ComingSoonPage() {
         </p>
 
         {/* Countdown */}
-        <div className="mt-12">
+        <div className="mt-6 md:mt-12">
           <CountdownTimer />
         </div>
 
         {/* Pre-book CTA */}
-        <div className="mt-12">
+        <div className="mt-6 md:mt-12">
           <Link href="/book">
             <Button variant="elegant" size="lg">
               {dict.comingSoon.preBook}
@@ -80,7 +80,7 @@ export default async function ComingSoonPage() {
         </div>
 
         {/* Divider */}
-        <div className="mt-12 mb-10 flex items-center justify-center gap-4">
+        <div className="mt-6 md:mt-12 mb-10 flex items-center justify-center gap-4">
           <span className="h-0.5 w-12 bg-gold/50" />
           <span className="w-2 h-2 rotate-45 bg-gold" />
           <span className="h-0.5 w-12 bg-gold/50" />

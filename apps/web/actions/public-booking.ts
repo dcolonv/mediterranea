@@ -9,6 +9,7 @@
 import { headers } from 'next/headers';
 import * as data from '@/lib/agent/data';
 import { allowAction } from '@/lib/rate-limit';
+import { getLocale } from '@/lib/i18n/server';
 import { DEFAULT_STUDIO_SETTINGS } from '@mediterranea/shared/constants';
 import type { WorkingHours } from '@mediterranea/shared/types';
 
@@ -141,12 +142,15 @@ export async function getPublicPolicy(): Promise<{
   blockedDates: string[];
 }> {
   try {
-    const [settings, blockedDates] = await Promise.all([
+    const [settings, blockedDates, locale] = await Promise.all([
       data.getStudioSettings(),
       data.getFullyBlockedDates(),
+      getLocale(),
     ]);
+    const { policyText, policyTextEs } = settings.cancellation;
     return {
-      policyText: settings.cancellation.policyText,
+      // Spanish copy when browsing in Spanish, falling back to the English text.
+      policyText: locale === 'es' ? policyTextEs || policyText : policyText,
       cutoffHours: settings.cancellation.cutoffHours,
       businessHours: settings.businessHours ?? {},
       maxAdvanceDays: settings.booking.maxAdvanceDays,
@@ -226,6 +230,8 @@ export async function createOnlineBooking(input: OnlineBookingInput) {
     clientPhone: input.clientPhone.trim(),
     notes: input.notes?.trim() || undefined,
     source: 'online',
+    // Remember the language they booked in so notifications match it.
+    locale: await getLocale(),
   });
 
   return res;

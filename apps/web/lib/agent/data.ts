@@ -334,6 +334,8 @@ export interface CreateAppointmentInput {
   notes?: string;
   /** How the booking was made; defaults to 'agent'. */
   source?: 'online' | 'walk-in' | 'agent';
+  /** Language the client booked in; notifications are sent in it. */
+  locale?: 'en' | 'es';
 }
 
 export type WriteResult =
@@ -410,6 +412,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         staffId: input.staffId,
         roomId: input.roomId,
         source: input.source ?? 'agent',
+        locale: input.locale ?? 'en',
         appointmentDate: input.date,
         appointmentTime: input.time,
         // Calendar occupancy — the block, so overlap checks reserve the full time.
