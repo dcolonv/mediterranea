@@ -9,6 +9,7 @@ import { formatDuration } from '@mediterranea/shared/utils';
 import { CONTACT_INFO, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import { useLang } from '@/components/i18n/language-provider';
 import { serviceName } from '@/lib/i18n/service';
+import { durationLabel } from '@/lib/i18n/duration';
 import { MonthCalendar, firstSelectableDate } from './month-calendar';
 import type { WorkingHours } from '@mediterranea/shared/types';
 import {
@@ -395,7 +396,7 @@ export function BookingFlow({
                   <GroupCard
                     key={s.id}
                     title={svcName(s)}
-                    hint={formatDuration(s.durationMinutes)}
+                    hint={durationLabel(s.durationMinutes, locale)}
                     description={locale === 'es' && s.descriptionEs ? s.descriptionEs : s.description}
                     price={s.price}
                     firstPrice={s.firstVisitPrice}
