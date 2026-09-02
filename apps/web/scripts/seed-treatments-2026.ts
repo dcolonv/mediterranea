@@ -26,9 +26,14 @@ type Seed = {
   nameEs: string;
   description: string;
   descriptionEs: string;
-  bookingGroup: 'custom' | 'focus' | 'indiba';
+  /** Empty = standalone (books directly, shown as its own card). */
+  bookingGroup: 'custom' | 'focus' | 'indiba' | '';
   durationMinutes: number;
+  /** Calendar block when it exceeds durationMinutes. */
+  blockMinutes?: number;
   price: number;
+  /** Limited-time / seasonal treatment. */
+  temporary?: boolean;
 };
 
 const SERVICES: Seed[] = [
@@ -157,6 +162,22 @@ const SERVICES: Seed[] = [
     durationMinutes: 45,
     price: 65,
   },
+
+  // ── Seasonal (standalone; books directly) ─────────────────────────────────
+  {
+    slug: 'after-summer-facial',
+    name: 'After Summer Facial',
+    nameEs: 'Facial Post Verano',
+    description:
+      'A seasonal facial that repairs and rebalances skin after the sun, calming sensitivity, restoring hydration and evening out summer marks.',
+    descriptionEs:
+      'Un facial de temporada que repara y reequilibra la piel tras el sol, calmando la sensibilidad, devolviendo la hidratación y unificando las marcas del verano.',
+    bookingGroup: '',
+    durationMinutes: 60,
+    blockMinutes: 90,
+    price: 85,
+    temporary: true,
+  },
 ];
 
 // First-appointment intro price by regular price tier (0 = none).
@@ -205,8 +226,10 @@ async function seed() {
         category: 'facial',
         bookingGroup: s.bookingGroup,
         durationMinutes: s.durationMinutes,
+        blockMinutes: s.blockMinutes ?? 0,
         price: s.price,
         firstVisitPrice: FIRST_VISIT_BY_PRICE[s.price] ?? 0,
+        temporary: s.temporary ?? false,
         roomType: '',
         isActive: true,
         displayOrder: i + 1,

@@ -391,10 +391,11 @@ export function BookingFlow({
                     key={s.id}
                     title={svcName(s)}
                     hint={formatDuration(s.durationMinutes)}
-                    description={s.description}
+                    description={locale === 'es' && s.descriptionEs ? s.descriptionEs : s.description}
                     price={s.price}
                     firstPrice={s.firstVisitPrice}
                     firstLabel={copy.firstVisit}
+                    badge={s.temporary ? copy.seasonal : undefined}
                     onClick={() => void chooseService(s)}
                   />
                 ))}
@@ -577,6 +578,7 @@ function GroupCard({
   from,
   fromLabel,
   firstLabel,
+  badge,
   onClick,
 }: {
   title: string;
@@ -587,6 +589,8 @@ function GroupCard({
   from?: boolean;
   fromLabel?: string;
   firstLabel: string;
+  /** Optional tag shown above the title (e.g. "Seasonal"). */
+  badge?: string;
   onClick: () => void;
 }) {
   return (
@@ -594,6 +598,11 @@ function GroupCard({
       onClick={onClick}
       className="group flex h-full flex-col border border-white-10 p-6 text-left transition-colors hover:border-gold/40"
     >
+      {badge && (
+        <span className="mb-2 inline-flex w-fit border border-gold/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-gold">
+          {badge}
+        </span>
+      )}
       <div className="flex items-start justify-between gap-3">
         <span className="font-serif text-lg text-white transition-colors group-hover:text-gold">
           {title}

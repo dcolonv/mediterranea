@@ -194,7 +194,8 @@ async function evaluateDay(input: {
   const service = await getService(input.serviceId);
   if (!service) return { error: `No service found for "${input.serviceId}".` };
 
-  const duration = service.durationMinutes;
+  // Calendar block length can exceed the treatment's display duration.
+  const duration = service.blockMinutes || service.durationMinutes;
   const weekday = weekdayOf(input.date);
   const settings = await getStudioSettings();
 
@@ -378,8 +379,10 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
     return { success: false, error: `${room.name} is not a ${service.roomType} room.` };
   }
 
+  // Reserve the calendar block (may exceed the treatment's display duration).
+  const blockMinutes = service.blockMinutes || service.durationMinutes;
   const start = timeToMinutes(input.time);
-  const end = start + service.durationMinutes;
+  const end = start + blockMinutes;
   const bufferMinutes = (await getStudioSettings()).booking.bufferMinutes ?? 0;
 
   // Link/refresh the customer record before the transaction.
@@ -424,7 +427,10 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         source: input.source ?? 'agent',
         appointmentDate: input.date,
         appointmentTime: input.time,
-        durationMinutes: service.durationMinutes,
+        // Calendar occupancy — the block, so overlap checks reserve the full time.
+        durationMinutes: blockMinutes,
+        // The treatment's own length, for display.
+        serviceMinutes: service.durationMinutes,
         notes: input.notes ?? '',
         // Bookings are auto-confirmed — no manual backoffice confirmation step.
         status: 'confirmed' as AppointmentStatus,

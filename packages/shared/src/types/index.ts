@@ -22,9 +22,13 @@ export interface Service {
   /** Public booking-flow group (custom / focus / indiba); unset = ungrouped. */
   bookingGroup?: BookingGroup;
   durationMinutes: number;
+  /** Calendar block length in minutes; defaults to durationMinutes when unset. */
+  blockMinutes?: number;
   price: number;
   /** Intro price for a client's first appointment; unset/0 = no first-visit price. */
   firstVisitPrice?: number;
+  /** Marks a limited-time / seasonal treatment (shows a badge). */
+  temporary?: boolean;
   isActive: boolean;
   displayOrder: number;
   /** Room type this treatment requires; when unset, any active room qualifies. */
@@ -105,7 +109,10 @@ export interface Appointment {
   source?: 'online' | 'walk-in' | 'agent';
   appointmentDate: string;
   appointmentTime: string;
+  /** Calendar occupancy in minutes (the reserved block). */
   durationMinutes: number;
+  /** The treatment's own length, when it differs from the reserved block. */
+  serviceMinutes?: number;
   notes: string;
   status: AppointmentStatus;
   /** Set once loyalty points have been awarded for this appointment's completion. */

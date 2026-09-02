@@ -34,6 +34,8 @@ export interface PublicService {
   price: number;
   /** Intro price for a first appointment; 0 = none. */
   firstVisitPrice: number;
+  /** Limited-time / seasonal treatment. */
+  temporary: boolean;
 }
 
 export interface PublicStaff {
@@ -54,6 +56,7 @@ function toPublicService(s: {
   durationMinutes: number;
   price: number;
   firstVisitPrice?: number;
+  temporary?: boolean;
 }): PublicService {
   return {
     id: s.id,
@@ -67,6 +70,7 @@ function toPublicService(s: {
     durationMinutes: s.durationMinutes,
     price: s.price,
     firstVisitPrice: s.firstVisitPrice ?? 0,
+    temporary: s.temporary ?? false,
   };
 }
 

@@ -69,6 +69,7 @@ const en = {
     cta: 'Book Your Facial',
     minutes: 'min',
     firstVisit: 'launch price',
+    seasonal: 'Seasonal',
   },
   facialTreatments: {
     eyebrow: 'The Treatments',
@@ -415,6 +416,7 @@ const es: typeof en = {
     cta: 'Reserva tu cita',
     minutes: 'min',
     firstVisit: 'precio de lanzamiento',
+    seasonal: 'De temporada',
   },
   facialTreatments: {
     eyebrow: 'Los Tratamientos',
