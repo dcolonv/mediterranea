@@ -20,13 +20,17 @@ async function buildContext(appt: Appointment): Promise<NotificationContext> {
     appt.staffId ? data.getStaff(appt.staffId) : Promise.resolve(null),
     data.getStudioSettings(),
   ]);
+  // Write to the client in the language they booked in (older records default to English).
+  const locale = appt.locale === 'es' ? 'es' : 'en';
+  const { policyText, policyTextEs } = settings.cancellation;
   return {
     clientName: appt.clientName,
     serviceName: appt.serviceName,
     date: appt.appointmentDate,
     time: appt.appointmentTime,
     staffName: staff?.name ?? null,
-    policyText: settings.cancellation.policyText,
+    policyText: locale === 'es' ? policyTextEs || policyText : policyText,
+    locale,
   };
 }
 

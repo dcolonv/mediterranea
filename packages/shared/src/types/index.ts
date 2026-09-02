@@ -107,6 +107,8 @@ export interface Appointment {
   roomId?: string;
   /** How the appointment was created. */
   source?: 'online' | 'walk-in' | 'agent';
+  /** Language the client booked in; notifications are sent in it. */
+  locale?: 'en' | 'es';
   appointmentDate: string;
   appointmentTime: string;
   /** Calendar occupancy in minutes (the reserved block). */

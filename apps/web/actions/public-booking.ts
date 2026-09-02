@@ -230,6 +230,8 @@ export async function createOnlineBooking(input: OnlineBookingInput) {
     clientPhone: input.clientPhone.trim(),
     notes: input.notes?.trim() || undefined,
     source: 'online',
+    // Remember the language they booked in so notifications match it.
+    locale: await getLocale(),
   });
 
   return res;
