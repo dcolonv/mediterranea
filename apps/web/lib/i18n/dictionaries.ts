@@ -63,7 +63,7 @@ const en = {
     focusDesc:
       'A single, targeted treatment focused on one concern, such as peeling, dermapen or hydration. Not sure which you need? We’ll help you choose.',
     indibaName: 'INDIBA Facial',
-    indibaDuration: '45–60 minutes',
+    indibaDuration: '45–75 minutes',
     indibaDesc:
       'A radiofrequency facial that boosts circulation and collagen from within, for firmer, revitalized skin with a natural glow.',
     cta: 'Book Your Facial',
@@ -410,7 +410,7 @@ const es: typeof en = {
     focusDesc:
       'Un tratamiento único y focalizado en una necesidad concreta, como peeling, dermapen o hidratación. ¿No sabes cuál necesitas? Te ayudamos a elegir.',
     indibaName: 'Facial INDIBA',
-    indibaDuration: '45–60 minutos',
+    indibaDuration: '45–75 minutos',
     indibaDesc:
       'Un facial de radiofrecuencia que activa la circulación y el colágeno desde el interior, para una piel más firme, revitalizada y con luminosidad natural.',
     cta: 'Reserva tu cita',

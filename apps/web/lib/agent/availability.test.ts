@@ -8,6 +8,7 @@ import {
   staffOffAt,
   computeSlots,
   computeFixedSlots,
+  gridTimes,
   detectConflicts,
   type AvailStaff,
 } from './availability';
@@ -212,6 +213,34 @@ describe('computeFixedSlots', () => {
       staff: [{ id: 's1', workingHours: { tuesday: HOURS }, timeOff: [{ date: '2026-09-08' }] }],
     });
     expect(slots.every((s) => !s.available)).toBe(true);
+  });
+
+  it('honors staff working hours when respectStaffHours is set', () => {
+    const slots = computeFixedSlots({
+      ...base,
+      weekday: 'tuesday',
+      respectStaffHours: true,
+      staff: [{ id: 's1', workingHours: { tuesday: { open: '12:00', close: '16:00' } } }],
+    });
+    const byTime = Object.fromEntries(slots.map((s) => [s.time, s.available]));
+    expect(byTime['10:00']).toBe(false); // before the practitioner starts
+    expect(byTime['12:00']).toBe(true); // 12:00–14:00 fits
+    expect(byTime['16:00']).toBe(false); // would run past 16:00
+  });
+});
+
+describe('gridTimes', () => {
+  it('steps on the interval and stops so the block fits before closing', () => {
+    // 10:30–18:30, 120-min block on a 30-min grid → last start 16:30.
+    const times = gridTimes({ open: '10:30', close: '18:30' }, 120, 30);
+    expect(times[0]).toBe('10:30');
+    expect(times[1]).toBe('11:00');
+    expect(times[times.length - 1]).toBe('16:30');
+  });
+
+  it('gives a later last start for a shorter block', () => {
+    const times = gridTimes({ open: '10:30', close: '18:30' }, 60, 30);
+    expect(times[times.length - 1]).toBe('17:30');
   });
 });
 

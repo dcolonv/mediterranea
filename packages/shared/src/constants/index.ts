@@ -85,19 +85,14 @@ export const TIME_SLOTS = [
   '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
 ];
 
-/**
- * Fixed bookable start times per booking group. These already fold in the
- * cool-down/preparation time between appointments, so no extra buffer is added.
- * The overlap/block length still comes from each service's real duration.
- */
 /** Earliest date the studio accepts bookings for (opening day). 'YYYY-MM-DD'. */
 export const BOOKING_OPENS_DATE = '2026-09-08';
 
-export const BOOKING_SLOT_TIMES: Record<'custom' | 'focus' | 'indiba', string[]> = {
-  custom: ['10:30', '12:30', '14:30', '16:30', '18:30'],
-  focus: ['10:30', '11:30', '12:30', '13:30', '14:30', '15:30', '16:30', '17:30'],
-  indiba: ['10:30', '11:30', '12:30', '13:30', '14:30', '15:30', '16:30', '17:30'],
-};
+/**
+ * Bookable start times come from the studio's slot grid (BookingRules
+ * .slotIntervalMinutes) across business hours. Each service's `blockMinutes`
+ * decides how long a booking occupies — that block folds in preparation time.
+ */
 
 export const APPOINTMENT_STATUSES = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },

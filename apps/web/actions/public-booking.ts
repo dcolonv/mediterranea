@@ -9,6 +9,7 @@
 import { headers } from 'next/headers';
 import * as data from '@/lib/agent/data';
 import { allowAction } from '@/lib/rate-limit';
+import { DEFAULT_STUDIO_SETTINGS } from '@mediterranea/shared/constants';
 import type { WorkingHours } from '@mediterranea/shared/types';
 
 /** Coarse client IP from proxy headers, for rate-limit keying. */
@@ -76,8 +77,14 @@ function toPublicService(s: {
 
 /** Active, bookable treatments (plain objects — no Firestore Timestamps). */
 export async function getBookingServices(): Promise<PublicService[]> {
-  const services = await data.listServices(false);
-  return services.map(toPublicService);
+  try {
+    const services = await data.listServices(false);
+    return services.map(toPublicService);
+  } catch (error) {
+    // Never take the public booking page down on a data failure.
+    console.error('getBookingServices failed:', error);
+    return [];
+  }
 }
 
 export async function getBookingService(slug: string): Promise<PublicService | null> {
@@ -133,17 +140,29 @@ export async function getPublicPolicy(): Promise<{
   maxAdvanceDays: number;
   blockedDates: string[];
 }> {
-  const [settings, blockedDates] = await Promise.all([
-    data.getStudioSettings(),
-    data.getFullyBlockedDates(),
-  ]);
-  return {
-    policyText: settings.cancellation.policyText,
-    cutoffHours: settings.cancellation.cutoffHours,
-    businessHours: settings.businessHours ?? {},
-    maxAdvanceDays: settings.booking.maxAdvanceDays,
-    blockedDates,
-  };
+  try {
+    const [settings, blockedDates] = await Promise.all([
+      data.getStudioSettings(),
+      data.getFullyBlockedDates(),
+    ]);
+    return {
+      policyText: settings.cancellation.policyText,
+      cutoffHours: settings.cancellation.cutoffHours,
+      businessHours: settings.businessHours ?? {},
+      maxAdvanceDays: settings.booking.maxAdvanceDays,
+      blockedDates,
+    };
+  } catch (error) {
+    // Fall back to defaults so the booking page still renders.
+    console.error('getPublicPolicy failed:', error);
+    return {
+      policyText: DEFAULT_STUDIO_SETTINGS.cancellation.policyText,
+      cutoffHours: DEFAULT_STUDIO_SETTINGS.cancellation.cutoffHours,
+      businessHours: DEFAULT_STUDIO_SETTINGS.businessHours as WorkingHours,
+      maxAdvanceDays: DEFAULT_STUDIO_SETTINGS.booking.maxAdvanceDays,
+      blockedDates: [],
+    };
+  }
 }
 
 export interface OnlineBookingInput {

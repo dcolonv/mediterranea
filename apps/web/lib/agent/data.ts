@@ -9,13 +9,13 @@
 import { Timestamp, type DocumentSnapshot } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { upsertCustomerForAppointment } from '@/actions/customers';
-import { DEFAULT_STUDIO_SETTINGS, BOOKING_SLOT_TIMES, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
+import { DEFAULT_STUDIO_SETTINGS, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import {
   timeToMinutes,
   weekdayOf,
   addDaysStr,
-  computeSlots,
   computeFixedSlots,
+  gridTimes,
   detectConflicts,
   type AvailAppt,
   type FixedSlot,
@@ -175,16 +175,14 @@ export interface DaySlotsResult {
   slots: FixedSlot[];
 }
 
-const FIXED_GROUPS = new Set(Object.keys(BOOKING_SLOT_TIMES));
-
 /**
  * Evaluate every candidate slot for a service on a date, returning each with an
  * `available` flag and (for the bookable ones) its free staff/rooms.
  *
- * Services in a fixed booking group (custom / focus / indiba) use their group's
- * fixed start times — prep is folded into those times, so no extra buffer — and
- * ignore the studio close time. Any other service falls back to the business-hours
- * slot grid. Time off, existing bookings and room availability apply either way.
+ * All services share one grid of start times across business hours (the studio's
+ * slot interval). What differs per service is how long each booking blocks —
+ * `blockMinutes` when set, otherwise the treatment duration — so a slot must fit
+ * before closing and not collide with existing bookings, time off, or a busy room.
  */
 async function evaluateDay(input: {
   serviceId: string;
@@ -236,35 +234,22 @@ async function evaluateDay(input: {
   const earliestMinutes =
     input.date === now.date ? now.minutes + settings.booking.minLeadHours * 60 : 0;
 
-  const group = service.bookingGroup;
-  let slots: FixedSlot[];
-
-  if (group && FIXED_GROUPS.has(group)) {
-    slots = computeFixedSlots({
-      candidateTimes: BOOKING_SLOT_TIMES[group as keyof typeof BOOKING_SLOT_TIMES],
-      duration,
-      bufferMinutes: 0, // prep is folded into the fixed slot spacing
-      earliestMinutes,
-      date: input.date,
-      staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
-      rooms: rooms.map((r) => ({ id: r.id })),
-      dayAppointments: dayAppts,
-    });
-  } else {
-    // Fallback: business-hours grid; every generated slot is by definition free.
-    slots = computeSlots({
-      date: input.date,
-      weekday,
-      duration,
-      businessHours: bh,
-      intervalMinutes: settings.booking.slotIntervalMinutes,
-      bufferMinutes: settings.booking.bufferMinutes ?? 0,
-      earliestMinutes,
-      staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
-      rooms: rooms.map((r) => ({ id: r.id })),
-      dayAppointments: dayAppts,
-    }).map((s) => ({ time: s.time, available: true, staffIds: s.staffIds, roomIds: s.roomIds }));
-  }
+  // Every service uses the same grid of start times within business hours; the
+  // service's own block length decides how much each booking occupies. Every
+  // candidate is returned with an availability flag so the UI can grey out
+  // times that are already taken.
+  const slots: FixedSlot[] = computeFixedSlots({
+    candidateTimes: gridTimes(bh, duration, settings.booking.slotIntervalMinutes),
+    duration,
+    bufferMinutes: settings.booking.bufferMinutes ?? 0,
+    earliestMinutes,
+    date: input.date,
+    weekday,
+    respectStaffHours: true,
+    staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
+    rooms: rooms.map((r) => ({ id: r.id })),
+    dayAppointments: dayAppts,
+  });
 
   return { ...base, slots };
 }

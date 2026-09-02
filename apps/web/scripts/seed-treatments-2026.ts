@@ -48,6 +48,7 @@ const SERVICES: Seed[] = [
       'Analizamos tu piel en el estudio y diseñamos una sesión según lo que necesita, desde hidratación y reafirmación hasta unificación del tono, atenuar marcas y suavizar las líneas de expresión, para un cuidado completo y a medida.',
     bookingGroup: 'custom',
     durationMinutes: 120,
+    blockMinutes: 120,
     price: 120,
   },
 
@@ -62,6 +63,7 @@ const SERVICES: Seed[] = [
       'Un facial focalizado que devuelve luminosidad a la piel apagada y recupera un tono fresco y radiante.',
     bookingGroup: 'focus',
     durationMinutes: 45,
+    blockMinutes: 60,
     price: 75,
   },
   {
@@ -74,6 +76,7 @@ const SERVICES: Seed[] = [
       'Un facial focalizado que limpia en profundidad, descongestiona los poros y equilibra la piel grasa y congestionada.',
     bookingGroup: 'focus',
     durationMinutes: 45,
+    blockMinutes: 60,
     price: 75,
   },
   {
@@ -86,6 +89,7 @@ const SERVICES: Seed[] = [
       'Un facial focalizado que repone agua y nutrientes para una piel suave, jugosa y confortable.',
     bookingGroup: 'focus',
     durationMinutes: 45,
+    blockMinutes: 60,
     price: 75,
   },
   {
@@ -98,6 +102,7 @@ const SERVICES: Seed[] = [
       'Un facial focalizado que unifica el tono y atenúa manchas y marcas para una piel más homogénea y luminosa.',
     bookingGroup: 'focus',
     durationMinutes: 45,
+    blockMinutes: 60,
     price: 75,
   },
   {
@@ -110,6 +115,7 @@ const SERVICES: Seed[] = [
       'Un facial focalizado que trabaja las líneas de expresión y la laxitud cutánea para un efecto más firme y liso.',
     bookingGroup: 'focus',
     durationMinutes: 45,
+    blockMinutes: 60,
     price: 75,
   },
   {
@@ -122,6 +128,7 @@ const SERVICES: Seed[] = [
       'Un peeling focalizado que renueva la superficie de la piel, suaviza la textura y devuelve una luminosidad fresca.',
     bookingGroup: 'focus',
     durationMinutes: 45,
+    blockMinutes: 60,
     price: 75,
   },
   {
@@ -134,6 +141,7 @@ const SERVICES: Seed[] = [
       '¿No sabes qué facial necesitas? Reserva una sesión focus y valoramos tu piel juntas para elegir el tratamiento más adecuado para ti en el momento.',
     bookingGroup: 'focus',
     durationMinutes: 45,
+    blockMinutes: 60,
     price: 75,
   },
 
@@ -148,6 +156,7 @@ const SERVICES: Seed[] = [
       'Un facial completo de radiofrecuencia INDIBA que reafirma y tonifica la piel desde el interior, para una luminosidad natural y duradera.',
     bookingGroup: 'indiba',
     durationMinutes: 75,
+    blockMinutes: 90,
     price: 100,
   },
   {
@@ -160,6 +169,7 @@ const SERVICES: Seed[] = [
       'Un facial focalizado de radiofrecuencia INDIBA que activa la circulación y el colágeno para una piel más firme y revitalizada.',
     bookingGroup: 'indiba',
     durationMinutes: 45,
+    blockMinutes: 60,
     price: 65,
   },
 

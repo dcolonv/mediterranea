@@ -175,21 +175,40 @@ export interface FixedSlot {
 }
 
 export interface ComputeFixedSlotsInput {
-  /** Explicit candidate start times, e.g. ['10:00','12:00', …]. */
+  /** Explicit candidate start times, e.g. ['10:30','11:00', …]. */
   candidateTimes: string[];
-  /** Overlap/block length in minutes (the service's real duration). */
+  /** Overlap/block length in minutes (the reserved block). */
   duration: number;
-  /** Cool-down between appointments; 0 when prep is folded into the slot grid. */
+  /** Cool-down between appointments; 0 when prep is folded into the block. */
   bufferMinutes: number;
   /** Earliest bookable start (minutes since midnight); e.g. lead cutoff for today. */
   earliestMinutes: number;
   date: string;
-  /** Qualified staff. Working-hours bounds are ignored (the fixed times are authoritative); time off still blocks. */
+  /** Weekday of `date` — required when `respectStaffHours` is set. */
+  weekday?: Weekday;
+  /** When true, a slot must also fit inside the practitioner's working hours. */
+  respectStaffHours?: boolean;
+  /** Qualified staff. Time off always blocks. */
   staff: AvailStaff[];
   /** Active rooms of the required type. */
   rooms: AvailRoom[];
   /** Same-day appointments in slot-occupying statuses. */
   dayAppointments: AvailAppt[];
+}
+
+/** Candidate start times on a grid within business hours that fit before closing. */
+export function gridTimes(
+  businessHours: DayHours,
+  duration: number,
+  intervalMinutes: number
+): string[] {
+  const open = timeToMinutes(businessHours.open);
+  const close = timeToMinutes(businessHours.close);
+  const times: string[] = [];
+  for (let start = open; start + duration <= close; start += intervalMinutes) {
+    times.push(minutesToTime(start));
+  }
+  return times;
 }
 
 /**
@@ -218,6 +237,11 @@ export function computeFixedSlots(input: ComputeFixedSlotsInput): FixedSlot[] {
 
     const freeStaff = input.staff
       .filter((s) => {
+        if (input.respectStaffHours && input.weekday) {
+          const wh = s.workingHours?.[input.weekday];
+          if (!wh) return false;
+          if (start < timeToMinutes(wh.open) || end > timeToMinutes(wh.close)) return false;
+        }
         if (staffOffAt(s, date, start, end)) return false;
         return !input.dayAppointments.some((a) => a.staffId === s.id && clashes(start, end, a));
       })
