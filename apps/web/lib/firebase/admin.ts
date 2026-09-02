@@ -2,46 +2,12 @@ import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 
-/**
- * Normalize the service-account private key across hosting environments.
- * Handles the ways a PEM commonly gets mangled in env vars: wrapping quotes,
- * literal `\n` escapes instead of real newlines, CRLF, and base64-encoded keys.
- * A bad key surfaces as `error:1E08010C:DECODER routines::unsupported`.
- */
-function normalizePrivateKey(raw: string | undefined): string | undefined {
-  if (!raw) return undefined;
-  let key = raw.trim();
-
-  // Strip a single layer of wrapping quotes (Vercel/CI often keep them).
-  if (
-    (key.startsWith('"') && key.endsWith('"')) ||
-    (key.startsWith("'") && key.endsWith("'"))
-  ) {
-    key = key.slice(1, -1);
-  }
-
-  // Turn literal \n (and escaped \\n) into real newlines; normalize CRLF.
-  key = key.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
-
-  // Support a base64-encoded key (set FIREBASE_ADMIN_PRIVATE_KEY to the base64 blob).
-  if (!key.includes('-----BEGIN')) {
-    try {
-      const decoded = Buffer.from(key, 'base64').toString('utf8');
-      if (decoded.includes('-----BEGIN')) key = decoded.replace(/\r\n/g, '\n');
-    } catch {
-      /* not base64 — fall through and let the SDK report it */
-    }
-  }
-
-  return key;
-}
-
 function getAdminApp(): App {
   if (getApps().length > 0) {
     return getApps()[0];
   }
 
-  const privateKey = normalizePrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
+  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
   return initializeApp({
     credential: cert({
