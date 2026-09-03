@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { useLang } from '@/components/i18n/language-provider';
 import { getConsent, setConsent, CONSENT_EVENT } from '@/lib/consent';
@@ -41,7 +42,12 @@ export function CookieBanner() {
       className="fixed inset-x-0 bottom-0 z-[100] border-t border-white-10 bg-dark-800 shadow-lg"
     >
       <div className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-        <p className="text-sm font-light leading-relaxed text-white-70">{c.body}</p>
+        <p className="text-sm font-light leading-relaxed text-white-70">
+          {c.body}{' '}
+          <Link href="/cookies" className="text-gold underline underline-offset-2 hover:text-gold-light">
+            {c.learnMore}
+          </Link>
+        </p>
         <div className="flex shrink-0 gap-3">
           <Button variant="outline" size="sm" onClick={() => setConsent('rejected')}>
             {c.reject}

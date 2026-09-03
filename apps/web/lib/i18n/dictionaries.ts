@@ -77,6 +77,7 @@ const en = {
     accept: 'Accept',
     reject: 'Reject',
     manage: 'Cookie settings',
+    learnMore: 'Cookie Policy',
   },
   facialTreatments: {
     eyebrow: 'The Treatments',
@@ -431,6 +432,7 @@ const es: typeof en = {
     accept: 'Aceptar',
     reject: 'Rechazar',
     manage: 'Configuración de cookies',
+    learnMore: 'Política de Cookies',
   },
   facialTreatments: {
     eyebrow: 'Los Tratamientos',

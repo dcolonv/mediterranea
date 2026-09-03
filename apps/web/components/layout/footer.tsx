@@ -110,7 +110,15 @@ export function Footer() {
               <p className="text-xs text-white-30 tracking-wider">
                 {dict.footer.rights(currentYear)}
               </p>
-              <CookieSettingsLink />
+              <div className="flex items-center gap-6">
+                <Link
+                  href="/cookies"
+                  className="text-sm text-white-50 transition-colors hover:text-white"
+                >
+                  {dict.cookies.learnMore}
+                </Link>
+                <CookieSettingsLink />
+              </div>
             </div>
             <div className="flex gap-6">
               <a
