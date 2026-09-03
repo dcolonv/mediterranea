@@ -37,6 +37,21 @@ type Seed = {
 };
 
 const SERVICES: Seed[] = [
+  // ── Seasonal (standalone; books directly) ─────────────────────────────────
+  {
+    slug: 'after-summer-facial',
+    name: 'After Summer Facial',
+    nameEs: 'Facial Post Verano',
+    description:
+      'A seasonal facial that repairs and rebalances skin after the sun, calming sensitivity, restoring hydration and evening out summer marks.',
+    descriptionEs:
+      'Un facial de temporada que repara y reequilibra la piel tras el sol, calmando la sensibilidad, devolviendo la hidratación y unificando las marcas del verano.',
+    bookingGroup: '',
+    durationMinutes: 60,
+    blockMinutes: 90,
+    price: 85,
+    temporary: true,
+  },
   // ── Custom (books directly) ────────────────────────────────────────────────
   {
     slug: 'custom-facial',
@@ -173,21 +188,6 @@ const SERVICES: Seed[] = [
     price: 65,
   },
 
-  // ── Seasonal (standalone; books directly) ─────────────────────────────────
-  {
-    slug: 'after-summer-facial',
-    name: 'After Summer Facial',
-    nameEs: 'Facial Post Verano',
-    description:
-      'A seasonal facial that repairs and rebalances skin after the sun, calming sensitivity, restoring hydration and evening out summer marks.',
-    descriptionEs:
-      'Un facial de temporada que repara y reequilibra la piel tras el sol, calmando la sensibilidad, devolviendo la hidratación y unificando las marcas del verano.',
-    bookingGroup: '',
-    durationMinutes: 60,
-    blockMinutes: 90,
-    price: 85,
-    temporary: true,
-  },
 ];
 
 // First-appointment intro price by regular price tier (0 = none).

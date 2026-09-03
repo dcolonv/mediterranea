@@ -355,6 +355,19 @@ export function BookingFlow({
               <p className="text-white-50">{b.noTreatments}</p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
+                {ungrouped.map((s) => (
+                  <GroupCard
+                    key={s.id}
+                    title={svcName(s)}
+                    hint={durationLabel(s.durationMinutes, locale)}
+                    description={locale === 'es' && s.descriptionEs ? s.descriptionEs : s.description}
+                    price={s.price}
+                    firstPrice={s.firstVisitPrice}
+                    firstLabel={copy.firstVisit}
+                    badge={s.temporary ? copy.seasonal : undefined}
+                    onClick={() => void chooseService(s)}
+                  />
+                ))}
                 {customService && (
                   <GroupCard
                     title={svcName(customService)}
@@ -392,19 +405,6 @@ export function BookingFlow({
                     onClick={() => chooseGroup('indiba')}
                   />
                 )}
-                {ungrouped.map((s) => (
-                  <GroupCard
-                    key={s.id}
-                    title={svcName(s)}
-                    hint={durationLabel(s.durationMinutes, locale)}
-                    description={locale === 'es' && s.descriptionEs ? s.descriptionEs : s.description}
-                    price={s.price}
-                    firstPrice={s.firstVisitPrice}
-                    firstLabel={copy.firstVisit}
-                    badge={s.temporary ? copy.seasonal : undefined}
-                    onClick={() => void chooseService(s)}
-                  />
-                ))}
               </div>
             )}
           </div>
