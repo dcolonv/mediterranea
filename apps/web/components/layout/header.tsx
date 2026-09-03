@@ -11,7 +11,6 @@ import { LanguageToggle } from '@/components/i18n/language-toggle';
 const NAV_SECTIONS = [
   { id: 'about', key: 'about', href: '/init#about' },
   { id: 'contact', key: 'contact', href: '/init#contact' },
-  { id: 'services-page', key: 'services', href: '/init/services' },
   { id: 'services', key: 'treatments', href: '/init/treatments' },
   // Blog and Gift Cards are hidden from the menu for now (routes still exist).
   { id: 'account', key: 'account', href: '/init/account' },
