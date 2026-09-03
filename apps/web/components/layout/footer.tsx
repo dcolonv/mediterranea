@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { CONTACT_INFO, BUSINESS_HOURS } from '@mediterranea/shared/constants';
 import { WhatsAppLink } from '@/components/whatsapp-link';
 import { useLang } from '@/components/i18n/language-provider';
+import { CookieSettingsLink } from '@/components/consent/cookie-banner';
 
 export function Footer() {
   const { dict } = useLang();
@@ -105,9 +106,20 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-16 pt-8 border-t border-white-10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-white-30 tracking-wider">
-              {dict.footer.rights(currentYear)}
-            </p>
+            <div className="flex flex-col items-center gap-2 md:flex-row md:gap-6">
+              <p className="text-xs text-white-30 tracking-wider">
+                {dict.footer.rights(currentYear)}
+              </p>
+              <div className="flex items-center gap-6">
+                <Link
+                  href="/cookies"
+                  className="text-sm text-white-50 transition-colors hover:text-white"
+                >
+                  {dict.cookies.learnMore}
+                </Link>
+                <CookieSettingsLink />
+              </div>
+            </div>
             <div className="flex gap-6">
               <a
                 href="https://www.instagram.com/mediterranea_face_studio"
