@@ -1,4 +1,5 @@
 import { LanguageProvider } from '@/components/i18n/language-provider';
+import { CookieBanner } from '@/components/consent/cookie-banner';
 import { getLocale } from '@/lib/i18n/server';
 
 export default async function PublicLayout({
@@ -10,5 +11,10 @@ export default async function PublicLayout({
   // The /init layout adds the Header/Footer/<main>; the coming-soon page renders
   // its own full-screen section.
   const locale = await getLocale();
-  return <LanguageProvider initialLocale={locale}>{children}</LanguageProvider>;
+  return (
+    <LanguageProvider initialLocale={locale}>
+      {children}
+      <CookieBanner />
+    </LanguageProvider>
+  );
 }

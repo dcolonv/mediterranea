@@ -71,6 +71,13 @@ const en = {
     firstVisit: 'launch price',
     seasonal: 'Seasonal',
   },
+  cookies: {
+    title: 'Cookies',
+    body: 'We use cookies that are necessary for the site to work, and optional analytics cookies to understand how it is used. You can accept or reject the analytics ones.',
+    accept: 'Accept',
+    reject: 'Reject',
+    manage: 'Cookie settings',
+  },
   facialTreatments: {
     eyebrow: 'The Treatments',
     title: 'What each facial does',
@@ -417,6 +424,13 @@ const es: typeof en = {
     minutes: 'min',
     firstVisit: 'precio de lanzamiento',
     seasonal: 'De temporada',
+  },
+  cookies: {
+    title: 'Cookies',
+    body: 'Usamos cookies necesarias para el funcionamiento del sitio y cookies analíticas opcionales para entender cómo se usa. Puedes aceptar o rechazar las analíticas.',
+    accept: 'Aceptar',
+    reject: 'Rechazar',
+    manage: 'Configuración de cookies',
   },
   facialTreatments: {
     eyebrow: 'Los Tratamientos',
