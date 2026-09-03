@@ -33,7 +33,7 @@ export default async function TreatmentDetailPage({
     <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-36 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link
-          href="/init/treatments"
+          href="/treatments"
           className="text-sm text-white-50 transition-colors hover:text-white"
         >
           ‹ {dict.treatmentDetail.back}

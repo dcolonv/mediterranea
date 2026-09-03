@@ -12,7 +12,7 @@ export function SignOutButton() {
       size="sm"
       onClick={async () => {
         await endCustomerSession();
-        router.replace('/init/login');
+        router.replace('/account/login');
         router.refresh();
       }}
     >

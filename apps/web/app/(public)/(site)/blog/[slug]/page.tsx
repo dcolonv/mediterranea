@@ -28,7 +28,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-36 lg:px-8">
       <article className="mx-auto max-w-2xl">
-        <Link href="/init/blog" className="text-sm text-white-50 transition-colors hover:text-white">
+        <Link href="/blog" className="text-sm text-white-50 transition-colors hover:text-white">
           ‹ {dict.blog.back}
         </Link>
 

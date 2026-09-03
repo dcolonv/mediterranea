@@ -173,7 +173,7 @@ export function BackofficeBlog() {
                   <h3 className="font-serif text-lg text-white">{p.title}</h3>
                   <Badge variant={p.status === 'published' ? 'completed' : 'pending'}>{p.status}</Badge>
                 </div>
-                <p className="mt-1 text-xs text-white-30">/init/blog/{p.slug}</p>
+                <p className="mt-1 text-xs text-white-30">/blog/{p.slug}</p>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" size="sm" onClick={() => startEdit(p)}>

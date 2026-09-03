@@ -21,7 +21,7 @@ export default async function GiftCardSuccessPage() {
         <h1 className="font-serif text-3xl text-white">{g.successTitle}</h1>
         <p className="mt-4 text-white-70">{g.successBody}</p>
         <div className="mt-8">
-          <Link href="/init">
+          <Link href="/">
             <Button variant="elegant">{g.backHome}</Button>
           </Link>
         </div>

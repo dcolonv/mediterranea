@@ -36,9 +36,9 @@ export function Hero() {
       <div className="absolute top-[18%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/[0.07] to-transparent" />
 
       {/* Content */}
-      {/* Desktop keeps top padding so the fixed header doesn't crop the image;
-          mobile spacing is unchanged. */}
-      <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-8 pt-32 pb-20 lg:pt-32 lg:pb-16">
+      {/* The countdown banner above already clears the fixed header, so this
+          only needs a little breathing room of its own. */}
+      <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-8 pt-10 pb-20 lg:pt-8 lg:pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left — Text content */}
           <div className="text-center lg:text-left">
@@ -61,7 +61,7 @@ export function Hero() {
 
             {/* Heading */}
             <h1
-              className={`font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-wide text-white leading-[1.1] whitespace-nowrap transition-all duration-1000 delay-200 ease-out ${
+              className={`font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-wide text-white leading-[1.1] whitespace-normal sm:whitespace-nowrap transition-all duration-1000 delay-200 ease-out ${
                 mounted
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
@@ -120,7 +120,7 @@ export function Hero() {
             {/* Image container */}
             <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] overflow-hidden">
               <Image
-                src="/hero-room.jpg"
+                src="/hero-studio-room.jpg"
                 alt="Mediterránea Face Studio — Treatment room"
                 fill
                 priority

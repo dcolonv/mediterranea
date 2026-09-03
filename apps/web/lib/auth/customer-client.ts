@@ -25,7 +25,7 @@ export async function endCustomerSession(): Promise<void> {
 
 /** Where to go after auth: honor a ?redirect param, else the account home. */
 export function postAuthRedirect(): string {
-  if (typeof window === 'undefined') return '/init/account';
+  if (typeof window === 'undefined') return '/account';
   const r = new URLSearchParams(window.location.search).get('redirect');
-  return r && r.startsWith('/init/account') ? r : '/init/account';
+  return r && r.startsWith('/account') ? r : '/account';
 }

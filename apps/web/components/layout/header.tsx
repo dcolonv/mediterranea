@@ -9,11 +9,11 @@ import { useLang } from '@/components/i18n/language-provider';
 import { LanguageToggle } from '@/components/i18n/language-toggle';
 
 const NAV_SECTIONS = [
-  { id: 'about', key: 'about', href: '/init#about' },
-  { id: 'contact', key: 'contact', href: '/init#contact' },
-  { id: 'services', key: 'treatments', href: '/init/treatments' },
-  // Blog and Gift Cards are hidden from the menu for now (routes still exist).
-  { id: 'account', key: 'account', href: '/init/account' },
+  { id: 'about', key: 'about', href: '/#about' },
+  { id: 'contact', key: 'contact', href: '/#contact' },
+  { id: 'services', key: 'treatments', href: '/treatments' },
+  // Account, Blog and Gift Cards are hidden from the menu for now
+  // (their routes still exist and work).
 ] as const;
 
 export function Header() {
@@ -97,7 +97,7 @@ export function Header() {
       <nav className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex h-24 items-center justify-between">
           {/* Logo */}
-          <Link href="/init">
+          <Link href="/">
             <Image
               src="/logo_light.png"
               alt="Mediterránea Face Studio"

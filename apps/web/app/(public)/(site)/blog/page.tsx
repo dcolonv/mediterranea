@@ -38,7 +38,7 @@ export default async function BlogPage() {
             {posts.map((p) => (
               <Link
                 key={p.id}
-                href={`/init/blog/${p.slug}`}
+                href={`/blog/${p.slug}`}
                 className="group block border border-white-10 bg-dark-800/40 p-8 transition-colors hover:border-gold/30"
               >
                 <p className="text-xs uppercase tracking-wider text-gold/70">{prettyDate(p.publishedAt)}</p>

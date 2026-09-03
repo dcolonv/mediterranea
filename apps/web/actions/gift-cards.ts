@@ -90,8 +90,8 @@ export async function createGiftCardCheckout(
         recipientEmail: (input.recipientEmail ?? '').trim().slice(0, 200),
         message: (input.message ?? '').trim().slice(0, 300),
       },
-      success_url: `${siteUrl()}/init/gift-cards/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl()}/init/gift-cards`,
+      success_url: `${siteUrl()}/gift-cards/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl()}/gift-cards`,
     });
     if (!session.url) return { success: false, error: 'Could not start checkout. Please try again.' };
     return { success: true, url: session.url };
