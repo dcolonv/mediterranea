@@ -1,9 +1,35 @@
 
+const TITLE = 'Reserva tu cita · Book your appointment';
+const DESCRIPTION =
+  'Escanea el código para reservar tu cita · Scan the code to book your appointment at Mediterránea Face Studio.';
+
 export const metadata = {
   title: 'Booking QR | Mediterránea Face Studio',
-  description: 'Scan to book an appointment at Mediterránea Face Studio.',
+  description: DESCRIPTION,
   // A printable asset, not a page for search results.
   robots: { index: false, follow: false },
+  // Override the site-wide preview so sharing this link shows the QR itself.
+  openGraph: {
+    type: 'website',
+    siteName: 'Mediterránea Face Studio',
+    title: TITLE,
+    description: DESCRIPTION,
+    url: 'https://www.mediterraneafacestudio.com/qr',
+    images: [
+      {
+        url: '/qr-book-og.png',
+        width: 1200,
+        height: 630,
+        alt: 'QR code to book an appointment at Mediterránea Face Studio',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/qr-book-og.png'],
+  },
 };
 
 const BOOK_URL = 'https://www.mediterraneafacestudio.com/book';

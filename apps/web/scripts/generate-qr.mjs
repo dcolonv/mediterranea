@@ -60,15 +60,34 @@ await sharp(qr)
   .png()
   .toFile('public/qr-book.png');
 
-// Verify the finished image still decodes to the target URL.
-const { data, info } = await sharp('public/qr-book.png')
-  .ensureAlpha()
-  .raw()
-  .toBuffer({ resolveWithObject: true });
-const decoded = jsQR(new Uint8ClampedArray(data), info.width, info.height);
+// Link-preview variant: the same QR centred on a 1200x630 canvas, the shape
+// WhatsApp/Facebook expect, so sharing /qr shows the scannable code itself.
+const OG_W = 1200;
+const OG_H = 630;
+const ogQrSize = 560;
 
-if (decoded?.data !== TARGET_URL) {
-  console.error(`QR verification FAILED — decoded: ${decoded?.data ?? 'nothing'}`);
-  process.exit(1);
+const ogQr = await sharp('public/qr-book.png').resize({ width: ogQrSize }).toBuffer();
+
+await sharp({
+  create: { width: OG_W, height: OG_H, channels: 4, background: { r: 252, g: 251, b: 249, alpha: 1 } },
+})
+  .composite([
+    {
+      input: ogQr,
+      top: Math.round((OG_H - ogQrSize) / 2),
+      left: Math.round((OG_W - ogQrSize) / 2),
+    },
+  ])
+  .png()
+  .toFile('public/qr-book-og.png');
+
+// Verify both images still decode to the target URL.
+for (const file of ['public/qr-book.png', 'public/qr-book-og.png']) {
+  const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const decoded = jsQR(new Uint8ClampedArray(data), info.width, info.height);
+  if (decoded?.data !== TARGET_URL) {
+    console.error(`QR verification FAILED for ${file} — decoded: ${decoded?.data ?? 'nothing'}`);
+    process.exit(1);
+  }
+  console.log(`${file} ${info.width}x${info.height} — decodes to ${decoded.data}`);
 }
-console.log(`public/qr-book.png ${info.width}x${info.height} — decodes to ${decoded.data}`);
