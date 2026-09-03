@@ -38,7 +38,7 @@ export function Hero() {
       {/* Content */}
       {/* Desktop keeps top padding so the fixed header doesn't crop the image;
           mobile spacing is unchanged. */}
-      <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-8 pt-32 pb-20 lg:pt-36 lg:pb-16">
+      <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-8 pt-32 pb-20 lg:pt-32 lg:pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left — Text content */}
           <div className="text-center lg:text-left">
