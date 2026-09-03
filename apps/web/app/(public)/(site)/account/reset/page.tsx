@@ -43,7 +43,7 @@ export default function CustomerResetPage() {
                 If an account exists for <span className="text-white">{email}</span>, a reset link
                 is on its way.
               </p>
-              <Link href="/init/login" className="mt-6 inline-block text-gold hover:text-gold-light">
+              <Link href="/account/login" className="mt-6 inline-block text-gold hover:text-gold-light">
                 Back to sign in
               </Link>
             </div>
@@ -55,7 +55,7 @@ export default function CustomerResetPage() {
                 {loading ? 'Sending…' : 'Send reset link'}
               </Button>
               <p className="text-center text-sm text-white-50">
-                <Link href="/init/login" className="hover:text-white">
+                <Link href="/account/login" className="hover:text-white">
                   Back to sign in
                 </Link>
               </p>

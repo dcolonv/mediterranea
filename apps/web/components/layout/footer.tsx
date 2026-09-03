@@ -35,7 +35,7 @@ export function Footer() {
             <ul className="space-y-4">
               <li>
                 <Link
-                  href="/init"
+                  href="/"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   {dict.footer.home}
@@ -43,7 +43,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/init/treatments"
+                  href="/treatments"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   {dict.footer.services}
@@ -51,7 +51,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/init#about"
+                  href="/#about"
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   {dict.footer.about}

@@ -74,10 +74,10 @@ export default function CustomerLoginPage() {
           </Button>
 
           <div className="mt-6 flex justify-between text-sm text-white-50">
-            <Link href="/init/reset" className="hover:text-white">
+            <Link href="/account/reset" className="hover:text-white">
               Forgot password?
             </Link>
-            <Link href="/init/signup" className="text-gold hover:text-gold-light">
+            <Link href="/account/signup" className="text-gold hover:text-gold-light">
               Create account
             </Link>
           </div>

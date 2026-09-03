@@ -13,7 +13,7 @@ export const metadata = {
 
 export default async function AccountPage() {
   const customer = await getCurrentCustomer();
-  if (!customer) redirect('/init/login');
+  if (!customer) redirect('/account/login');
 
   const [appts, reviewedIds] = await Promise.all([
     getMyAppointments(),
@@ -38,7 +38,7 @@ export default async function AccountPage() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/init/account/profile">
+            <Link href="/account/profile">
               <Button variant="outline" size="sm">
                 Profile
               </Button>
