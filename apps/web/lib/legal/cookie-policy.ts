@@ -35,7 +35,7 @@ export interface CookiePolicy {
 }
 
 /** Update when the policy text or the cookie tables change. */
-const LAST_UPDATED = { en: '3 September 2026', es: '3 de septiembre de 2026' };
+const LAST_UPDATED = { en: '4 September 2026', es: '4 de septiembre de 2026' };
 
 const NECESSARY_EN: CookieRow[] = [
   {
@@ -213,14 +213,25 @@ const EN: CookiePolicy = {
       table: { caption: 'Analytics — only with your consent', rows: ANALYTICS_EN },
     },
     {
-      heading: '6. Third parties and international transfers',
+      heading: '6. Measurement without cookies',
+      paragraphs: [
+        'Independently of the cookies above, we use Vercel Web Analytics, provided by our hosting provider, to count page views. This tool stores nothing on your device and reads nothing from it: it sets no cookie and uses neither local storage nor IndexedDB, so it falls outside the consent requirement of Article 22.2 LSSI-CE and works whether you accept or reject analytics cookies.',
+        'For each page view it records only the page visited, the referring site, and the country, browser family, operating system and device type derived from the request. To recognise whether two views belong to the same visit, an irreversible hash is calculated from your IP address and browser characteristics using a secret key that changes every day; your IP address is not stored, the hash cannot be traced back to you, and the link is lost when the daily key rotates.',
+        'The lawful basis is our legitimate interest (Article 6.1.f GDPR) in knowing how many people visit the site and which pages they use, in a form that does not identify you, does not build profiles and is not used for advertising. You may object to this processing at any time by writing to ' +
+          CONTACT_INFO.email +
+          '.',
+        'The provider is Vercel Inc., acting as data processor under a data processing agreement that includes the European Commission’s Standard Contractual Clauses for any transfer outside the European Economic Area.',
+      ],
+    },
+    {
+      heading: '7. Third parties and international transfers',
       paragraphs: [
         'Analytics cookies are provided by Google Ireland Limited, which may transfer data to servers outside the European Economic Area. Such transfers are covered by the safeguards offered by Google, including the EU-US Data Privacy Framework and the European Commission’s Standard Contractual Clauses.',
         'You can read Google’s privacy information at policies.google.com/privacy and its description of how it uses data from sites that use its services at policies.google.com/technologies/partner-sites.',
       ],
     },
     {
-      heading: '7. How to accept, reject or change your choice',
+      heading: '8. How to accept, reject or change your choice',
       paragraphs: [
         'The first time you visit, a banner lets you accept or reject analytics cookies with a single click; both options are equally accessible, and no analytics cookie is installed before you choose.',
         'You can change your decision at any time from the “Cookie settings” link in the footer of the site. Withdrawing consent does not affect the lawfulness of the processing carried out before you withdrew it.',
@@ -234,13 +245,13 @@ const EN: CookiePolicy = {
       ],
     },
     {
-      heading: '8. Retention',
+      heading: '9. Retention',
       paragraphs: [
         'Each cookie is kept for the period stated in the tables above, unless you delete it earlier from your browser. The record of your cookie choice is kept until you clear your browser storage or change your decision.',
       ],
     },
     {
-      heading: '9. Your rights',
+      heading: '10. Your rights',
       paragraphs: [
         'You have the right to request access to your personal data, and its rectification or erasure, as well as to request the restriction of processing, to object to processing, and to data portability. You may exercise these rights by writing to ' +
           CONTACT_INFO.email +
@@ -249,7 +260,7 @@ const EN: CookiePolicy = {
       ],
     },
     {
-      heading: '10. Changes to this policy',
+      heading: '11. Changes to this policy',
       paragraphs: [
         'We may update this policy when the cookies we use change or when required by law. The date at the top shows when it was last revised; we recommend reviewing it periodically.',
       ],
@@ -309,14 +320,25 @@ const ES: CookiePolicy = {
       table: { caption: 'Analíticas — solo con tu consentimiento', rows: ANALYTICS_ES },
     },
     {
-      heading: '6. Terceros y transferencias internacionales',
+      heading: '6. Medición sin cookies',
+      paragraphs: [
+        'Con independencia de las cookies anteriores, utilizamos Vercel Web Analytics, servicio de nuestro proveedor de alojamiento, para contabilizar las páginas vistas. Esta herramienta no almacena nada en tu dispositivo ni lee nada de él: no instala ninguna cookie ni utiliza almacenamiento local o IndexedDB, por lo que queda fuera de la exigencia de consentimiento del artículo 22.2 de la LSSI-CE y funciona tanto si aceptas como si rechazas las cookies analíticas.',
+        'De cada página vista únicamente registra la página visitada, el sitio de procedencia y el país, la familia de navegador, el sistema operativo y el tipo de dispositivo deducidos de la petición. Para reconocer si dos visualizaciones pertenecen a una misma visita se calcula un valor hash irreversible a partir de tu dirección IP y de las características de tu navegador, empleando una clave secreta que cambia cada día; tu dirección IP no se conserva, el hash no permite volver a identificarte y la asociación se pierde al rotar la clave diaria.',
+        'La base jurídica es nuestro interés legítimo (artículo 6.1.f del RGPD) en conocer cuántas personas visitan el sitio y qué páginas consultan, de una forma que no te identifica, no elabora perfiles y no se utiliza con fines publicitarios. Puedes oponerte a este tratamiento en cualquier momento escribiendo a ' +
+          CONTACT_INFO.email +
+          '.',
+        'El proveedor es Vercel Inc., que actúa como encargado del tratamiento en virtud de un contrato que incorpora las Cláusulas Contractuales Tipo de la Comisión Europea para cualquier transferencia fuera del Espacio Económico Europeo.',
+      ],
+    },
+    {
+      heading: '7. Terceros y transferencias internacionales',
       paragraphs: [
         'Las cookies analíticas son proporcionadas por Google Ireland Limited, que puede transferir datos a servidores situados fuera del Espacio Económico Europeo. Dichas transferencias están amparadas por las garantías ofrecidas por Google, entre ellas el Marco de Privacidad de Datos UE-EE. UU. y las Cláusulas Contractuales Tipo de la Comisión Europea.',
         'Puedes consultar la información de privacidad de Google en policies.google.com/privacy y su descripción del uso de datos procedentes de sitios que utilizan sus servicios en policies.google.com/technologies/partner-sites.',
       ],
     },
     {
-      heading: '7. Cómo aceptar, rechazar o cambiar tu decisión',
+      heading: '8. Cómo aceptar, rechazar o cambiar tu decisión',
       paragraphs: [
         'En tu primera visita, un aviso te permite aceptar o rechazar las cookies analíticas con un solo clic; ambas opciones son igualmente accesibles y no se instala ninguna cookie analítica antes de que elijas.',
         'Puedes cambiar tu decisión en cualquier momento desde el enlace “Configuración de cookies” situado en el pie del sitio. La retirada del consentimiento no afecta a la licitud del tratamiento realizado con anterioridad.',
@@ -330,13 +352,13 @@ const ES: CookiePolicy = {
       ],
     },
     {
-      heading: '8. Conservación',
+      heading: '9. Conservación',
       paragraphs: [
         'Cada cookie se conserva durante el plazo indicado en las tablas anteriores, salvo que la elimines antes desde tu navegador. El registro de tu decisión sobre las cookies se conserva hasta que borres el almacenamiento de tu navegador o cambies tu elección.',
       ],
     },
     {
-      heading: '9. Tus derechos',
+      heading: '10. Tus derechos',
       paragraphs: [
         'Tienes derecho a solicitar el acceso a tus datos personales, su rectificación o supresión, así como a solicitar la limitación del tratamiento, a oponerte al mismo y a la portabilidad de los datos. Puedes ejercer estos derechos escribiendo a ' +
           CONTACT_INFO.email +
@@ -345,7 +367,7 @@ const ES: CookiePolicy = {
       ],
     },
     {
-      heading: '10. Cambios en esta política',
+      heading: '11. Cambios en esta política',
       paragraphs: [
         'Podemos actualizar esta política cuando cambien las cookies que utilizamos o cuando así lo exija la normativa. La fecha que figura al inicio indica su última revisión; te recomendamos consultarla periódicamente.',
       ],
