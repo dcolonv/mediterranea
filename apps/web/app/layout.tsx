@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Marcellus, Jost } from 'next/font/google';
 import { AuthProvider } from '@/components/providers';
 import { AnalyticsTracker } from '@/components/analytics/analytics-tracker';
+import { Analytics as VercelAnalytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const marcellus = Marcellus({
@@ -61,7 +62,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${marcellus.variable} ${jost.variable}`}>
       <body className={`${jost.className} antialiased`}>
+        {/* Google Analytics — only after the visitor accepts. */}
         <AnalyticsTracker />
+        {/* Vercel Web Analytics — cookieless and anonymous, so it also counts
+            the visitors who never answer the consent banner. */}
+        <VercelAnalytics />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
