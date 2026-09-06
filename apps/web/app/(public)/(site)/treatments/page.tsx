@@ -2,17 +2,22 @@ import Link from 'next/link';
 import { Button, PriceTag } from '@/components/ui';
 import { getBookingServices } from '@/actions/public-booking';
 import { getServerDictionary } from '@/lib/i18n/server';
+import { durationLabel } from '@/lib/i18n/duration';
+import { serviceName, serviceDescription } from '@/lib/i18n/service';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Treatments | Mediterránea Face Studio',
   description:
-    'Our three facial formats — Custom, Focus and INDIBA — plus the technology and products behind every treatment.',
+    'Our facial formats — 1.5 Hour, 45 Minutes and INDIBA — our seasonal facials, and the technology and products behind every treatment.',
 };
 
 export default async function TreatmentsPage() {
-  const [services, { dict }] = await Promise.all([getBookingServices(), getServerDictionary()]);
+  const [services, { locale, dict }] = await Promise.all([
+    getBookingServices(),
+    getServerDictionary(),
+  ]);
   const s = dict.services;
   const ft = dict.facialTreatments;
   const b = dict.booking;
@@ -22,43 +27,118 @@ export default async function TreatmentsPage() {
   const groupPricing = (group: string) => {
     const inGroup = services.filter((sv) => sv.bookingGroup === group);
     if (!inGroup.length) return null;
+    const prices = inGroup.map((sv) => sv.price);
     return {
-      regular: Math.min(...inGroup.map((sv) => sv.price)),
+      regular: Math.min(...prices),
       first: Math.min(...inGroup.map((sv) => sv.firstVisitPrice || sv.price)),
+      // "from" only earns its place when the group spans more than one price.
+      varies: Math.min(...prices) !== Math.max(...prices),
     };
   };
 
-  const cards = [
+  const customPricing = groupPricing('custom');
+  const indibaPricing = groupPricing('indiba');
+  const focusPricing = groupPricing('focus');
+
+  interface Card {
+    name: string;
+    duration: string;
+    description: string;
+    pricing: { regular: number; first: number } | null;
+    from: boolean;
+    badge?: string;
+    href: string;
+  }
+
+  // The three permanent formats.
+  const formats: Card[] = [
     {
       name: s.customName,
       duration: s.customDuration,
       description: s.customDesc,
-      pricing: groupPricing('custom'),
-      from: false,
+      pricing: customPricing,
+      from: customPricing?.varies ?? false,
       href: '/book?group=custom',
-    },
-    {
-      name: s.focusName,
-      duration: s.focusDuration,
-      description: s.focusDesc,
-      pricing: groupPricing('focus'),
-      from: true,
-      href: '/book?group=focus',
     },
     {
       name: s.indibaName,
       duration: s.indibaDuration,
       description: s.indibaDesc,
-      pricing: groupPricing('indiba'),
-      from: true,
+      pricing: indibaPricing,
+      from: indibaPricing?.varies ?? false,
       href: '/book?group=indiba',
     },
+    {
+      name: s.focusName,
+      duration: s.focusDuration,
+      description: s.focusDesc,
+      pricing: focusPricing,
+      from: focusPricing?.varies ?? false,
+      href: '/book?group=focus',
+    },
   ];
+
+  // Standalone treatments (no booking group) book directly — currently the
+  // seasonal facials, which lead the grid but are only on the page while they
+  // run.
+  const seasonal: Card[] = services
+    .filter((sv) => !sv.bookingGroup)
+    .map((sv) => ({
+      name: serviceName(sv, locale),
+      duration: durationLabel(sv.durationMinutes, locale),
+      description: serviceDescription(sv, locale),
+      pricing: { regular: sv.price, first: sv.firstVisitPrice || sv.price },
+      from: false,
+      badge: sv.temporary ? s.seasonal : undefined,
+      href: `/book?service=${sv.slug}`,
+    }));
+
+  const cards = [...seasonal, ...formats];
+
+  const card = (c: Card) => (
+    <div
+      key={c.name}
+      className="group flex h-full flex-col border border-white-10 bg-dark-800/40 p-8 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70"
+    >
+      <div className="mb-4 flex items-center text-xs uppercase tracking-wider text-white-30">
+        <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {c.duration}
+        {c.badge && (
+          <span className="ml-auto border border-gold/40 px-2 py-0.5 text-[10px] tracking-wider text-gold">
+            {c.badge}
+          </span>
+        )}
+      </div>
+      <div className="mb-4 flex flex-col gap-2">
+        <h2 className="font-serif text-2xl leading-snug text-white transition-colors duration-300 group-hover:text-gold">
+          {c.name}
+        </h2>
+        {c.pricing && (
+          <PriceTag
+            price={c.pricing.regular}
+            firstPrice={c.pricing.first}
+            from={c.from}
+            fromLabel={b.from}
+            firstLabel={s.firstVisit}
+            className="text-left"
+          />
+        )}
+      </div>
+      <p className="flex-1 text-sm font-light leading-relaxed text-white-50">{c.description}</p>
+      <Link href={c.href} className="mt-8">
+        <Button variant="elegant" size="sm" className="w-full">
+          {dict.treatments.book}
+        </Button>
+      </Link>
+    </div>
+  );
 
   return (
     <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-36 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        {/* The three facial formats */}
+        {/* The facial formats, plus any standalone/seasonal facials */}
         <div className="mb-16 text-center">
           <div className="mb-6 flex items-center justify-center gap-5">
             <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
@@ -67,45 +147,18 @@ export default async function TreatmentsPage() {
             </span>
             <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />
           </div>
-          <h1 className="font-serif text-4xl tracking-wide text-white sm:text-5xl">{s.title}</h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-white-50">{s.subtitle}</p>
+          <h1 className="font-serif text-4xl tracking-wide text-white sm:text-5xl">
+            {seasonal.length ? s.allTitle : s.title}
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-white-50">
+            {seasonal.length ? s.allSubtitle : s.subtitle}
+          </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {cards.map((card) => (
-            <div
-              key={card.name}
-              className="group flex h-full flex-col border border-white-10 bg-dark-800/40 p-8 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70"
-            >
-              <div className="mb-4 flex items-center text-xs uppercase tracking-wider text-white-30">
-                <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {card.duration}
-              </div>
-              <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                <h2 className="font-serif text-2xl text-white transition-colors duration-300 group-hover:text-gold">
-                  {card.name}
-                </h2>
-                {card.pricing && (
-                  <PriceTag
-                    price={card.pricing.regular}
-                    firstPrice={card.pricing.first}
-                    from={card.from}
-                    fromLabel={b.from}
-                    firstLabel={s.firstVisit}
-                    className="shrink-0 text-left sm:text-right"
-                  />
-                )}
-              </div>
-              <p className="flex-1 text-sm font-light leading-relaxed text-white-50">{card.description}</p>
-              <Link href={card.href} className="mt-8">
-                <Button variant="elegant" size="sm" className="w-full">
-                  {dict.treatments.book}
-                </Button>
-              </Link>
-            </div>
-          ))}
+        {/* Two columns while a seasonal facial makes four cards; back to three
+            across once it ends and only the permanent formats remain. */}
+        <div className={`grid gap-6 ${cards.length % 2 === 0 ? 'sm:grid-cols-2' : 'md:grid-cols-3'}`}>
+          {cards.map(card)}
         </div>
 
         {/* What each facial does */}

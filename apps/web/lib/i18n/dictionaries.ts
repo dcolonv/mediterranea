@@ -54,16 +54,20 @@ const en = {
     eyebrow: 'What We Offer',
     title: 'Three ways to care for your skin',
     subtitle: 'A fully personalized session, a single focused treatment, or a targeted INDIBA facial.',
-    customName: 'Custom Facial',
-    customDuration: '1.5–2 hours',
+    // The treatments page also lists the seasonal facials, so it can't say "three".
+    allTitle: 'Ways to care for your skin',
+    allSubtitle:
+      'A full personalized session, a single focused treatment, a targeted INDIBA facial — plus whatever is in season.',
+    customName: '1.5 Hour Facial',
+    customDuration: '1.5 hours',
     customDesc:
       'A fully personalized session. After assessing your skin, we apply whichever of these treatments it needs, from hydration, purifying and peeling to even tone and firmness, combining several in a single visit.',
-    focusName: 'Focus Facial',
+    focusName: '45 Minutes Facial',
     focusDuration: '45 minutes',
     focusDesc:
       'A single, targeted treatment focused on one concern, such as peeling, dermapen or hydration. Not sure which you need? We’ll help you choose.',
     indibaName: 'INDIBA Facial',
-    indibaDuration: '45–75 minutes',
+    indibaDuration: '45 & 75 minutes',
     indibaDesc:
       'A radiofrequency facial that boosts circulation and collagen from within, for firmer, revitalized skin with a natural glow.',
     cta: 'Book Your Facial',
@@ -83,7 +87,7 @@ const en = {
     eyebrow: 'The Treatments',
     title: 'What each facial does',
     subtitle:
-      'A Focus facial is one of these treatments; a Custom facial blends several, chosen for your skin.',
+      'The 45 Minutes Facial is one of these treatments; the 1.5 Hour Facial blends several, chosen for your skin.',
     items: [
       {
         name: 'Hydration',
@@ -284,7 +288,7 @@ const en = {
     stepTime: 'Date & time',
     stepDetails: 'Your details',
     chooseTreatment: 'Choose your facial',
-    chooseFocus: 'Choose a focus treatment',
+    chooseFocus: 'Choose your treatment',
     chooseIndiba: 'Choose an INDIBA option',
     from: 'from',
     noTreatments: 'No treatments are available to book right now.',
@@ -421,16 +425,19 @@ const es: typeof en = {
     eyebrow: 'Lo Que Ofrecemos',
     title: 'Tres formas de cuidar tu piel',
     subtitle: 'Una sesión personalizada, un tratamiento único y focalizado, o un facial INDIBA específico.',
-    customName: 'Facial Personalizado',
-    customDuration: '1,5–2 horas',
+    allTitle: 'Formas de cuidar tu piel',
+    allSubtitle:
+      'Una sesión completa y personalizada, un tratamiento único y focalizado, un facial INDIBA específico — y lo que esté de temporada.',
+    customName: 'Facial de 1,5 Horas',
+    customDuration: '1,5 horas',
     customDesc:
       'Una sesión totalmente personalizada. Tras valorar tu piel, aplicamos los tratamientos que necesita, desde hidratación y purificante hasta peeling, unificación del tono y firmeza, combinando varios en una misma sesión.',
-    focusName: 'Facial Focalizado',
+    focusName: 'Facial de 45 Minutos',
     focusDuration: '45 minutos',
     focusDesc:
       'Un tratamiento único y focalizado en una necesidad concreta, como peeling, dermapen o hidratación. ¿No sabes cuál necesitas? Te ayudamos a elegir.',
     indibaName: 'Facial INDIBA',
-    indibaDuration: '45–75 minutos',
+    indibaDuration: '45 y 75 minutos',
     indibaDesc:
       'Un facial de radiofrecuencia que activa la circulación y el colágeno desde el interior, para una piel más firme, revitalizada y con luminosidad natural.',
     cta: 'Reserva tu cita',
@@ -450,7 +457,7 @@ const es: typeof en = {
     eyebrow: 'Los Tratamientos',
     title: 'Qué hace cada facial',
     subtitle:
-      'Un facial Focus es uno de estos tratamientos; un facial Personalizado combina varios, elegidos para tu piel.',
+      'El Facial de 45 Minutos es uno de estos tratamientos; el Facial de 1,5 Horas combina varios, elegidos para tu piel.',
     items: [
       {
         name: 'Hidratación',
@@ -651,7 +658,7 @@ const es: typeof en = {
     stepTime: 'Fecha y hora',
     stepDetails: 'Tus datos',
     chooseTreatment: 'Elige tu facial',
-    chooseFocus: 'Elige un tratamiento focalizado',
+    chooseFocus: 'Elige tu tratamiento',
     chooseIndiba: 'Elige una opción INDIBA',
     from: 'desde',
     noTreatments: 'No hay tratamientos disponibles para reservar en este momento.',

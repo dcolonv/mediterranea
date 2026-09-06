@@ -6,8 +6,8 @@
  * Requires Firebase Admin credentials in .env.local.
  *
  * Booking model (drives the two-level booking flow via `bookingGroup`):
- *   custom → Custom Facial (books directly)
- *   focus  → 5 focus facials (submenu)
+ *   custom → 1.5 Hour Facial (books directly)
+ *   focus  → 45 Minutes Facial (submenu of focused treatments)
  *   indiba → INDIBA Focus / INDIBA Full (submenu)
  *
  * Everything is a facial (category: 'facial'). Doc id = slug (idempotent upsert).
@@ -55,14 +55,14 @@ const SERVICES: Seed[] = [
   // ── Custom (books directly) ────────────────────────────────────────────────
   {
     slug: 'custom-facial',
-    name: 'Custom Facial',
-    nameEs: 'Facial Personalizado',
+    name: '1.5 Hour Facial',
+    nameEs: 'Facial de 1,5 Horas',
     description:
       'We analyze your skin in the studio and design a session around what it needs, from hydration and firming to even tone, fading marks and softening expression lines, for complete, tailored care.',
     descriptionEs:
       'Analizamos tu piel en el estudio y diseñamos una sesión según lo que necesita, desde hidratación y reafirmación hasta unificación del tono, atenuar marcas y suavizar las líneas de expresión, para un cuidado completo y a medida.',
     bookingGroup: 'custom',
-    durationMinutes: 120,
+    durationMinutes: 90,
     blockMinutes: 120,
     price: 120,
   },
@@ -70,8 +70,8 @@ const SERVICES: Seed[] = [
   // ── Focus facials (submenu) — 45 min, €75 ─────────────────────────────────
   {
     slug: 'iluminador-focalizado',
-    name: 'Brightening Focus',
-    nameEs: 'Iluminador Focalizado',
+    name: 'Brightening',
+    nameEs: 'Iluminador',
     description:
       'A focused facial that restores luminosity to dull skin, bringing back a fresh, radiant tone.',
     descriptionEs:
@@ -83,8 +83,8 @@ const SERVICES: Seed[] = [
   },
   {
     slug: 'purificante-focalizado',
-    name: 'Purifying Focus',
-    nameEs: 'Purificante Focalizado',
+    name: 'Purifying',
+    nameEs: 'Purificante',
     description:
       'A focused facial that deeply cleanses, decongests pores and rebalances oily, congested skin.',
     descriptionEs:
@@ -96,8 +96,8 @@ const SERVICES: Seed[] = [
   },
   {
     slug: 'hidratacion-focalizado',
-    name: 'Hydration Focus',
-    nameEs: 'Hidratación Focalizado',
+    name: 'Hydration',
+    nameEs: 'Hidratación',
     description:
       'A focused facial that replenishes water and nutrients for soft, plump, comfortable skin.',
     descriptionEs:
@@ -109,8 +109,8 @@ const SERVICES: Seed[] = [
   },
   {
     slug: 'tono-uniforme-focalizado',
-    name: 'Even Tone Focus',
-    nameEs: 'Tono Uniforme Focalizado',
+    name: 'Even Tone',
+    nameEs: 'Tono Uniforme',
     description:
       'A focused facial that evens tone and fades spots and marks for more uniform, luminous skin.',
     descriptionEs:
@@ -122,8 +122,8 @@ const SERVICES: Seed[] = [
   },
   {
     slug: 'lineas-firmeza-focalizado',
-    name: 'Lines & Firmness Focus',
-    nameEs: 'Líneas & Firmeza Focalizado',
+    name: 'Lines & Firmness',
+    nameEs: 'Líneas & Firmeza',
     description:
       'A focused facial that targets expression lines and skin laxity for a firmer, smoother effect.',
     descriptionEs:
@@ -135,8 +135,8 @@ const SERVICES: Seed[] = [
   },
   {
     slug: 'peeling-focalizado',
-    name: 'Peeling Focus',
-    nameEs: 'Peeling Focalizado',
+    name: 'Peeling',
+    nameEs: 'Peeling',
     description:
       'A focused peeling that renews the skin’s surface, smoothing texture and reviving a fresh, luminous glow.',
     descriptionEs:
@@ -151,9 +151,9 @@ const SERVICES: Seed[] = [
     name: 'Help Me Choose',
     nameEs: 'Te Ayudamos a Elegir',
     description:
-      'Not sure which facial you need? Book a focus session and we’ll assess your skin together and choose the right treatment for you on the day.',
+      'Not sure which facial you need? Book a 45 minute session and we’ll assess your skin together and choose the right treatment for you on the day.',
     descriptionEs:
-      '¿No sabes qué facial necesitas? Reserva una sesión focus y valoramos tu piel juntas para elegir el tratamiento más adecuado para ti en el momento.',
+      '¿No sabes qué facial necesitas? Reserva una sesión de 45 minutos y valoramos tu piel juntas para elegir el tratamiento más adecuado para ti en el momento.',
     bookingGroup: 'focus',
     durationMinutes: 45,
     blockMinutes: 60,
