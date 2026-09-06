@@ -6,11 +6,12 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button, Input, Textarea, PriceTag } from '@/components/ui';
 import { formatDuration } from '@mediterranea/shared/utils';
-import { CONTACT_INFO, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
+import { BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import { useLang } from '@/components/i18n/language-provider';
 import { serviceName } from '@/lib/i18n/service';
 import { durationLabel } from '@/lib/i18n/duration';
 import { MonthCalendar, firstSelectableDate } from './month-calendar';
+import { googleCalendarUrl } from '@/lib/calendar/ics';
 import type { WorkingHours } from '@mediterranea/shared/types';
 import {
   getBookingStaff,
@@ -23,42 +24,56 @@ import {
 type Step = 'type' | 'sub' | 'practitioner' | 'time' | 'details' | 'done';
 type Group = 'custom' | 'focus' | 'indiba';
 
-function addMinutes(time: string, minutes: number): string {
-  const [h, m] = time.split(':').map(Number);
-  const total = h * 60 + m + minutes;
-  const hh = Math.floor(total / 60) % 24;
-  const mm = total % 60;
-  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+function isIos(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  // iPadOS reports itself as a Mac, so the touch check catches it too.
+  return (
+    /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
 }
 
-function downloadIcs(opts: {
+/**
+ * Hands the appointment to the phone's calendar app rather than leaving an
+ * .ics file in Downloads:
+ *  - iOS opens a served text/calendar response in Calendar directly.
+ *  - Android routes calendar.google.com links to the Calendar app.
+ *  - Desktop keeps the familiar file download.
+ */
+function addToCalendar(opts: {
   service: string;
   date: string;
   time: string;
   durationMinutes: number;
 }) {
-  const dt = (t: string) => `${opts.date.replace(/-/g, '')}T${t.replace(':', '')}00`;
-  const end = addMinutes(opts.time, opts.durationMinutes);
-  const lines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Mediterranea Face Studio//Booking//EN',
-    'BEGIN:VEVENT',
-    `UID:${opts.date}-${opts.time}-mediterranea`,
-    `DTSTART:${dt(opts.time)}`,
-    `DTEND:${dt(end)}`,
-    `SUMMARY:${opts.service} — Mediterránea Face Studio`,
-    `LOCATION:${CONTACT_INFO.address}, ${CONTACT_INFO.city}`,
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ];
-  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar' });
-  const url = URL.createObjectURL(blob);
+  const event = {
+    service: opts.service,
+    date: opts.date,
+    time: opts.time,
+    durationMinutes: opts.durationMinutes,
+  };
+  const icsUrl = `/api/calendar?${new URLSearchParams({
+    service: opts.service,
+    date: opts.date,
+    time: opts.time,
+    duration: String(opts.durationMinutes),
+  })}`;
+
+  if (isIos()) {
+    // Navigating (not downloading) is what triggers Calendar's "Add Event" sheet.
+    window.location.href = icsUrl;
+    return;
+  }
+
+  if (/Android/.test(navigator.userAgent)) {
+    window.open(googleCalendarUrl(event), '_blank', 'noopener');
+    return;
+  }
+
   const a = document.createElement('a');
-  a.href = url;
-  a.download = 'appointment.ics';
+  a.href = icsUrl;
+  a.download = 'mediterranea-appointment.ics';
   a.click();
-  URL.revokeObjectURL(url);
 }
 
 export function BookingFlow({
@@ -299,7 +314,7 @@ export function BookingFlow({
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button
             variant="elegant"
-            onClick={() => downloadIcs({ service: svcName(service), date, time, durationMinutes })}
+            onClick={() => addToCalendar({ service: svcName(service), date, time, durationMinutes })}
           >
             {b.addToCalendar}
           </Button>

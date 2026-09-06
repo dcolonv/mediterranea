@@ -221,12 +221,24 @@ const en = {
     ],
   },
   products: {
-    eyebrow: 'Products We Work With',
+    eyebrow: 'What We Work With',
     title: 'Brands We Trust',
     subtitle:
-      'Professional skincare lines we combine to get the best results for your skin.',
+      'The technology and professional skincare lines we combine to get the best results for your skin.',
     visit: 'Visit site',
     items: [
+      {
+        name: 'INDIBA',
+        description:
+          'Spanish radiofrequency technology, backed by over 40 years of research, at the heart of our most advanced facials.',
+        url: 'https://indiba.com/es/',
+      },
+      {
+        name: 'Zemits',
+        description:
+          'Professional aesthetic equipment behind our ultrasonic, microcurrent and galvanic treatments.',
+        url: 'https://zemits.es/',
+      },
       {
         name: 'Omorovicza',
         description:
@@ -579,9 +591,21 @@ const es: typeof en = {
     eyebrow: 'Con Qué Trabajamos',
     title: 'Marcas en las que Confiamos',
     subtitle:
-      'Líneas de cosmética profesional que combinamos para conseguir los mejores resultados para tu piel.',
+      'La tecnología y las líneas de cosmética profesional que combinamos para conseguir los mejores resultados para tu piel.',
     visit: 'Visitar sitio',
     items: [
+      {
+        name: 'INDIBA',
+        description:
+          'Tecnología española de radiofrecuencia, con más de 40 años de investigación, en el corazón de nuestros faciales más avanzados.',
+        url: 'https://indiba.com/es/',
+      },
+      {
+        name: 'Zemits',
+        description:
+          'Aparatología estética profesional detrás de nuestros tratamientos de ultrasonido, microcorriente y galvánica.',
+        url: 'https://zemits.es/',
+      },
       {
         name: 'Omorovicza',
         description:
