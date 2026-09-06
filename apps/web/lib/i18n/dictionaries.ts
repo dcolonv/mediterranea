@@ -57,7 +57,7 @@ const en = {
     // The treatments page also lists the seasonal facials, so it can't say "three".
     allTitle: 'Ways to care for your skin',
     allSubtitle:
-      'A full personalized session, a single focused treatment, a targeted INDIBA facial — plus whatever is in season.',
+      'A full personalized session, a single focused treatment, a targeted INDIBA facial — and a seasonal facial for what your skin needs this time of year.',
     customName: '1.5 Hour Facial',
     customDuration: '1.5 hours',
     customDesc:
@@ -427,7 +427,7 @@ const es: typeof en = {
     subtitle: 'Una sesión personalizada, un tratamiento único y focalizado, o un facial INDIBA específico.',
     allTitle: 'Formas de cuidar tu piel',
     allSubtitle:
-      'Una sesión completa y personalizada, un tratamiento único y focalizado, un facial INDIBA específico — y lo que esté de temporada.',
+      'Una sesión completa y personalizada, un tratamiento único y focalizado, un facial INDIBA específico — y un facial de temporada para lo que tu piel necesita en esta época del año.',
     customName: 'Facial de 1,5 Horas',
     customDuration: '1,5 horas',
     customDesc:
