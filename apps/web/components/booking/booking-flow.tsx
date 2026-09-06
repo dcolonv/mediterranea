@@ -145,6 +145,9 @@ export function BookingFlow({
     list.reduce((min, s) => Math.min(min, s.price), Infinity);
   const minFirstPrice = (list: PublicService[]) =>
     list.reduce((min, s) => Math.min(min, s.firstVisitPrice || s.price), Infinity);
+  // "from" only earns its place when the group spans more than one price.
+  const priceVaries = (list: PublicService[]) =>
+    list.some((s) => s.price !== list[0].price);
 
   // For a deep-linked service, resolve whether the practitioner step is needed.
   useEffect(() => {
@@ -394,19 +397,6 @@ export function BookingFlow({
                     onClick={() => chooseGroup('custom')}
                   />
                 )}
-                {focusServices.length > 0 && (
-                  <GroupCard
-                    title={copy.focusName}
-                    hint={copy.focusDuration}
-                    description={copy.focusDesc}
-                    price={minPrice(focusServices)}
-                    firstPrice={minFirstPrice(focusServices)}
-                    from
-                    fromLabel={b.from}
-                    firstLabel={copy.firstVisit}
-                    onClick={() => chooseGroup('focus')}
-                  />
-                )}
                 {indibaServices.length > 0 && (
                   <GroupCard
                     title={copy.indibaName}
@@ -414,10 +404,23 @@ export function BookingFlow({
                     description={copy.indibaDesc}
                     price={minPrice(indibaServices)}
                     firstPrice={minFirstPrice(indibaServices)}
-                    from
+                    from={priceVaries(indibaServices)}
                     fromLabel={b.from}
                     firstLabel={copy.firstVisit}
                     onClick={() => chooseGroup('indiba')}
+                  />
+                )}
+                {focusServices.length > 0 && (
+                  <GroupCard
+                    title={copy.focusName}
+                    hint={copy.focusDuration}
+                    description={copy.focusDesc}
+                    price={minPrice(focusServices)}
+                    firstPrice={minFirstPrice(focusServices)}
+                    from={priceVaries(focusServices)}
+                    fromLabel={b.from}
+                    firstLabel={copy.firstVisit}
+                    onClick={() => chooseGroup('focus')}
                   />
                 )}
               </div>

@@ -64,8 +64,8 @@ export function ServicesOverview() {
         {/* The three facial formats */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <FacialCard name={s.customName} duration={s.customDuration} description={s.customDesc} delay={0} />
-          <FacialCard name={s.focusName} duration={s.focusDuration} description={s.focusDesc} delay={120} />
-          <FacialCard name={s.indibaName} duration={s.indibaDuration} description={s.indibaDesc} delay={240} />
+          <FacialCard name={s.indibaName} duration={s.indibaDuration} description={s.indibaDesc} delay={120} />
+          <FacialCard name={s.focusName} duration={s.focusDuration} description={s.focusDesc} delay={240} />
         </div>
 
         {/* CTA */}
