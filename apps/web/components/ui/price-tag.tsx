@@ -26,10 +26,12 @@ export function PriceTag({
 
   return (
     <span className={cn('text-right leading-tight', className)}>
-      <span className="whitespace-nowrap">
+      <span>
         {from && fromLabel && <span className="text-white-30">{fromLabel} </span>}
-        {hasIntro && <span className="text-white-30 line-through">{formatPrice(price)}</span>}{' '}
-        <span className="text-gold">{formatPrice(hasIntro ? firstPrice : price)}</span>
+        {hasIntro && (
+          <span className="whitespace-nowrap text-white-30 line-through">{formatPrice(price)}</span>
+        )}{' '}
+        <span className="whitespace-nowrap text-gold">{formatPrice(hasIntro ? firstPrice : price)}</span>
       </span>
       {hasIntro && (
         <span className="mt-0.5 block text-[10px] uppercase tracking-wider text-gold/70">

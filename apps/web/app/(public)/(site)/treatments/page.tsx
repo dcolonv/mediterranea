@@ -98,9 +98,9 @@ export default async function TreatmentsPage() {
   const card = (c: Card) => (
     <div
       key={c.name}
-      className="group flex h-full flex-col border border-white-10 bg-dark-800/40 p-8 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70"
+      className="group flex h-full min-w-0 flex-col border border-white-10 bg-dark-800/40 p-6 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70 sm:p-8"
     >
-      <div className="mb-4 flex items-center text-xs uppercase tracking-wider text-white-30">
+      <div className="mb-4 flex flex-wrap items-center gap-y-2 text-xs uppercase tracking-wider text-white-30">
         <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -112,7 +112,7 @@ export default async function TreatmentsPage() {
         )}
       </div>
       <div className="mb-4 flex flex-col gap-2">
-        <h2 className="font-serif text-2xl leading-snug text-white transition-colors duration-300 group-hover:text-gold">
+        <h2 className="font-serif text-2xl leading-snug break-words text-white transition-colors duration-300 group-hover:text-gold">
           {c.name}
         </h2>
         {c.pricing && (
@@ -177,7 +177,7 @@ export default async function TreatmentsPage() {
 
           <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
             {ft.items.map((item) => (
-              <div key={item.name} className="border-l border-gold/30 pl-5">
+              <div key={item.name} className="min-w-0 border-l border-gold/30 pl-5">
                 <h3 className="font-serif text-lg text-white">{item.name}</h3>
                 <p className="mt-2 text-sm font-light leading-relaxed text-white-50">
                   {item.description}
@@ -205,12 +205,12 @@ export default async function TreatmentsPage() {
             {t.items.map((item, i) => (
               <div
                 key={item.name}
-                className="group flex h-full flex-col border border-white-10 bg-dark-800/40 p-8 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70"
+                className="group flex h-full min-w-0 flex-col border border-white-10 bg-dark-800/40 p-6 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70 sm:p-8"
               >
                 <span className="mb-5 font-serif text-2xl text-gold/40 transition-colors duration-500 group-hover:text-gold/70">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className="font-serif text-xl leading-snug text-white transition-colors duration-300 group-hover:text-gold">
+                <h3 className="font-serif text-xl leading-snug break-words text-white transition-colors duration-300 group-hover:text-gold">
                   {item.name}
                 </h3>
                 <p className="mt-3 flex-1 text-sm font-light leading-relaxed text-white-50">
@@ -242,9 +242,9 @@ export default async function TreatmentsPage() {
                 href={brand.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex h-full flex-col border border-white-10 bg-dark-800/40 p-8 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70"
+                className="group flex h-full min-w-0 flex-col border border-white-10 bg-dark-800/40 p-6 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70 sm:p-8"
               >
-                <h3 className="font-serif text-2xl text-white transition-colors duration-300 group-hover:text-gold">
+                <h3 className="font-serif text-2xl break-words text-white transition-colors duration-300 group-hover:text-gold">
                   {brand.name}
                 </h3>
                 <p className="mt-3 flex-1 text-sm font-light leading-relaxed text-white-50">
