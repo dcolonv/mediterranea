@@ -6,6 +6,7 @@ import Link from 'next/link';
 import type { IconType } from 'react-icons';
 import {
   LuLayoutDashboard,
+  LuCalendarCheck,
   LuCalendarDays,
   LuClock,
   LuUsers,
@@ -29,7 +30,8 @@ import { hasCapability, type Capability } from '@/lib/auth/capabilities';
 import { getMyCapabilities } from '@/actions/team';
 
 const NAV: { href: string; label: string; icon: IconType; cap?: Capability }[] = [
-  { href: '/backoffice', label: 'Dashboard', icon: LuLayoutDashboard },
+  { href: '/backoffice', label: 'Upcoming', icon: LuCalendarCheck },
+  { href: '/backoffice/dashboard', label: 'Dashboard', icon: LuLayoutDashboard },
   { href: '/backoffice/calendar', label: 'Calendar', icon: LuCalendarDays, cap: 'calendar' },
   { href: '/backoffice/waitlist', label: 'Waitlist', icon: LuClock, cap: 'waitlist' },
   { href: '/backoffice/clients', label: 'Clients', icon: LuUsers, cap: 'clients' },
