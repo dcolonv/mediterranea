@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useAuth } from '@/src/providers/auth-provider';
 import { fetchAppointments } from '@/src/api/client';
 import { colors, spacing, radius, STATUS_STYLES } from '@/src/theme';
