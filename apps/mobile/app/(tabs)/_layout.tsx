@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { colors } from '@/src/theme';
 import { useAuth } from '@/src/providers/auth-provider';
-import { registerForPushNotifications } from '@/src/push';
+import { configureNotificationHandler, registerForPushNotifications } from '@/src/push';
 
 export default function TabsLayout() {
   const { isAdmin, getToken } = useAuth();
 
   useEffect(() => {
+    configureNotificationHandler();
     if (isAdmin) {
       registerForPushNotifications(getToken);
     }

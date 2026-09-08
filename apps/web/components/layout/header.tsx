@@ -95,7 +95,7 @@ export function Header() {
       }`}
     >
       <nav className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex h-24 items-center justify-between">
+        <div className="relative flex h-24 items-center justify-between">
           {/* Logo */}
           <Link href="/">
             <Image
@@ -104,6 +104,7 @@ export function Header() {
               width={120}
               height={54}
               priority
+              className="h-auto w-[88px] lg:w-[120px]"
             />
           </Link>
 
@@ -128,6 +129,14 @@ export function Header() {
                 {dict.nav.bookNow}
               </Button>
             </Link>
+          </div>
+
+          {/* Language flags — in the bar on mobile, in the desktop nav above. */}
+          <div className="absolute left-1/2 -translate-x-1/2 lg:hidden">
+            <LanguageToggle
+              sizeClass="text-[1.375rem]"
+              className="[&>button]:px-1.5"
+            />
           </div>
 
           {/* Mobile menu button */}
@@ -179,7 +188,6 @@ export function Header() {
                   {dict.nav[section.key]}
                 </Link>
               ))}
-              <LanguageToggle sizeClass="text-[1.6875rem] sm:text-[2.0625rem]" />
               <Link href="/book" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="elegant" className="w-full">
                   {dict.nav.bookNow}

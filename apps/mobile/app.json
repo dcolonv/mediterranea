@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "scheme": "mediterranea",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mediterraneafacestudio.app"
@@ -25,7 +24,10 @@
           "photosPermission": "Allow Mediterránea to access your photos to add client before/after images.",
           "cameraPermission": "Allow Mediterránea to use the camera to capture client before/after photos."
         }
-      ]
+      ],
+      "expo-status-bar",
+      "expo-web-browser",
+      "@react-native-vector-icons/ionicons"
     ]
   }
 }

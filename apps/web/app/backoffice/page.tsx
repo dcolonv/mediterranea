@@ -1,7 +1,7 @@
-import { BackofficeDashboard } from './backoffice-dashboard';
+import { BackofficeUpcoming } from './backoffice-upcoming';
 
 export const metadata = {
-  title: 'Dashboard | Mediterranea Backoffice',
+  title: 'Upcoming | Mediterranea Backoffice',
 };
 
 export default function BackofficePage() {
@@ -10,15 +10,16 @@ export default function BackofficePage() {
       <div className="mb-10">
         <div className="mb-4 flex items-center gap-4">
           <span className="h-px w-8 bg-gold" />
-          <span className="text-xs tracking-[0.3em] text-gold uppercase">Dashboard</span>
+          <span className="text-xs tracking-[0.3em] text-gold uppercase">Appointments</span>
         </div>
-        <h1 className="font-serif text-3xl text-white">Today at the studio</h1>
+        <h1 className="font-serif text-3xl text-white">Upcoming appointments</h1>
         <p className="mt-2 text-white-50">
-          Today’s schedule and a pulse on the week. Book, check in, and act on appointments.
+          Everything from today onwards, soonest first. Select one to confirm, check in, reschedule
+          or leave a note.
         </p>
       </div>
 
-      <BackofficeDashboard />
+      <BackofficeUpcoming />
     </div>
   );
 }
