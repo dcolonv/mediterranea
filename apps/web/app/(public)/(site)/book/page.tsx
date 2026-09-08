@@ -1,7 +1,4 @@
-import Link from 'next/link';
-import Image from 'next/image';
 import { BookingFlow } from '@/components/booking/booking-flow';
-import { LanguageToggle } from '@/components/i18n/language-toggle';
 import { getBookingServices, getPublicPolicy } from '@/actions/public-booking';
 import { getCurrentCustomer } from '@/lib/auth/customer';
 import { getServerDictionary } from '@/lib/i18n/server';
@@ -38,14 +35,7 @@ export default async function BookPage({
     : null;
 
   return (
-    <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-8 lg:px-8">
-      {/* Standalone top bar (this page lives outside the /init header/footer). */}
-      <div className="mx-auto mb-12 flex max-w-5xl items-center justify-between">
-        <Link href="/" aria-label="Mediterránea Face Studio">
-          <Image src="/logo_light.png" alt="Mediterránea Face Studio" width={110} height={50} priority />
-        </Link>
-        <LanguageToggle />
-      </div>
+    <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-36 lg:px-8">
 
       <div className="mx-auto max-w-3xl">
         <div className="mb-12 text-center">
