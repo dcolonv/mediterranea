@@ -95,7 +95,7 @@ export function Header() {
       }`}
     >
       <nav className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="relative flex h-24 items-center justify-between">
+        <div className="flex h-24 items-center justify-between">
           {/* Logo */}
           <Link href="/">
             <Image
@@ -104,7 +104,6 @@ export function Header() {
               width={120}
               height={54}
               priority
-              className="h-auto w-[88px] lg:w-[120px]"
             />
           </Link>
 
@@ -131,43 +130,39 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Language flags — in the bar on mobile, in the desktop nav above. */}
-          <div className="absolute left-1/2 -translate-x-1/2 lg:hidden">
-            <LanguageToggle
-              sizeClass="text-[1.375rem]"
-              className="[&>button]:px-1.5"
-            />
-          </div>
+          {/* Mobile: flags beside the menu button, evenly spaced. */}
+          <div className="flex items-center lg:hidden">
+            <LanguageToggle sizeClass="text-[1.375rem]" />
 
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            className="lg:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <span className="sr-only">Open menu</span>
-            <svg
-              className="h-6 w-6 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1"
-              stroke="currentColor"
+            <button
+              type="button"
+              className="p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                />
-              )}
-            </svg>
-          </button>
+              <span className="sr-only">Open menu</span>
+              <svg
+                className="h-6 w-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1"
+                stroke="currentColor"
+              >
+                {mobileMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
