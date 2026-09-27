@@ -54,6 +54,15 @@ describe('createAppointmentToken / readAppointmentToken', () => {
     }
   });
 
+  it('rejects rather than throws when the secret is unset', () => {
+    // /manage/enter is public: a misconfigured deploy must not 500 on it.
+    const token = createAppointmentToken({ appointmentId: 'appt-123', expiresAt: future() });
+    process.env.APPOINTMENT_LINK_SECRET = '';
+    expect(() => readAppointmentToken(token)).not.toThrow();
+    expect(readAppointmentToken(token)).toBeNull();
+    process.env.APPOINTMENT_LINK_SECRET = SECRET;
+  });
+
   it('refuses to sign with a missing or weak secret', () => {
     process.env.APPOINTMENT_LINK_SECRET = '';
     expect(() => createAppointmentToken({ appointmentId: 'x', expiresAt: future() })).toThrow();
