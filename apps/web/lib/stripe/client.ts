@@ -24,11 +24,3 @@ export function toCents(euros: number): number {
   return Math.round(euros * 100);
 }
 
-/** Base URL for building Stripe success/cancel redirect URLs. */
-export function siteUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    'http://localhost:3000'
-  );
-}
