@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { format, parseISO, addDays } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { Button } from '@/components/ui';
+import { MonthCalendar } from '@/components/booking/month-calendar';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
 import {
-  getManagedRescheduleTimes,
+  getManagedDaySlots,
   rescheduleManagedAppointment,
   cancelManagedAppointment,
   type ManageView,
@@ -22,7 +23,13 @@ const COPY = {
     back: 'Never mind',
     pickDate: 'Pick a new day',
     pickTime: 'Pick a new time',
-    noTimes: 'No free times that day. Try another.',
+    noTimes: 'No open times on this date. Try another day.',
+    selectDatePrompt: 'Select a date to see available times.',
+    finding: 'Finding…',
+    slotAvailable: 'Available',
+    slotBooked: 'Booked',
+    prevMonth: 'Previous month',
+    nextMonth: 'Next month',
     confirmCancel: 'Cancel this appointment?',
     confirmCancelBody: 'This frees the slot for someone else and can’t be undone.',
     keepIt: 'Keep my appointment',
@@ -42,7 +49,13 @@ const COPY = {
     back: 'Dejarlo como está',
     pickDate: 'Elige un nuevo día',
     pickTime: 'Elige una nueva hora',
-    noTimes: 'No hay horas libres ese día. Prueba con otro.',
+    noTimes: 'No hay horas disponibles ese día. Prueba con otro.',
+    selectDatePrompt: 'Elige una fecha para ver las horas disponibles.',
+    finding: 'Buscando…',
+    slotAvailable: 'Disponible',
+    slotBooked: 'Reservada',
+    prevMonth: 'Mes anterior',
+    nextMonth: 'Mes siguiente',
     confirmCancel: '¿Cancelar esta cita?',
     confirmCancelBody: 'Liberarás la hora para otra persona y no se puede deshacer.',
     keepIt: 'Mantener mi cita',
@@ -64,7 +77,7 @@ export function ManageAppointment({ appointment }: { appointment: ManageView }) 
 
   const [mode, setMode] = useState<Mode>('view');
   const [date, setDate] = useState('');
-  const [times, setTimes] = useState<string[] | null>(null);
+  const [slots, setSlots] = useState<{ time: string; available: boolean }[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [current, setCurrent] = useState({ date: appointment.date, time: appointment.time });
@@ -74,19 +87,14 @@ export function ManageAppointment({ appointment }: { appointment: ManageView }) 
       locale: dateLocale,
     });
 
-  // A month of choices is plenty; anything further out is a phone call.
-  const dayOptions = Array.from({ length: 30 }, (_, i) =>
-    format(addDays(new Date(), i + 1), 'yyyy-MM-dd')
-  );
-
   async function chooseDate(next: string) {
     setDate(next);
-    setTimes(null);
+    setSlots(null);
     setError(null);
     setBusy(true);
-    const res = await getManagedRescheduleTimes(next);
+    const res = await getManagedDaySlots(next);
     setBusy(false);
-    if (res.success) setTimes(res.times);
+    if (res.success) setSlots(res.slots);
     else setError(res.error);
   }
 
@@ -100,7 +108,7 @@ export function ManageAppointment({ appointment }: { appointment: ManageView }) 
       setMode('moved');
     } else {
       setError(res.error);
-      // The slot may have gone while they were deciding — refresh the list.
+      // The slot may have gone while they were deciding — refresh the day.
       void chooseDate(date);
     }
   }
@@ -194,56 +202,54 @@ export function ManageAppointment({ appointment }: { appointment: ManageView }) 
         </div>
       ) : (
         <div className="mt-8">
-          <p className="mb-3 text-xs uppercase tracking-wider text-white-50">{t.pickDate}</p>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {dayOptions.map((d) => (
-              <button
-                key={d}
-                onClick={() => chooseDate(d)}
-                className={`shrink-0 cursor-pointer border px-3 py-2 text-center text-xs transition-colors ${
-                  date === d
-                    ? 'border-gold bg-gold/10 text-white'
-                    : 'border-white-10 text-white-50 hover:border-gold/40 hover:text-white'
-                }`}
-              >
-                <span className="block uppercase tracking-wider">
-                  {format(parseISO(d), 'EEE', { locale: dateLocale })}
-                </span>
-                <span className="block font-serif text-base text-white">
-                  {format(parseISO(d), 'd')}
-                </span>
-                <span className="block text-[10px] text-white-30">
-                  {format(parseISO(d), 'MMM', { locale: dateLocale })}
-                </span>
-              </button>
-            ))}
-          </div>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,20rem)_1fr]">
+            <MonthCalendar
+              businessHours={appointment.businessHours}
+              maxAdvanceDays={appointment.maxAdvanceDays}
+              blockedDates={appointment.blockedDates}
+              locale={appointment.locale}
+              selectedDate={date}
+              onSelectDate={chooseDate}
+              prevLabel={t.prevMonth}
+              nextLabel={t.nextMonth}
+            />
 
-          {busy && <p className="mt-6 text-sm text-white-50">{t.loading}</p>}
-
-          {!busy && times !== null && (
-            <>
-              <p className="mb-3 mt-6 text-xs uppercase tracking-wider text-white-50">
-                {t.pickTime}
-              </p>
-              {times.length === 0 ? (
+            <div>
+              {!date && <p className="text-sm text-white-50">{t.selectDatePrompt}</p>}
+              {date && busy && <p className="text-sm text-white-50">{t.finding}</p>}
+              {date && !busy && slots && slots.length === 0 && (
                 <p className="text-sm text-white-50">{t.noTimes}</p>
-              ) : (
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                  {times.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => confirmTime(time)}
-                      disabled={busy}
-                      className="cursor-pointer border border-white-10 px-3 py-2 text-sm text-white transition-colors hover:border-gold hover:bg-gold/10 disabled:opacity-50"
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
               )}
-            </>
-          )}
+              {date && !busy && slots && slots.length > 0 && (
+                <>
+                  <div className="mb-5 flex items-center gap-5 text-xs text-white-50">
+                    <span className="flex items-center gap-2">
+                      <span className="h-3 w-3 border border-gold/50" /> {t.slotAvailable}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="h-3 w-3 border border-white-10 bg-white-10" /> {t.slotBooked}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {slots.map((s) => (
+                      <button
+                        key={s.time}
+                        disabled={!s.available || busy}
+                        onClick={() => confirmTime(s.time)}
+                        className={`border px-3 py-2 text-sm transition-colors ${
+                          s.available
+                            ? 'cursor-pointer border-white-10 text-white-70 hover:border-gold/40 hover:text-white'
+                            : 'cursor-not-allowed border-white-10/50 text-white-30 line-through'
+                        }`}
+                      >
+                        {s.time}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
 
           <button
             onClick={() => setMode('view')}

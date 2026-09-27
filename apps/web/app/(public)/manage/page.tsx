@@ -31,7 +31,7 @@ export default async function ManagePage() {
         </Link>
       </div>
 
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-3xl">
         {result.success ? (
           <ManageAppointment appointment={result.data} />
         ) : (
