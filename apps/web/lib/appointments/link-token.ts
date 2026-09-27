@@ -22,9 +22,15 @@ const SEP = '.';
  */
 export const MANAGE_COOKIE = '__appt_link';
 
-function secret(): string {
+/** The signing secret, or null when unset or too weak to use. */
+function secretOrNull(): string | null {
   const value = process.env.APPOINTMENT_LINK_SECRET;
-  if (!value || value.length < 32) {
+  return value && value.length >= 32 ? value : null;
+}
+
+function secret(): string {
+  const value = secretOrNull();
+  if (!value) {
     throw new Error(
       'APPOINTMENT_LINK_SECRET is missing or too short (needs at least 32 characters).'
     );
@@ -62,6 +68,9 @@ export function createAppointmentToken({ appointmentId, expiresAt }: Appointment
  */
 export function readAppointmentToken(token: string | undefined | null): string | null {
   if (!token) return null;
+
+  // No usable secret means no valid links exist, so reject rather than throw.
+  if (!secretOrNull()) return null;
 
   const parts = token.split(SEP);
   if (parts.length !== 3) return null;
