@@ -19,7 +19,7 @@ import {
   linkExpiryFor,
   appointmentManageUrl,
 } from '@/lib/appointments/link-token';
-import { siteUrl } from '@/lib/stripe/client';
+import { siteUrl } from '@/lib/site-url';
 import type { Appointment } from '@mediterranea/shared/types';
 
 /**
