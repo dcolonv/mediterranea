@@ -9,11 +9,36 @@ import { sendStaffPush } from './push';
 import {
   bookingConfirmed,
   appointmentCancelled,
+  appointmentRescheduled,
   appointmentReminder,
   type NotificationContext,
   type RenderedMessage,
 } from './templates';
+import {
+  createAppointmentToken,
+  linkExpiryFor,
+  appointmentManageUrl,
+} from '@/lib/appointments/link-token';
+import { siteUrl } from '@/lib/stripe/client';
 import type { Appointment } from '@mediterranea/shared/types';
+
+/**
+ * A fresh signed link for this appointment, so a rescheduled booking's next
+ * email carries a token valid for its new time. Returns undefined when the
+ * secret is unset — the email then sends without buttons rather than failing.
+ */
+function manageUrlFor(appt: Appointment): string | undefined {
+  try {
+    const token = createAppointmentToken({
+      appointmentId: appt.id,
+      expiresAt: linkExpiryFor(appt.appointmentDate, appt.appointmentTime),
+    });
+    return appointmentManageUrl(token, siteUrl());
+  } catch {
+    console.warn('[notifications] APPOINTMENT_LINK_SECRET unset; emails omit manage links.');
+    return undefined;
+  }
+}
 
 async function buildContext(appt: Appointment): Promise<NotificationContext> {
   const [staff, settings] = await Promise.all([
@@ -28,6 +53,7 @@ async function buildContext(appt: Appointment): Promise<NotificationContext> {
     serviceName: appt.serviceName,
     date: appt.appointmentDate,
     time: appt.appointmentTime,
+    manageUrl: manageUrlFor(appt),
     staffName: staff?.name ?? null,
     policyText: locale === 'es' ? policyTextEs || policyText : policyText,
     locale,
@@ -91,6 +117,24 @@ export async function notifyAppointmentCancelled(appointmentId: string): Promise
     ]);
   } catch (error) {
     console.error('[notifications] notifyAppointmentCancelled failed:', error);
+  }
+}
+
+/** The client moved their own appointment; confirm the new time. */
+export async function notifyAppointmentRescheduled(appointmentId: string): Promise<void> {
+  try {
+    const appt = await data.getAppointment(appointmentId);
+    if (!appt) return;
+    await Promise.allSettled([
+      deliver(appt, appointmentRescheduled(await buildContext(appt))),
+      sendStaffPush(
+        'Appointment moved',
+        `${appt.clientName} — ${appt.serviceName}, now ${appt.appointmentDate} at ${appt.appointmentTime}`,
+        { appointmentId: appt.id }
+      ),
+    ]);
+  } catch (error) {
+    console.error('[notifications] notifyAppointmentRescheduled failed:', error);
   }
 }
 

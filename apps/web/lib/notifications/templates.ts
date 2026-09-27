@@ -17,6 +17,8 @@ export interface NotificationContext {
   staffName?: string | null;
   policyText?: string;
   locale?: NotificationLocale;
+  /** Signed link letting the client reschedule or cancel. Omitted if unavailable. */
+  manageUrl?: string;
 }
 
 export interface RenderedMessage {
@@ -48,6 +50,33 @@ function shell(title: string, bodyHtml: string): string {
 </div>`;
 }
 
+/** Reschedule / cancel buttons, plus a copyable URL for clients that strip them. */
+function manageActions(ctx: NotificationContext): string {
+  if (!ctx.manageUrl) return '';
+  const es = ctx.locale === 'es';
+  const reschedule = es ? 'Cambiar la cita' : 'Reschedule';
+  const cancel = es ? 'Cancelar la cita' : 'Cancel appointment';
+  const fallback = es
+    ? 'Si los botones no funcionan, copia este enlace:'
+    : 'If the buttons don’t work, copy this link:';
+  const btn =
+    'display:inline-block;padding:10px 18px;border:1px solid #9a7b3f;' +
+    'border-radius:2px;text-decoration:none;font-size:14px;margin:0 6px 8px 0';
+  return `<p style="margin-top:24px">
+    <a href="${ctx.manageUrl}" style="${btn};background:#9a7b3f;color:#fff">${reschedule}</a>
+    <a href="${ctx.manageUrl}" style="${btn};color:#9a7b3f">${cancel}</a>
+  </p>
+  <p style="font-size:11px;color:#8a8378">${fallback}<br/>${ctx.manageUrl}</p>`;
+}
+
+/** Same links as plain text, for the text/SMS parts. */
+function manageLine(ctx: NotificationContext): string {
+  if (!ctx.manageUrl) return '';
+  return ctx.locale === 'es'
+    ? ` Para cambiar o cancelar tu cita: ${ctx.manageUrl}`
+    : ` To reschedule or cancel: ${ctx.manageUrl}`;
+}
+
 function line(ctx: NotificationContext): string {
   const es = ctx.locale === 'es';
   const withStaff = ctx.staffName ? (es ? ` con ${ctx.staffName}` : ` with ${ctx.staffName}`) : '';
@@ -71,12 +100,13 @@ export function bookingConfirmed(ctx: NotificationContext): RenderedMessage {
         `<p>Hola ${ctx.clientName}:</p>
          <p>Tu cita está reservada:</p>
          <p style="font-size:16px"><strong>${summary}</strong></p>
+         ${manageActions(ctx)}
          ${policy}
          <p>Te esperamos.</p>`
       ),
       text: `Hola ${ctx.clientName}, tu cita en ${STUDIO} está confirmada: ${summary}.${
         ctx.policyText ? ` ${ctx.policyText}` : ''
-      }`,
+      }${manageLine(ctx)}`,
       sms: `${STUDIO}: tu cita está confirmada — ${summary}.`,
     };
   }
@@ -88,12 +118,13 @@ export function bookingConfirmed(ctx: NotificationContext): RenderedMessage {
       `<p>Hi ${ctx.clientName},</p>
        <p>Your appointment is booked:</p>
        <p style="font-size:16px"><strong>${summary}</strong></p>
+       ${manageActions(ctx)}
        ${policy}
        <p>We look forward to seeing you.</p>`
     ),
     text: `Hi ${ctx.clientName}, your appointment at ${STUDIO} is confirmed: ${summary}.${
       ctx.policyText ? ` ${ctx.policyText}` : ''
-    }`,
+    }${manageLine(ctx)}`,
     sms: `${STUDIO}: your appointment is confirmed — ${summary}.`,
   };
 }
@@ -186,6 +217,40 @@ export function waitlistSlotOpened(ctx: NotificationContext): RenderedMessage {
   };
 }
 
+export function appointmentRescheduled(ctx: NotificationContext): RenderedMessage {
+  const summary = line(ctx);
+
+  if (ctx.locale === 'es') {
+    return {
+      subject: `Tu cita en ${STUDIO} se ha cambiado`,
+      html: shell(
+        'Cita actualizada',
+        `<p>Hola ${ctx.clientName}:</p>
+         <p>Tu cita ha quedado así:</p>
+         <p style="font-size:16px"><strong>${summary}</strong></p>
+         ${manageActions(ctx)}
+         <p>Te esperamos.</p>`
+      ),
+      text: `Hola ${ctx.clientName}, tu cita en ${STUDIO} se ha cambiado: ${summary}.${manageLine(ctx)}`,
+      sms: `${STUDIO}: tu cita se ha cambiado — ${summary}.`,
+    };
+  }
+
+  return {
+    subject: `Your appointment at ${STUDIO} has been changed`,
+    html: shell(
+      'Appointment updated',
+      `<p>Hi ${ctx.clientName},</p>
+       <p>Your appointment is now:</p>
+       <p style="font-size:16px"><strong>${summary}</strong></p>
+       ${manageActions(ctx)}
+       <p>We look forward to seeing you.</p>`
+    ),
+    text: `Hi ${ctx.clientName}, your appointment at ${STUDIO} has been changed: ${summary}.${manageLine(ctx)}`,
+    sms: `${STUDIO}: your appointment has been changed — ${summary}.`,
+  };
+}
+
 export function appointmentReminder(ctx: NotificationContext): RenderedMessage {
   const summary = line(ctx);
   const policy = ctx.policyText
@@ -200,9 +265,10 @@ export function appointmentReminder(ctx: NotificationContext): RenderedMessage {
         `<p>Hola ${ctx.clientName}:</p>
          <p>Te recordamos tu cita de mañana:</p>
          <p style="font-size:16px"><strong>${summary}</strong></p>
+         ${manageActions(ctx)}
          ${policy}`
       ),
-      text: `Recordatorio de ${STUDIO}: ${summary}.${ctx.policyText ? ` ${ctx.policyText}` : ''}`,
+      text: `Recordatorio de ${STUDIO}: ${summary}.${ctx.policyText ? ` ${ctx.policyText}` : ''}${manageLine(ctx)}`,
       sms: `Recordatorio de ${STUDIO}: ${summary}.`,
     };
   }
@@ -214,9 +280,10 @@ export function appointmentReminder(ctx: NotificationContext): RenderedMessage {
       `<p>Hi ${ctx.clientName},</p>
        <p>This is a friendly reminder of your appointment tomorrow:</p>
        <p style="font-size:16px"><strong>${summary}</strong></p>
+       ${manageActions(ctx)}
        ${policy}`
     ),
-    text: `Reminder from ${STUDIO}: ${summary}.${ctx.policyText ? ` ${ctx.policyText}` : ''}`,
+    text: `Reminder from ${STUDIO}: ${summary}.${ctx.policyText ? ` ${ctx.policyText}` : ''}${manageLine(ctx)}`,
     sms: `${STUDIO} reminder: ${summary}.`,
   };
 }

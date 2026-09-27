@@ -8,13 +8,15 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mediterraneafacestudio.app"
+      "bundleIdentifier": "com.mediterraneafacestudio.app",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#181818"
       },
-      "package": "com.mediterraneafacestudio.app"
+      "package": "com.mediterraneafacestudio.app",
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
       "expo-router",
@@ -27,7 +29,8 @@
       ],
       "expo-status-bar",
       "expo-web-browser",
-      "@react-native-vector-icons/ionicons"
+      "@react-native-vector-icons/ionicons",
+      "@react-native-google-signin/google-signin"
     ]
   }
 }

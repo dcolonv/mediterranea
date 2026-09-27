@@ -5,6 +5,7 @@ import { getAdminDb } from '@/lib/firebase/admin';
 import { getCurrentCustomer } from '@/lib/auth/customer';
 import * as data from '@/lib/agent/data';
 import { CONSENT_VERSION } from '@mediterranea/shared/constants';
+import { minutesUntil, modifiableError } from '@/lib/appointments/policy';
 import type { Appointment, SkinProfile, IntakeForm } from '@mediterranea/shared/types';
 
 export interface MyAppointment {
@@ -16,36 +17,6 @@ export interface MyAppointment {
   status: Appointment['status'];
   staffName: string | null;
   canModify: boolean; // within the cancellation cutoff window
-}
-
-/** Current date + minutes-since-midnight in Europe/Madrid. */
-function malagaNow(): { date: string; minutes: number } {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/Madrid',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(new Date());
-  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '00';
-  return {
-    date: `${get('year')}-${get('month')}-${get('day')}`,
-    minutes: (Number(get('hour')) % 24) * 60 + Number(get('minute')),
-  };
-}
-
-function timeToMinutes(t: string): number {
-  const [h, m] = t.split(':').map(Number);
-  return h * 60 + (m || 0);
-}
-
-/** Minutes from now (Malaga) until an appointment's start. Negative if past. */
-function minutesUntil(date: string, time: string): number {
-  const now = malagaNow();
-  const days = Math.round((Date.parse(date) - Date.parse(now.date)) / 86_400_000);
-  return days * 1440 + timeToMinutes(time) - now.minutes;
 }
 
 async function myAppointmentDocs(customerId: string, email: string) {
@@ -172,15 +143,11 @@ async function ownedModifiable(id: string) {
   if (!appt) return { error: 'Appointment not found.' as const };
   const mine = appt.customerId === customer.id || appt.clientEmail === customer.email;
   if (!mine) return { error: 'That appointment is not on your account.' as const };
-  if (appt.status !== 'pending' && appt.status !== 'confirmed') {
-    return { error: 'This appointment can no longer be changed.' as const };
-  }
 
   const settings = await data.getStudioSettings();
-  const until = minutesUntil(appt.appointmentDate, appt.appointmentTime);
-  if (until < settings.cancellation.cutoffHours * 60) {
-    return { error: `Changes must be made at least ${settings.cancellation.cutoffHours} hours in advance. Please call us.` as const };
-  }
+  const blocked = modifiableError(appt, settings.cancellation.cutoffHours);
+  if (blocked) return { error: blocked };
+
   return { appt, customer };
 }
 

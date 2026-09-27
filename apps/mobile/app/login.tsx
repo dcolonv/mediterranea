@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/providers/auth-provider';
-import { signInWithEmail, GOOGLE_CONFIGURED } from '@/src/firebase/auth';
+import { signInWithEmail, GOOGLE_AVAILABLE } from '@/src/firebase/auth';
 import { GoogleSignInButton } from '@/src/components/google-sign-in-button';
 import { colors, spacing, radius } from '@/src/theme';
 import { Field, Button, Loading } from '@/src/components/ui';
@@ -136,7 +136,7 @@ export default function LoginScreen() {
 
                 <Button title="Sign In" onPress={submit} loading={submitting} />
 
-                {GOOGLE_CONFIGURED ? <GoogleSignInButton /> : null}
+                {GOOGLE_AVAILABLE ? <GoogleSignInButton /> : null}
 
                 <Text style={styles.disclaimer}>
                   Only authorized administrators can access this app.

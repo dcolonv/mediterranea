@@ -7,9 +7,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Appointments: Public create, admin read/update/delete
+    // Appointments: public create (the booking flow writes via the client SDK
+    // with no signed-in user), admin read/update/delete. The shape is pinned so
+    // an open create cannot be used to write arbitrary data or to forge an
+    // already-confirmed appointment.
     match /appointments/{appointmentId} {
-      allow create: if true;
+      allow create: if isValidNewAppointment();
       allow read, update, delete: if isAdmin();
     }
 
@@ -67,15 +70,46 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Studio settings: public read (business hours + policy for booking), admin write
+    // Studio settings: served to the public through the Admin SDK (getPublicPolicy),
+    // so no direct client read is needed.
     match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     // Admins: Only admin can read
     match /admins/{adminId} {
       allow read: if isAdmin();
+    }
+
+    // Anything not matched above is server-only (Admin SDK bypasses rules).
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // A new booking: exactly the fields the booking flow writes, nothing more,
+    // and always pending so status cannot be self-approved.
+    function isValidNewAppointment() {
+      let d = request.resource.data;
+      return d.status == 'pending'
+        && d.keys().hasAll([
+             'serviceId', 'serviceName', 'clientName', 'clientEmail', 'clientPhone',
+             'appointmentDate', 'appointmentTime', 'durationMinutes', 'status',
+             'createdAt', 'updatedAt'
+           ])
+        && d.keys().hasOnly([
+             'serviceId', 'serviceName', 'clientName', 'clientEmail', 'clientPhone',
+             'appointmentDate', 'appointmentTime', 'durationMinutes', 'notes',
+             'customerId', 'status', 'createdAt', 'updatedAt'
+           ])
+        && d.serviceId is string && d.serviceId.size() > 0 && d.serviceId.size() <= 200
+        && d.serviceName is string && d.serviceName.size() > 0 && d.serviceName.size() <= 200
+        && d.clientName is string && d.clientName.size() >= 2 && d.clientName.size() <= 120
+        && d.clientEmail is string && d.clientEmail.size() <= 200
+        && d.clientPhone is string && d.clientPhone.size() <= 40
+        && d.appointmentDate is string && d.appointmentDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.appointmentTime is string && d.appointmentTime.matches('^[0-9]{1,2}:[0-9]{2}$')
+        && d.durationMinutes is number && d.durationMinutes > 0 && d.durationMinutes <= 600
+        && d.createdAt is timestamp && d.updatedAt is timestamp;
     }
 
     // Admin = the `admin` role custom claim (fast path) OR the admins allowlist
