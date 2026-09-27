@@ -10,7 +10,11 @@
     "build": "turbo build",
     "build:web": "turbo build --filter=@mediterranea/web",
     "lint": "turbo lint",
-    "lint:web": "turbo lint --filter=@mediterranea/web"
+    "lint:web": "turbo lint --filter=@mediterranea/web",
+    "build:atom": "pnpm --filter @mediterranea/atom fw:build",
+    "flash:atom": "pnpm --filter @mediterranea/atom fw:flash",
+    "monitor:atom": "pnpm --filter @mediterranea/atom fw:monitor",
+    "dev:atom": "pnpm --filter @mediterranea/atom fw:dev"
   },
   "devDependencies": {
     "turbo": "^2"
