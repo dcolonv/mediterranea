@@ -50,31 +50,29 @@ function shell(title: string, bodyHtml: string): string {
 </div>`;
 }
 
-/** Reschedule / cancel buttons, plus a copyable URL for clients that strip them. */
+/** Reschedule button, plus a copyable URL for clients that strip it. */
 function manageActions(ctx: NotificationContext): string {
   if (!ctx.manageUrl) return '';
   const es = ctx.locale === 'es';
   const reschedule = es ? 'Cambiar la cita' : 'Reschedule';
-  const cancel = es ? 'Cancelar la cita' : 'Cancel appointment';
   const fallback = es
-    ? 'Si los botones no funcionan, copia este enlace:'
-    : 'If the buttons don’t work, copy this link:';
+    ? 'Si el botón no funciona, copia este enlace:'
+    : 'If the button doesn’t work, copy this link:';
   const btn =
     'display:inline-block;padding:10px 18px;border:1px solid #9a7b3f;' +
     'border-radius:2px;text-decoration:none;font-size:14px;margin:0 6px 8px 0';
   return `<p style="margin-top:24px">
     <a href="${ctx.manageUrl}" style="${btn};background:#9a7b3f;color:#fff">${reschedule}</a>
-    <a href="${ctx.manageUrl}" style="${btn};color:#9a7b3f">${cancel}</a>
   </p>
   <p style="font-size:11px;color:#8a8378">${fallback}<br/>${ctx.manageUrl}</p>`;
 }
 
-/** Same links as plain text, for the text/SMS parts. */
+/** The same link as plain text, for the text part. */
 function manageLine(ctx: NotificationContext): string {
   if (!ctx.manageUrl) return '';
   return ctx.locale === 'es'
-    ? ` Para cambiar o cancelar tu cita: ${ctx.manageUrl}`
-    : ` To reschedule or cancel: ${ctx.manageUrl}`;
+    ? ` Para cambiar tu cita: ${ctx.manageUrl}`
+    : ` To reschedule: ${ctx.manageUrl}`;
 }
 
 function line(ctx: NotificationContext): string {
