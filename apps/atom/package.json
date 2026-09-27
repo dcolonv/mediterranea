@@ -1,0 +1,15 @@
+{
+  "name": "@mediterranea/atom",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Firmware is not part of the JS build — use pnpm fw:build (needs arduino-cli)'",
+    "fw:setup": "sh scripts/setup.sh",
+    "fw:build": "arduino-cli compile --fqbn \"$(sh scripts/fqbn.sh)\" --output-dir firmware/build firmware",
+    "fw:flash": "arduino-cli compile --fqbn \"$(sh scripts/fqbn.sh)\" --output-dir firmware/build -u -p \"$(sh scripts/port.sh)\" firmware",
+    "fw:dev": "arduino-cli compile --fqbn \"$(sh scripts/fqbn.sh)\" --output-dir firmware/build -u -p \"$(sh scripts/port.sh)\" firmware && arduino-cli monitor -p \"$(sh scripts/port.sh)\" -c baudrate=115200",
+    "fw:monitor": "arduino-cli monitor -p \"$(sh scripts/port.sh)\" -c baudrate=115200",
+    "fw:clean": "rm -rf firmware/build",
+    "fw:ports": "arduino-cli board list"
+  }
+}

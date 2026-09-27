@@ -44,6 +44,10 @@ next-env.d.ts
 # turbo
 .turbo
 
+# arduino-cli firmware build output + local device config
+apps/atom/firmware/build/
+apps/atom/firmware/secrets.h
+
 # firebase emulator
 firestore-debug.log
 firebase-debug.log
