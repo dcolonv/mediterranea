@@ -1,5 +1,6 @@
 import * as Device from 'expo-device';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import Constants from 'expo-constants';
+import { isExpoGo } from '@/src/runtime';
 import { registerPushToken } from '@/src/api/client';
 
 /**
@@ -8,7 +9,6 @@ import { registerPushToken } from '@/src/api/client';
  * module down with it. Everything below therefore loads expo-notifications
  * lazily, and only outside Expo Go. Push works in a development build.
  */
-const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 /** Load expo-notifications on demand; null in Expo Go or if it fails to load. */
 async function loadNotifications() {

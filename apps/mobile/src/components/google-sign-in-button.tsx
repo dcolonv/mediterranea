@@ -1,25 +1,49 @@
-import { useEffect } from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { useGoogleAuth, signInWithGoogleCredential } from '@/src/firebase/auth';
+import { useState } from 'react';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
+import { signInWithGoogle, GoogleSignInCancelled } from '@/src/firebase/auth';
 import { colors, spacing, radius } from '@/src/theme';
 
 /**
- * Renders the Google sign-in button. Mount ONLY when GOOGLE_CONFIGURED is true —
- * the underlying useAuthRequest hook throws without a platform client id.
+ * Google sign-in. Mount ONLY when GOOGLE_AVAILABLE is true — the underlying
+ * native module is absent in Expo Go.
  */
 export function GoogleSignInButton() {
-  const { response, promptAsync } = useGoogleAuth();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (response?.type === 'success' && response.authentication?.idToken) {
-      signInWithGoogleCredential(response.authentication.idToken).catch(console.error);
+  const press = async () => {
+    setError(null);
+    setBusy(true);
+    try {
+      await signInWithGoogle();
+      // AuthProvider + the route gate take it from here.
+    } catch (e) {
+      // Backing out of the picker is not an error worth showing.
+      if (!(e instanceof GoogleSignInCancelled)) {
+        console.log('[auth] Google sign-in failed:', e);
+        setError('Google sign-in failed. Please try again.');
+      }
+    } finally {
+      setBusy(false);
     }
-  }, [response]);
+  };
 
   return (
-    <TouchableOpacity style={styles.button} onPress={() => promptAsync()}>
-      <Text style={styles.text}>Sign in with Google</Text>
-    </TouchableOpacity>
+    <View>
+      <TouchableOpacity
+        style={[styles.button, busy && styles.busy]}
+        onPress={press}
+        disabled={busy}
+        accessibilityRole="button"
+      >
+        {busy ? (
+          <ActivityIndicator color={colors.inkSoft} />
+        ) : (
+          <Text style={styles.text}>Sign in with Google</Text>
+        )}
+      </TouchableOpacity>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+    </View>
   );
 }
 
@@ -34,5 +58,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.md,
   },
+  busy: { opacity: 0.6 },
   text: { color: colors.inkSoft, fontSize: 15, fontWeight: '600' },
+  error: {
+    color: colors.danger,
+    fontSize: 13,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
 });
