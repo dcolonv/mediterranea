@@ -7,7 +7,7 @@ import * as data from '@/lib/agent/data';
 import { allowAction } from '@/lib/rate-limit';
 import { readAppointmentToken, MANAGE_COOKIE } from '@/lib/appointments/link-token';
 import { modifiableError } from '@/lib/appointments/policy';
-import type { Appointment } from '@mediterranea/shared/types';
+import type { Appointment, WorkingHours } from '@mediterranea/shared/types';
 
 /**
  * Self-service reschedule and cancel for clients arriving from a link in their
@@ -36,13 +36,24 @@ export interface ManageView {
   /** Null when the client may still change it; otherwise why not. */
   blockedReason: string | null;
   policyText: string;
+  /** Refs the month calendar needs, so the page loads them in one round trip. */
+  businessHours: WorkingHours;
+  maxAdvanceDays: number;
+  blockedDates: string[];
 }
 
 type Failure = { success: false; error: string };
 
 /** Resolve the appointment this browser holds a valid token for. */
 async function authorize(): Promise<
-  { appt: Appointment; locale: 'en' | 'es'; cutoffHours: number; policyText: string } | Failure
+  | {
+      appt: Appointment;
+      locale: 'en' | 'es';
+      cutoffHours: number;
+      policyText: string;
+      settings: Awaited<ReturnType<typeof data.getStudioSettings>>;
+    }
+  | Failure
 > {
   const token = (await cookies()).get(MANAGE_COOKIE)?.value;
   const appointmentId = readAppointmentToken(token);
@@ -60,7 +71,7 @@ async function authorize(): Promise<
       ? settings.cancellation.policyTextEs || settings.cancellation.policyText
       : settings.cancellation.policyText) ?? '';
 
-  return { appt, locale, cutoffHours: settings.cancellation.cutoffHours, policyText };
+  return { appt, locale, cutoffHours: settings.cancellation.cutoffHours, policyText, settings };
 }
 
 /** The appointment behind the current link, for rendering. */
@@ -69,7 +80,7 @@ export async function getManagedAppointment(): Promise<
 > {
   const auth = await authorize();
   if ('success' in auth) return auth;
-  const { appt, locale, cutoffHours, policyText } = auth;
+  const { appt, locale, cutoffHours, policyText, settings } = auth;
 
   return {
     success: true,
@@ -84,14 +95,17 @@ export async function getManagedAppointment(): Promise<
       locale,
       blockedReason: modifiableError(appt, cutoffHours, locale),
       policyText,
+      businessHours: settings.businessHours ?? {},
+      maxAdvanceDays: settings.booking.maxAdvanceDays,
+      blockedDates: await data.getFullyBlockedDates(),
     },
   };
 }
 
-/** Open times for moving this appointment, same treatment. */
-export async function getManagedRescheduleTimes(
+/** Every slot on a day, each flagged available or taken — as the booking flow shows it. */
+export async function getManagedDaySlots(
   date: string
-): Promise<{ success: true; times: string[] } | Failure> {
+): Promise<{ success: true; slots: { time: string; available: boolean }[] } | Failure> {
   const auth = await authorize();
   if ('success' in auth) return auth;
   const { appt, locale, cutoffHours } = auth;
@@ -103,9 +117,12 @@ export async function getManagedRescheduleTimes(
     return { success: false, error: 'Invalid date.' };
   }
 
-  const res = await data.findAvailability({ serviceId: appt.serviceId, date });
+  const res = await data.findDaySlots({ serviceId: appt.serviceId, date });
   if ('error' in res) return { success: false, error: res.error };
-  return { success: true, times: res.slots.map((s) => s.time) };
+  return {
+    success: true,
+    slots: res.slots.map((s) => ({ time: s.time, available: s.available })),
+  };
 }
 
 export async function rescheduleManagedAppointment(
