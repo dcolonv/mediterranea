@@ -152,3 +152,30 @@ export const CONTACT_INFO = {
   phone: '+34 602 643 543',
   email: 'info@mediterraneafacestudio.com',
 };
+
+/**
+ * ATOM Echo voice device.
+ *
+ * The firmware is C++ and cannot import this file, so `apps/atom/firmware/`
+ * mirrors these values in `audio_config.h`. Change one, change the other —
+ * they are checked against each other by the server, which rejects audio that
+ * does not match.
+ */
+export const ATOM_AUDIO = {
+  /** Mono PCM signed 16-bit little-endian, straight off the PDM mic. */
+  sampleRate: 16000,
+  channels: 1,
+  bitsPerSample: 16,
+  /** Endpoint the device streams to. */
+  endpoint: '/api/atom/speech',
+  /** Shared-secret header. The device has no user to authenticate as. */
+  tokenHeader: 'x-device-token',
+  /** Refuse anything longer than this; the device should never send it. */
+  maxSeconds: 30,
+  /** Ignore clips too short to contain speech — usually a mis-press. */
+  minSeconds: 0.3,
+} as const;
+
+/** Bytes per second of audio at the device's format. */
+export const ATOM_BYTES_PER_SECOND =
+  ATOM_AUDIO.sampleRate * ATOM_AUDIO.channels * (ATOM_AUDIO.bitsPerSample / 8);
