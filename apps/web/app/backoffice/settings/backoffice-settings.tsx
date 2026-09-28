@@ -23,6 +23,7 @@ export function BackofficeSettings() {
   const [maxAdvanceDays, setMaxAdvanceDays] = useState('60');
   const [slotInterval, setSlotInterval] = useState('30');
   const [bufferMinutes, setBufferMinutes] = useState('30');
+  const [afterHours, setAfterHours] = useState(String(DEFAULT_STUDIO_SETTINGS.booking.afterHoursMinutes));
   const [cutoffHours, setCutoffHours] = useState('24');
   const [policyText, setPolicyText] = useState('');
   const [policyTextEs, setPolicyTextEs] = useState('');
@@ -50,6 +51,7 @@ export function BackofficeSettings() {
         setMaxAdvanceDays(String(s.booking.maxAdvanceDays));
         setSlotInterval(String(s.booking.slotIntervalMinutes));
         setBufferMinutes(String(s.booking.bufferMinutes ?? 30));
+        setAfterHours(String(s.booking.afterHoursMinutes ?? DEFAULT_STUDIO_SETTINGS.booking.afterHoursMinutes));
         setCutoffHours(String(s.cancellation.cutoffHours));
         setPolicyText(s.cancellation.policyText);
         setPolicyTextEs(s.cancellation.policyTextEs ?? '');
@@ -90,6 +92,7 @@ export function BackofficeSettings() {
         maxAdvanceDays: Number(maxAdvanceDays),
         slotIntervalMinutes: Number(slotInterval),
         bufferMinutes: Number(bufferMinutes),
+        afterHoursMinutes: Number(afterHours),
       },
       loyalty: {
         enabled: loyaltyEnabled,
@@ -109,7 +112,7 @@ export function BackofficeSettings() {
     };
 
     if (
-      [payload.booking.minLeadHours, payload.booking.maxAdvanceDays, payload.booking.slotIntervalMinutes, payload.booking.bufferMinutes, payload.cancellation.cutoffHours].some(
+      [payload.booking.minLeadHours, payload.booking.maxAdvanceDays, payload.booking.slotIntervalMinutes, payload.booking.bufferMinutes, payload.booking.afterHoursMinutes, payload.cancellation.cutoffHours].some(
         (n) => !Number.isFinite(n)
       )
     ) {
@@ -137,7 +140,8 @@ export function BackofficeSettings() {
       <section className="border border-white-10 bg-dark-800 p-8">
         <h2 className="mb-1 font-serif text-xl text-white">Business hours</h2>
         <p className="mb-6 text-sm text-white-50">
-          When the studio is open. Bookable times are also bounded by each practitioner’s own hours.
+          When the studio is open. The last bookings can start at closing time and run past it by up to
+          the limit below. Bookable times are also bounded by each practitioner’s own hours.
         </p>
         <div className="space-y-2">
           {WEEKDAYS.map(({ key, label }) => {
@@ -176,6 +180,15 @@ export function BackofficeSettings() {
               </div>
             );
           })}
+        </div>
+        <div className="mt-6 sm:max-w-xs">
+          <Input
+            id="after-hours"
+            label="Run past closing by up to (min)"
+            type="number"
+            value={afterHours}
+            onChange={(e) => setAfterHours(e.target.value)}
+          />
         </div>
       </section>
 

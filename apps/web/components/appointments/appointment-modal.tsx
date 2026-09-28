@@ -4,22 +4,24 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { Button, Badge, Textarea, Select } from '@/components/ui';
 import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
+import { formatDuration } from '@mediterranea/shared/utils';
 import {
   updateAppointmentStatus,
   deleteAppointment,
   saveAppointmentNotes,
 } from '@/actions/appointments';
-import { getAvailability, rescheduleAppointment } from '@/actions/scheduling';
-import type { Appointment, AppointmentStatus, Staff, Room } from '@mediterranea/shared/types';
+import { getBackofficeSlots, getSchedulingRefs, rescheduleAppointment } from '@/actions/scheduling';
+import { SlotPicker, type BackofficeSlot } from '@/components/scheduling/slot-picker';
+import type { Appointment, AppointmentStatus, Service, Staff, Room } from '@mediterranea/shared/types';
 
-interface Slot {
-  time: string;
-  staffIds: string[];
-  roomIds: string[];
+interface Refs {
+  services: Service[];
+  staff: Staff[];
+  rooms: Room[];
 }
 
-/** Statuses that can still be rescheduled. */
-const RESCHEDULABLE = new Set<AppointmentStatus>(['pending', 'confirmed', 'checked-in']);
+/** Statuses whose treatment, date and time can still be edited — past visits included. */
+const EDITABLE = new Set<AppointmentStatus>(['pending', 'confirmed', 'checked-in', 'completed', 'no-show']);
 
 type Tone = 'primary' | 'neutral' | 'danger';
 
@@ -72,17 +74,19 @@ export function AppointmentModal({
 }: AppointmentModalProps) {
   const [actionLoading, setActionLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [mode, setMode] = useState<'detail' | 'reschedule'>('detail');
+  const [mode, setMode] = useState<'detail' | 'edit'>('detail');
 
-  // Reschedule flow.
-  const [rDate, setRDate] = useState(appointment.appointmentDate);
-  const [slots, setSlots] = useState<Slot[] | null>(null);
+  // Edit flow: treatment, date, time, practitioner, room.
+  const [refs, setRefs] = useState<Refs | null>(null);
+  const [eServiceId, setEServiceId] = useState(appointment.serviceId);
+  const [eDate, setEDate] = useState(appointment.appointmentDate);
+  const [slots, setSlots] = useState<BackofficeSlot[] | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [chosen, setChosen] = useState<Slot | null>(null);
+  const [chosen, setChosen] = useState<BackofficeSlot | null>(null);
   const [chosenStaff, setChosenStaff] = useState('');
   const [chosenRoom, setChosenRoom] = useState('');
-  const [rescheduling, setRescheduling] = useState(false);
-  const [rError, setRError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [eError, setEError] = useState<string | null>(null);
 
   const [notes, setNotes] = useState(appointment.notes ?? '');
   const [savedNotes, setSavedNotes] = useState(appointment.notes ?? '');
@@ -126,66 +130,108 @@ export function AppointmentModal({
     setActionLoading(false);
   }
 
-  function openReschedule() {
-    setMode('reschedule');
-    setRDate(appointment.appointmentDate);
-    setSlots(null);
-    setChosen(null);
-    setRError(null);
+  function pickSlot(slot: BackofficeSlot) {
+    setChosen(slot);
+    setChosenStaff(
+      appointment.staffId && slot.staffIds.includes(appointment.staffId)
+        ? appointment.staffId
+        : (slot.staffIds[0] ?? '')
+    );
+    setChosenRoom(
+      appointment.roomId && slot.roomIds.includes(appointment.roomId)
+        ? appointment.roomId
+        : (slot.roomIds[0] ?? '')
+    );
   }
 
-  async function findTimes() {
+  // A time off the grid: any qualified practitioner and matching room; the
+  // server still refuses a clash.
+  function otherSlot(time: string, serviceId: string, r: Refs): BackofficeSlot {
+    const service = r.services.find((sv) => sv.id === serviceId);
+    return {
+      time,
+      available: true,
+      staffIds: r.staff.filter((p) => p.serviceIds?.includes(serviceId)).map((p) => p.id),
+      roomIds: r.rooms
+        .filter((room) => !service?.roomType || room.type === service.roomType)
+        .map((room) => room.id),
+    };
+  }
+
+  async function loadSlots(serviceId: string, date: string, r: Refs) {
     setLoadingSlots(true);
-    setRError(null);
-    setChosen(null);
+    setEError(null);
     setSlots(null);
-    const res = await getAvailability(appointment.serviceId, rDate);
+    setChosen(null);
+    const res = await getBackofficeSlots(serviceId, date, { ignoreAppointmentId: appointment.id });
     setLoadingSlots(false);
     if ('error' in res) {
-      setRError(res.error);
+      setEError(res.error);
       return;
     }
     setSlots(res.slots);
+    // Keep the current time selected while it still fits, so changing only the
+    // treatment is a single save.
+    if (date === appointment.appointmentDate) {
+      const current = res.slots.find((sl) => sl.time === appointment.appointmentTime);
+      if (current?.available) pickSlot(current);
+      else if (!current) pickSlot(otherSlot(appointment.appointmentTime, serviceId, r));
+    }
   }
 
-  function pickSlot(s: Slot) {
-    setChosen(s);
-    setChosenStaff(
-      appointment.staffId && s.staffIds.includes(appointment.staffId)
-        ? appointment.staffId
-        : (s.staffIds[0] ?? '')
-    );
-    setChosenRoom(
-      appointment.roomId && s.roomIds.includes(appointment.roomId)
-        ? appointment.roomId
-        : (s.roomIds[0] ?? '')
-    );
+  async function openEdit() {
+    setMode('edit');
+    setEServiceId(appointment.serviceId);
+    setEDate(appointment.appointmentDate);
+    setEError(null);
+    let r = refs;
+    if (!r) {
+      const res = await getSchedulingRefs();
+      if (!res.success) {
+        setEError(res.error);
+        return;
+      }
+      r = { services: res.services, staff: res.staff, rooms: res.rooms };
+      setRefs(r);
+    }
+    await loadSlots(appointment.serviceId, appointment.appointmentDate, r);
   }
 
-  async function confirmReschedule() {
+  async function saveEdit() {
     if (!chosen || !chosenStaff || !chosenRoom) return;
-    setRescheduling(true);
-    setRError(null);
+    setSaving(true);
+    setEError(null);
     const res = await rescheduleAppointment(appointment.id, {
-      date: rDate,
+      date: eDate,
       time: chosen.time,
       staffId: chosenStaff,
       roomId: chosenRoom,
+      ...(eServiceId !== appointment.serviceId && { serviceId: eServiceId }),
     });
-    setRescheduling(false);
+    setSaving(false);
     if (res.success) {
       onUpdate();
       onClose();
     } else {
-      // Slot may have been taken since we looked — reset and let them re-search.
-      setRError(res.error);
-      setSlots(null);
-      setChosen(null);
+      setEError(res.error);
     }
   }
 
-  const nameOfStaff = (id: string) => staff?.find((s) => s.id === id)?.name ?? id;
-  const nameOfRoom = (id: string) => rooms?.find((r) => r.id === id)?.name ?? id;
+  const nameOfStaff = (id: string) =>
+    (refs?.staff ?? staff)?.find((s) => s.id === id)?.name ?? id;
+  const nameOfRoom = (id: string) => (refs?.rooms ?? rooms)?.find((r) => r.id === id)?.name ?? id;
+  // Keep the current treatment selectable even if it has since been retired.
+  const serviceOptions = refs
+    ? [
+        ...(refs.services.some((sv) => sv.id === appointment.serviceId)
+          ? []
+          : [{ value: appointment.serviceId, label: appointment.serviceName }]),
+        ...refs.services.map((sv) => ({
+          value: sv.id,
+          label: `${sv.name} (${formatDuration(sv.durationMinutes)})`,
+        })),
+      ]
+    : [];
 
   const actions = statusActions[appointment.status];
 
@@ -212,96 +258,91 @@ export function AppointmentModal({
           </button>
         </div>
 
-        {mode === 'reschedule' ? (
+        {mode === 'edit' ? (
           <>
-            {/* Reschedule body */}
+            {/* Edit body */}
             <div className="p-6 space-y-5">
               <p className="text-sm text-white-50">
-                Find a new time for <span className="text-white">{appointment.serviceName}</span>.
-                Availability respects practitioner hours, rooms, and existing bookings.
+                Change the treatment, date or time. Past dates are fine for correcting a visit;
+                clashes with other bookings are still blocked. The client isn’t notified.
               </p>
 
-              <div className="flex items-end gap-3">
-                <div className="flex-1">
-                  <label className="mb-2 block text-sm font-medium tracking-wide text-white-70">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={rDate}
-                    onChange={(e) => {
-                      setRDate(e.target.value);
-                      setSlots(null);
-                      setChosen(null);
-                    }}
-                    className="h-12 w-full border border-white-10 bg-dark-800 px-4 text-white focus:border-gold focus:outline-none"
-                  />
-                </div>
-                <Button variant="outline" onClick={findTimes} disabled={loadingSlots}>
-                  {loadingSlots ? 'Finding…' : 'Find times'}
-                </Button>
-              </div>
-
-              {rError && <p className="text-sm text-red-400">{rError}</p>}
-
-              {slots && slots.length === 0 && (
-                <p className="text-sm text-white-50">No open times on this date.</p>
+              {refs && (
+                <Select
+                  id="e-service"
+                  label="Treatment"
+                  value={eServiceId}
+                  onChange={(e) => {
+                    setEServiceId(e.target.value);
+                    void loadSlots(e.target.value, eDate, refs);
+                  }}
+                  options={serviceOptions}
+                />
               )}
 
-              {slots && slots.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {slots.map((s) => (
-                    <button
-                      key={s.time}
-                      onClick={() => pickSlot(s)}
-                      className={`px-3 py-2 text-sm transition-colors ${
-                        chosen?.time === s.time
-                          ? 'bg-gold text-charcoal'
-                          : 'border border-white-10 text-white-70 hover:border-white-30'
-                      }`}
-                    >
-                      {s.time}
-                    </button>
-                  ))}
-                </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium tracking-wide text-white-70">Date</label>
+                <input
+                  type="date"
+                  value={eDate}
+                  onChange={(e) => {
+                    setEDate(e.target.value);
+                    if (e.target.value && refs) void loadSlots(eServiceId, e.target.value, refs);
+                  }}
+                  className="h-12 w-full border border-white-10 bg-dark-800 px-4 text-white focus:border-gold focus:outline-none"
+                />
+              </div>
+
+              {eError && <p className="text-sm text-red-400">{eError}</p>}
+              {loadingSlots && <p className="text-sm text-white-50">Finding times…</p>}
+              {!loadingSlots && slots && refs && (
+                <SlotPicker
+                  slots={slots}
+                  selected={chosen?.time}
+                  onPick={pickSlot}
+                  onOtherTime={(time) => pickSlot(otherSlot(time, eServiceId, refs))}
+                />
               )}
 
               {chosen && (
-                <div className="grid grid-cols-2 gap-4">
-                  <Select
-                    id="r-staff"
-                    label="Practitioner"
-                    value={chosenStaff}
-                    onChange={(e) => setChosenStaff(e.target.value)}
-                    options={chosen.staffIds.map((id) => ({ value: id, label: nameOfStaff(id) }))}
-                  />
-                  <Select
-                    id="r-room"
-                    label="Room"
-                    value={chosenRoom}
-                    onChange={(e) => setChosenRoom(e.target.value)}
-                    options={chosen.roomIds.map((id) => ({ value: id, label: nameOfRoom(id) }))}
-                  />
+                <div className="space-y-4 border-t border-white-10 pt-5">
+                  <p className="text-sm text-white-70">
+                    New time:{' '}
+                    <span className="text-white">
+                      {format(new Date(`${eDate}T00:00:00`), 'MMMM d, yyyy')} at {chosen.time}
+                    </span>
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Select
+                      id="e-staff"
+                      label="Practitioner"
+                      value={chosenStaff}
+                      onChange={(e) => setChosenStaff(e.target.value)}
+                      options={chosen.staffIds.map((id) => ({ value: id, label: nameOfStaff(id) }))}
+                    />
+                    <Select
+                      id="e-room"
+                      label="Room"
+                      value={chosenRoom}
+                      onChange={(e) => setChosenRoom(e.target.value)}
+                      options={chosen.roomIds.map((id) => ({ value: id, label: nameOfRoom(id) }))}
+                    />
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Reschedule actions */}
+            {/* Edit actions */}
             <div className="flex items-center gap-3 border-t border-white-10 p-6">
               <Button
                 variant="elegant"
                 size="sm"
-                onClick={confirmReschedule}
-                disabled={rescheduling || !chosen || !chosenStaff || !chosenRoom}
+                onClick={saveEdit}
+                disabled={saving || !chosen || !chosenStaff || !chosenRoom}
               >
-                {rescheduling ? 'Saving…' : 'Confirm reschedule'}
+                {saving ? 'Saving…' : 'Save changes'}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setMode('detail')}
-                disabled={rescheduling}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setMode('detail')} disabled={saving}>
                 Back
               </Button>
             </div>
@@ -356,23 +397,31 @@ export function AppointmentModal({
             <div>
               <span className="text-white-30 text-xs uppercase tracking-wider">Email</span>
               <p className="mt-1">
-                <a
-                  href={`mailto:${appointment.clientEmail}`}
-                  className="text-gold hover:text-gold-light transition-colors break-all"
-                >
-                  {appointment.clientEmail}
-                </a>
+                {appointment.clientEmail ? (
+                  <a
+                    href={`mailto:${appointment.clientEmail}`}
+                    className="text-gold hover:text-gold-light transition-colors break-all"
+                  >
+                    {appointment.clientEmail}
+                  </a>
+                ) : (
+                  <span className="text-white-30">—</span>
+                )}
               </p>
             </div>
             <div>
               <span className="text-white-30 text-xs uppercase tracking-wider">Phone</span>
               <p className="mt-1">
-                <a
-                  href={`tel:${appointment.clientPhone}`}
-                  className="text-gold hover:text-gold-light transition-colors"
-                >
-                  {appointment.clientPhone}
-                </a>
+                {appointment.clientPhone ? (
+                  <a
+                    href={`tel:${appointment.clientPhone}`}
+                    className="text-gold hover:text-gold-light transition-colors"
+                  >
+                    {appointment.clientPhone}
+                  </a>
+                ) : (
+                  <span className="text-white-30">—</span>
+                )}
               </p>
             </div>
           </div>
@@ -450,15 +499,15 @@ export function AppointmentModal({
                   This appointment is {APPOINTMENT_STATUSES[appointment.status].label.toLowerCase()}.
                 </span>
               )}
-              {RESCHEDULABLE.has(appointment.status) && (
+              {EDITABLE.has(appointment.status) && (
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={actionLoading}
-                  onClick={openReschedule}
+                  onClick={() => void openEdit()}
                   className="ml-auto"
                 >
-                  Reschedule
+                  Edit
                 </Button>
               )}
               <Button
@@ -467,7 +516,7 @@ export function AppointmentModal({
                 disabled={actionLoading}
                 onClick={() => setShowDeleteConfirm(true)}
                 className={`text-red-400 hover:text-red-300 hover:bg-red-500/10 ${
-                  RESCHEDULABLE.has(appointment.status) ? '' : 'ml-auto'
+                  EDITABLE.has(appointment.status) ? '' : 'ml-auto'
                 }`}
               >
                 Delete

@@ -10,6 +10,7 @@ import {
   computeFixedSlots,
   gridTimes,
   detectConflicts,
+  expandTimeOff,
   type AvailStaff,
 } from './availability';
 import type { DayHours } from '@mediterranea/shared/types';
@@ -227,6 +228,33 @@ describe('computeFixedSlots', () => {
     expect(byTime['12:00']).toBe(true); // 12:00–14:00 fits
     expect(byTime['16:00']).toBe(false); // would run past 16:00
   });
+
+  it('lets a practitioner who works until closing cover the after-hours window', () => {
+    const slots = computeFixedSlots({
+      ...base,
+      candidateTimes: ['17:00', '18:00'],
+      weekday: 'tuesday',
+      respectStaffHours: true,
+      afterHours: { close: timeToMinutes('18:00'), minutes: 120 },
+    });
+    const byTime = Object.fromEntries(slots.map((s) => [s.time, s.available]));
+    expect(byTime['17:00']).toBe(true); // 17:00–19:00
+    expect(byTime['18:00']).toBe(true); // 18:00–20:00, the full allowance
+  });
+
+  it('does not stretch a shift that ends before closing', () => {
+    const slots = computeFixedSlots({
+      ...base,
+      candidateTimes: ['14:00', '16:00'],
+      weekday: 'tuesday',
+      respectStaffHours: true,
+      afterHours: { close: timeToMinutes('18:00'), minutes: 120 },
+      staff: [{ id: 's1', workingHours: { tuesday: { open: '12:00', close: '16:00' } } }],
+    });
+    const byTime = Object.fromEntries(slots.map((s) => [s.time, s.available]));
+    expect(byTime['14:00']).toBe(true); // 14:00–16:00 fits the shift
+    expect(byTime['16:00']).toBe(false); // the shift ends at 16:00
+  });
 });
 
 describe('gridTimes', () => {
@@ -241,6 +269,21 @@ describe('gridTimes', () => {
   it('gives a later last start for a shorter block', () => {
     const times = gridTimes({ open: '10:30', close: '18:30' }, 60, 30);
     expect(times[times.length - 1]).toBe('17:30');
+  });
+
+  it('lets every block start at closing when the after-hours window covers it', () => {
+    // 10:30–18:30 with 120 min after hours → 60/90/120-min blocks all start by 18:30.
+    for (const block of [60, 90, 120]) {
+      const times = gridTimes({ open: '10:30', close: '18:30' }, block, 30, 120);
+      expect(times[times.length - 1]).toBe('18:30');
+    }
+  });
+
+  it('never starts after closing, and ends within the after-hours window', () => {
+    // 90 min after hours → a 120-min block must end by 20:00, so last start 18:00;
+    // a 60-min block could end by 20:00 but still can't start after 18:30.
+    expect(gridTimes({ open: '10:30', close: '18:30' }, 120, 30, 90).at(-1)).toBe('18:00');
+    expect(gridTimes({ open: '10:30', close: '18:30' }, 60, 30, 90).at(-1)).toBe('18:30');
   });
 });
 
@@ -282,5 +325,60 @@ describe('detectConflicts', () => {
       staffClash: true,
       roomClash: true,
     });
+  });
+});
+
+describe('expandTimeOff', () => {
+  const weekdaysOnly = (d: string) => !['saturday', 'sunday'].includes(weekdayOf(d));
+
+  it('lists a partial day with its times and reason', () => {
+    const blocks = expandTimeOff(
+      [{ id: 's1', timeOff: [{ date: '2026-09-08', start: '13:00', end: '14:00', reason: 'Dentist' }] }],
+      '2026-09-01',
+      '2026-09-30',
+      weekdaysOnly
+    );
+    expect(blocks).toEqual([
+      { id: 's1:0:2026-09-08', date: '2026-09-08', start: '13:00', end: '14:00', staffId: 's1', reason: 'Dentist' },
+    ]);
+  });
+
+  it('spreads a multi-day range over open days inside the window', () => {
+    // Fri 11 → Tue 15 September, window starts on the 12th: Sat/Sun are closed.
+    const blocks = expandTimeOff(
+      [{ id: 's1', timeOff: [{ date: '2026-09-11', endDate: '2026-09-15', reason: 'Holiday' }] }],
+      '2026-09-12',
+      null,
+      weekdaysOnly
+    );
+    expect(blocks.map((b) => b.date)).toEqual(['2026-09-14', '2026-09-15']);
+    expect(blocks.every((b) => b.start === undefined && b.reason === 'Holiday')).toBe(true);
+  });
+
+  it('stops at the end of the window', () => {
+    const blocks = expandTimeOff(
+      [{ id: 's1', timeOff: [{ date: '2026-09-14', endDate: '2026-09-18' }] }],
+      '2026-09-01',
+      '2026-09-15',
+      weekdaysOnly
+    );
+    expect(blocks.map((b) => b.date)).toEqual(['2026-09-14', '2026-09-15']);
+  });
+
+  it('sorts by date, whole days before timed blocks', () => {
+    const blocks = expandTimeOff(
+      [
+        { id: 's1', timeOff: [{ date: '2026-09-09', start: '10:00', end: '11:00' }] },
+        { id: 's2', timeOff: [{ date: '2026-09-09' }, { date: '2026-09-08', start: '16:00', end: '17:00' }] },
+      ],
+      '2026-09-01',
+      null,
+      weekdaysOnly
+    );
+    expect(blocks.map((b) => `${b.date} ${b.start ?? 'all day'}`)).toEqual([
+      '2026-09-08 16:00',
+      '2026-09-09 all day',
+      '2026-09-09 10:00',
+    ]);
   });
 });

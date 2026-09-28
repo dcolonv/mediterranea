@@ -18,11 +18,19 @@ import {
   isSunday,
 } from 'date-fns';
 import { Button, Badge, Select } from '@/components/ui';
-import { getSchedulingRefs, getCalendarAppointments } from '@/actions/scheduling';
+import { getSchedulingRefs, getCalendarAppointments, getCalendarBlocks } from '@/actions/scheduling';
 import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
 import { AppointmentModal } from '@/components/appointments';
 import { WalkInBooking } from '@/components/scheduling/walk-in-booking';
 import { BookingAssistant } from '@/components/scheduling/booking-assistant';
+import {
+  mergeDayItems,
+  blockTimeLabel,
+  dayItemKey,
+  BLOCKED_STRIPES,
+  type DayItem,
+} from '@/components/scheduling/day-items';
+import type { BlockedTime } from '@/lib/agent/availability';
 import type { Appointment, Service, Staff, Room } from '@mediterranea/shared/types';
 
 type View = 'day' | 'week' | 'month';
@@ -41,6 +49,7 @@ export function BackofficeCalendar() {
     rooms: [],
   });
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [blocks, setBlocks] = useState<BlockedTime[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [selected, setSelected] = useState<Appointment | null>(null);
@@ -67,13 +76,22 @@ export function BackofficeCalendar() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await getCalendarAppointments({
-      startDate: ymd(range.start),
-      endDate: ymd(range.end),
-      ...(staffId && { staffId }),
-      ...(roomId && { roomId }),
-    });
+    const [res, blockRes] = await Promise.all([
+      getCalendarAppointments({
+        startDate: ymd(range.start),
+        endDate: ymd(range.end),
+        ...(staffId && { staffId }),
+        ...(roomId && { roomId }),
+      }),
+      // Time off belongs to a practitioner, so the room filter doesn't hide it.
+      getCalendarBlocks({
+        startDate: ymd(range.start),
+        endDate: ymd(range.end),
+        ...(staffId && { staffId }),
+      }),
+    ]);
     if (res.success) setAppointments(res.data);
+    if (blockRes.success) setBlocks(blockRes.data);
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ymd(range.start), ymd(range.end), staffId, roomId]);
@@ -88,10 +106,11 @@ export function BackofficeCalendar() {
     else setAnchor((a) => (dir === 1 ? addDays(a, 1) : subDays(a, 1)));
   }
 
-  const forDay = (day: Date) =>
-    appointments
-      .filter((a) => a.appointmentDate === ymd(day))
-      .sort((a, b) => a.appointmentTime.localeCompare(b.appointmentTime));
+  const forDay = (day: Date): DayItem[] =>
+    mergeDayItems(
+      appointments.filter((a) => a.appointmentDate === ymd(day)),
+      blocks.filter((b) => b.date === ymd(day))
+    );
 
   const rangeLabel =
     view === 'month'
@@ -119,6 +138,25 @@ export function BackofficeCalendar() {
         )}
       </button>
     );
+  }
+
+  function BlockRow({ block }: { block: BlockedTime }) {
+    return (
+      <div className={`w-full p-3 border border-dashed border-white-30 ${BLOCKED_STRIPES}`}>
+        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+          <span className="whitespace-nowrap text-sm font-medium text-white-50">{blockTimeLabel(block)}</span>
+          <Badge>Blocked</Badge>
+        </div>
+        <p className="mt-1 text-sm text-white-70 truncate">{block.reason || 'Time off'}</p>
+        {staffName(block.staffId) && (
+          <p className="mt-1 text-[11px] text-white-30 truncate">{staffName(block.staffId)}</p>
+        )}
+      </div>
+    );
+  }
+
+  function ItemRow({ item }: { item: DayItem }) {
+    return item.kind === 'appt' ? <AppointmentRow apt={item.apt} /> : <BlockRow block={item.block} />;
   }
 
   return (
@@ -184,9 +222,9 @@ export function BackofficeCalendar() {
       ) : view === 'day' ? (
         <DayView day={anchor} rows={forDay(anchor)} />
       ) : view === 'week' ? (
-        <WeekView start={range.start} forDay={forDay} onDayHeader={(d) => { setAnchor(d); setView('day'); }} AppointmentRow={AppointmentRow} />
+        <WeekView start={range.start} forDay={forDay} onDayHeader={(d) => { setAnchor(d); setView('day'); }} ItemRow={ItemRow} />
       ) : (
-        <MonthView anchor={anchor} appointments={appointments} onPickDay={(d) => { setAnchor(d); setView('day'); }} />
+        <MonthView anchor={anchor} appointments={appointments} blocks={blocks} onPickDay={(d) => { setAnchor(d); setView('day'); }} />
       )}
 
       {selected && (
@@ -216,7 +254,7 @@ export function BackofficeCalendar() {
 
   // ---- Inline view components (share AppointmentRow via closure) ----
 
-  function DayView({ day, rows }: { day: Date; rows: Appointment[] }) {
+  function DayView({ day, rows }: { day: Date; rows: DayItem[] }) {
     return (
       <div className="max-w-xl">
         {rows.length === 0 ? (
@@ -225,8 +263,8 @@ export function BackofficeCalendar() {
           </div>
         ) : (
           <div className="space-y-2">
-            {rows.map((apt) => (
-              <AppointmentRow key={apt.id} apt={apt} />
+            {rows.map((item) => (
+              <ItemRow key={dayItemKey(item)} item={item} />
             ))}
           </div>
         )}
@@ -240,12 +278,12 @@ function WeekView({
   start,
   forDay,
   onDayHeader,
-  AppointmentRow,
+  ItemRow,
 }: {
   start: Date;
-  forDay: (d: Date) => Appointment[];
+  forDay: (d: Date) => DayItem[];
   onDayHeader: (d: Date) => void;
-  AppointmentRow: (props: { apt: Appointment }) => ReactElement;
+  ItemRow: (props: { item: DayItem }) => ReactElement;
 }) {
   const days = Array.from({ length: 6 }, (_, i) => addDays(start, i)); // Mon–Sat
   return (
@@ -267,7 +305,9 @@ function WeekView({
               {rows.length === 0 ? (
                 <p className="py-4 text-center text-[11px] text-white-30">—</p>
               ) : (
-                rows.map((apt) => <AppointmentRow key={apt.id} apt={apt} />)
+                rows.map((item) => (
+                  <ItemRow key={dayItemKey(item)} item={item} />
+                ))
               )}
             </div>
           </div>
@@ -281,10 +321,12 @@ function WeekView({
 function MonthView({
   anchor,
   appointments,
+  blocks,
   onPickDay,
 }: {
   anchor: Date;
   appointments: Appointment[];
+  blocks: BlockedTime[];
   onPickDay: (d: Date) => void;
 }) {
   const monthStart = startOfMonth(anchor);
@@ -305,6 +347,7 @@ function MonthView({
 
   const countFor = (day: Date) =>
     appointments.filter((a) => a.appointmentDate === format(day, 'yyyy-MM-dd')).length;
+  const blocksFor = (day: Date) => blocks.filter((b) => b.date === format(day, 'yyyy-MM-dd'));
 
   return (
     <div className="border border-white-10 bg-dark-800">
@@ -320,6 +363,7 @@ function MonthView({
           {week.map((day) => {
             const inMonth = isSameMonth(day, anchor);
             const count = countFor(day);
+            const dayBlocks = blocksFor(day);
             return (
               <button
                 key={day.toISOString()}
@@ -331,11 +375,21 @@ function MonthView({
                 <span className={`text-sm font-medium ${isToday(day) ? 'text-gold' : inMonth ? 'text-white' : 'text-white-30'}`}>
                   {format(day, 'd')}
                 </span>
-                {count > 0 && (
-                  <span className="mt-2 inline-block bg-gold/20 px-1.5 py-0.5 text-[10px] font-medium text-gold">
-                    {count} appt{count === 1 ? '' : 's'}
-                  </span>
-                )}
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {count > 0 && (
+                    <span className="inline-block bg-gold/20 px-1.5 py-0.5 text-[10px] font-medium text-gold">
+                      {count} appt{count === 1 ? '' : 's'}
+                    </span>
+                  )}
+                  {dayBlocks.length > 0 && (
+                    <span
+                      title={dayBlocks.map((b) => `${blockTimeLabel(b)} · ${b.reason || 'Time off'}`).join('\n')}
+                      className="inline-block border border-dashed border-white-30 px-1.5 py-0.5 text-[10px] font-medium text-white-50"
+                    >
+                      Blocked
+                    </span>
+                  )}
+                </div>
               </button>
             );
           })}

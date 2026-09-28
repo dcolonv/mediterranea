@@ -190,6 +190,11 @@ export interface BookingRules {
   slotIntervalMinutes: number;
   /** Cool-down/preparation gap enforced between consecutive appointments, in minutes. */
   bufferMinutes: number;
+  /**
+   * How long a booking may run past closing time, in minutes. Bookings still
+   * start by closing time; this lets the last ones finish late.
+   */
+  afterHoursMinutes?: number;
 }
 
 export interface CancellationPolicy {

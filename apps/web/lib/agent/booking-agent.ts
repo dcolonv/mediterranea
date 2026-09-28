@@ -39,6 +39,9 @@ export interface AgentResult {
 /** Tools that change data — gated behind human confirmation when proposeWrites is on. */
 export const WRITE_TOOLS = new Set(['create_appointment', 'update_appointment', 'delete_appointment']);
 
+const READ_ONLY_NOTE =
+  'This channel is read-only: you cannot create, change or cancel appointments here. If asked to, say so briefly and suggest the backoffice.';
+
 function buildInstructions(today: string): string {
   return [
     'You are the scheduling assistant for Mediterránea Face Studio, used by studio staff in the backoffice.',
@@ -67,11 +70,34 @@ function buildInstructions(today: string): string {
 
 export async function runBookingAgent(
   messages: AgentMessage[],
-  opts: { today: string; maxToolTurns?: number; proposeWrites?: boolean }
+  opts: {
+    today: string;
+    maxToolTurns?: number;
+    /**
+     * Gate writes behind human confirmation (default). Turning this off lets
+     * writes execute immediately — it does NOT make the agent read-only.
+     */
+    proposeWrites?: boolean;
+    /** Withhold the write tools entirely: the agent can only look things up. */
+    readOnly?: boolean;
+    /** Extra rules for this channel, appended to the instructions. */
+    channelNote?: string;
+  }
 ): Promise<AgentResult> {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const maxTurns = opts.maxToolTurns ?? 8;
   const proposeWrites = opts.proposeWrites ?? true;
+  const readOnly = opts.readOnly ?? false;
+  const availableTools = readOnly
+    ? tools.filter((t) => !WRITE_TOOLS.has(t.name))
+    : tools;
+  const instructions = [
+    buildInstructions(opts.today),
+    readOnly ? READ_ONLY_NOTE : '',
+    opts.channelNote ?? '',
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 
   const input: OpenAI.Responses.ResponseInput = messages.map((m) => ({
     role: m.role,
@@ -83,8 +109,8 @@ export async function runBookingAgent(
   for (let turn = 0; turn <= maxTurns; turn++) {
     const response = await client.responses.create({
       model: MODEL,
-      instructions: buildInstructions(opts.today),
-      tools: tools as unknown as OpenAI.Responses.Tool[],
+      instructions,
+      tools: availableTools as unknown as OpenAI.Responses.Tool[],
       input,
     });
 
@@ -107,6 +133,15 @@ export async function runBookingAgent(
         args = JSON.parse(call.arguments || '{}');
       } catch {
         args = {};
+      }
+
+      // Belt and braces: a read-only run never executes a write, even if the
+      // model names a tool it wasn't given.
+      if (readOnly && WRITE_TOOLS.has(call.name)) {
+        const refused = JSON.stringify({ status: 'not_allowed', note: 'This channel is read-only.' });
+        toolCalls.push({ name: call.name, arguments: call.arguments, result: refused });
+        input.push({ type: 'function_call_output', call_id: call.call_id, output: refused });
+        continue;
       }
 
       // Gate writes behind human confirmation: don't execute — capture the

@@ -45,13 +45,15 @@ export function firstSelectableDate(
 }
 
 /**
- * A month grid for picking a booking date. Days that are in the past, beyond the
- * booking window, or on a closed weekday are disabled. Monday-first, localized.
+ * A month grid for picking a booking date. Days that are in the past (unless
+ * `allowPast`), beyond the booking window, or on a closed weekday are disabled.
+ * Monday-first, localized.
  */
 export function MonthCalendar({
   businessHours,
   maxAdvanceDays,
   minDate = '',
+  allowPast = false,
   blockedDates = [],
   locale,
   selectedDate,
@@ -63,6 +65,8 @@ export function MonthCalendar({
   maxAdvanceDays: number;
   /** Earliest selectable date (e.g. the opening date), 'YYYY-MM-DD'. */
   minDate?: string;
+  /** Let past days be picked (backoffice backfilling); `minDate` still applies. */
+  allowPast?: boolean;
   /** Fully-closed dates (e.g. holidays) to disable. */
   blockedDates?: string[];
   locale: 'es' | 'en';
@@ -80,7 +84,7 @@ export function MonthCalendar({
     return d;
   }, []);
   const todayStr = ymd(today);
-  const floorStr = minDate && minDate > todayStr ? minDate : todayStr;
+  const floorStr = allowPast ? minDate : minDate && minDate > todayStr ? minDate : todayStr;
   const maxDate = useMemo(() => {
     const d = new Date(today);
     d.setDate(d.getDate() + maxAdvanceDays);
@@ -117,6 +121,7 @@ export function MonthCalendar({
 
   const floorDate = new Date(`${floorStr}T00:00:00`);
   const canPrev =
+    !floorStr ||
     view.year > floorDate.getFullYear() ||
     (view.year === floorDate.getFullYear() && view.month > floorDate.getMonth());
   const canNext =
