@@ -1,9 +1,17 @@
 /**
- * M5Stack ATOM Echo — push-to-talk voice input.
+ * M5Stack ATOM Echo — hands-free voice assistant ("Hola Olivia").
  *
- * Hold the top button (G39) to record; release to send. Audio streams to
- * /api/atom/speech in apps/web while you speak, which transcribes it and
- * replies with text.
+ * The device listens for its wake word on-device, the whole time. Say
+ * "Hola Olivia" / "Hi Olivia" (or tap the button), ask your question, and stop
+ * talking: the question streams to /api/atom/speech in apps/web and the spoken
+ * answer streams back and plays on the built-in speaker. For a few seconds
+ * afterwards it listens for a follow-up without the wake word.
+ *
+ * The button still works: hold it to talk (release to send); tap it during an
+ * answer to stop it.
+ *
+ * Privacy: nothing leaves the device until the wake word fires or the button
+ * is pressed. Wake word detection runs entirely on the ESP32.
  *
  * Two rules this hardware imposes, which every firmware here must follow:
  *
@@ -11,40 +19,94 @@
  *      type 130 on this unit and the sketch then runs but produces NO sound.
  *   2. The PDM mic and the I2S speaker share pin G33 and the same I2S port, so
  *      they can never be active at once. Always end one before beginning the
- *      other.
+ *      other. (It also means the device can't hear you while it speaks — the
+ *      button is the way to cut in.)
  *
  * Why streaming and not one big POST: there is no PSRAM and ~300 KB of RAM, of
  * which Wi-Fi takes 40-50 KB. Buffering the whole clip would cap recording at
- * 3-4 seconds. Streaming 8 KB chunks keeps memory flat whatever the length.
+ * a few seconds. Streaming 2 KB frames keeps memory flat whatever the length.
  */
 #include <Arduino.h>
 #include <M5Unified.h>
 #include <WiFi.h>
 
+#include <atomic>
+
 #include "audio_config.h"
+#include "reply_reader.h"
 #include "secrets.h"
+#include "src/audio_ring.h"
+#include "src/mic_stream.h"
+#include "src/speech_gate.h"
+#include "src/wake_word.h"
+#include "wake_words.h"
 
 /** SK6812 RGB LED. M5Unified does not expose it on this board, so it is driven
  *  directly with the core's built-in single-pixel helper. */
 static constexpr uint8_t LED_PIN = 27;
 
-/** Recorded into alternately, so a send never stalls the next capture. */
-static int16_t chunkA[ATOM_CHUNK_SAMPLES];
-static int16_t chunkB[ATOM_CHUNK_SAMPLES];
+// ── State ────────────────────────────────────────────────────────────────────
 
-static constexpr size_t CHUNK_BYTES = ATOM_CHUNK_SAMPLES * sizeof(int16_t);
-static constexpr uint32_t MAX_CHUNKS =
-    ((uint32_t)ATOM_MAX_SECONDS * ATOM_SAMPLE_RATE) / ATOM_CHUNK_SAMPLES;
+/** What started a question. */
+enum class Trigger {
+  WakeWord,  // pre-roll from before detection is sent too
+  Button,    // hold: push-to-talk; tap: hands-free
+  FollowUp,  // speech started within the follow-up window
+};
+
+/** How one question ended. */
+enum class Outcome {
+  Answered,
+  Interrupted,  // button pressed during the answer
+  Cancelled,    // nothing was said
+  Failed,
+};
+
+/** Continuous capture: the mic task fills the ring, the main loop reads it. */
+static AudioRing<ATOM_RING_SAMPLES> ring;
+static MicStream<ATOM_CAPTURE_SAMPLES> mic;
+static std::atomic<bool> micWanted{false};
+static std::atomic<bool> micRunning{false};
+
+/** The frame being processed/uploaded. */
+static int16_t frame[ATOM_FRAME_SAMPLES];
+static constexpr size_t FRAME_BYTES = ATOM_FRAME_SAMPLES * sizeof(int16_t);
+static constexpr uint32_t FRAME_MS = ATOM_FRAME_SAMPLES * 1000 / ATOM_SAMPLE_RATE;
+
+static SpeechGate gate(ATOM_SPEECH_FACTOR, ATOM_MIN_SPEECH_RMS);
+static WakeWordDetector detector;
+static bool wakeWordReady = false;
+
+/** The reply's playback ring. See ATOM_PLAY_SAMPLES in audio_config.h. */
+static int16_t playBuf[ATOM_PLAY_BUFFERS][ATOM_PLAY_SAMPLES];
+static constexpr size_t PLAY_BYTES = ATOM_PLAY_SAMPLES * sizeof(int16_t);
+static constexpr uint8_t PLAY_CHANNEL = 0;
+
+/**
+ * Identifies this conversation to the server, which keeps its history. Made
+ * fresh at every boot, so restarting the device is how a conversation ends —
+ * besides saying "new conversation" / "nueva conversación".
+ */
+static char sessionId[17];
+
+static void newSession() {
+  // esp_random() draws on the hardware RNG, seeded by the radio once Wi-Fi is
+  // up; before that it is still unpredictable enough to tell sessions apart.
+  snprintf(sessionId, sizeof(sessionId), "%08lx%08lx",
+           (unsigned long)esp_random(), (unsigned long)esp_random());
+  Serial.printf("New conversation %s\n", sessionId);
+}
 
 // ── LED ──────────────────────────────────────────────────────────────────────
 
 static void led(uint8_t r, uint8_t g, uint8_t b) { rgbLedWrite(LED_PIN, r, g, b); }
 
-static void ledIdle() { led(0, 0, 0); }
+static void ledIdle() { led(0, 0, 0); }          // off: listening for the wake word
 static void ledConnecting() { led(0, 0, 40); }   // blue
-static void ledRecording() { led(60, 0, 0); }    // red
-static void ledSending() { led(60, 35, 0); }     // amber
-static void ledOk() { led(0, 50, 0); }           // green
+static void ledRecording() { led(60, 0, 0); }    // red: listening to the question
+static void ledThinking() { led(60, 35, 0); }    // amber
+static void ledSpeaking() { led(0, 40, 30); }    // teal
+static void ledFollowUp() { led(0, 20, 0); }     // soft green: say more, no wake word needed
 static void ledError() { led(80, 0, 0); }        // bright red
 
 static void blinkError() {
@@ -76,10 +138,50 @@ static void configureAudioPins() {
   M5.Mic.config(mic);
 }
 
-/** Short confirmation tone. Speaker only — the mic must already be stopped. */
+/**
+ * The mic task owns M5.Mic: it starts and stops it on request and otherwise
+ * just moves captured audio into the ring. Running it apart from the main loop
+ * is what lets audio keep flowing while the loop is blocked on the network.
+ */
+static void captureTask(void*) {
+  for (;;) {
+    bool wanted = micWanted.load();
+    bool running = micRunning.load();
+    if (wanted && !running) {
+      mic.begin(ATOM_SAMPLE_RATE);
+      micRunning = true;
+    } else if (!wanted && running) {
+      mic.end();
+      micRunning = false;
+    }
+    if (micRunning) {
+      ring.write(mic.next(), ATOM_CAPTURE_SAMPLES);
+    } else {
+      vTaskDelay(pdMS_TO_TICKS(5));
+    }
+  }
+}
+
+static void micOn() {
+  M5.Speaker.end();  // shares G33 and the I2S port with the mic
+  micWanted = true;
+  while (!micRunning) delay(1);
+  ring.skipToNow();
+  // The first moments after the PDM mic starts are a thump, not sound.
+  delay(120);
+  ring.skipToNow();
+}
+
+static void micOff() {
+  micWanted = false;
+  while (micRunning) delay(1);
+}
+
+/** Short tone. Turns the mic off to play it; the caller turns it back on. */
 static void beep(uint16_t hz, uint32_t ms) {
+  micOff();
   M5.Speaker.begin();
-  M5.Speaker.setVolume(200);
+  M5.Speaker.setVolume(ATOM_VOLUME);
   M5.Speaker.tone(hz, ms);
   while (M5.Speaker.isPlaying()) delay(1);
   M5.Speaker.end();
@@ -110,106 +212,264 @@ static bool ensureWifi(uint32_t timeoutMs = 15000) {
   return true;
 }
 
-// ── Push-to-talk ─────────────────────────────────────────────────────────────
+// ── Reply playback ───────────────────────────────────────────────────────────
+
+/** Returns true if the user pressed the button, which stops playback at once. */
+static bool stopIfPressed() {
+  M5.update();
+  if (!M5.BtnA.wasPressed()) return false;
+  M5.Speaker.stop();
+  return true;
+}
 
 /**
- * Record while the button is held, streaming as we go.
+ * Plays the reply as it streams in.
  *
- * Uses HTTP chunked transfer because the length is unknown until the button is
- * released. The server wraps the raw PCM in a WAV header once it has it all.
+ * Holds playback until all ATOM_PLAY_BUFFERS are full (~0.4 s), then keeps the
+ * ring topped up. playRaw on an explicit channel waits for a free slot, and a
+ * slot frees only when the oldest buffer has finished playing — so by the time
+ * a buffer comes round to be refilled, it's no longer in use.
+ *
+ * Returns true if the user interrupted.
  */
-static bool recordAndSend() {
-  if (!ensureWifi()) {
-    blinkError();
-    return false;
+static bool playReply(ReplyReader& reply) {
+  // The mic must already be off: the speaker takes G33 and the I2S port.
+  M5.Speaker.begin();
+  M5.Speaker.setVolume(ATOM_VOLUME);
+
+  size_t lens[ATOM_PLAY_BUFFERS] = {0};
+  uint32_t filled = 0;
+  uint32_t queued = 0;
+  uint32_t playedSamples = 0;
+  bool speaking = false;
+  bool interrupted = false;
+
+  while (true) {
+    uint8_t slot = filled % ATOM_PLAY_BUFFERS;
+    size_t bytes = reply.read((uint8_t*)playBuf[slot], PLAY_BYTES);
+    if (reply.interrupted()) {
+      interrupted = true;
+      break;
+    }
+    bool ended = bytes < PLAY_BYTES;
+    lens[slot] = bytes / sizeof(int16_t);  // an odd trailing byte is dropped
+    if (lens[slot] > 0) filled++;
+
+    if (filled >= ATOM_PLAY_BUFFERS || ended) {
+      if (!speaking && filled > 0) {
+        ledSpeaking();
+        speaking = true;
+      }
+      while (queued < filled) {
+        uint8_t q = queued % ATOM_PLAY_BUFFERS;
+        M5.Speaker.playRaw(playBuf[q], lens[q], ATOM_SAMPLE_RATE, false, 1, PLAY_CHANNEL);
+        playedSamples += lens[q];
+        queued++;
+      }
+    }
+
+    if (stopIfPressed()) {
+      interrupted = true;
+      break;
+    }
+    if (ended) break;
   }
 
+  // Let the last buffers finish, unless the user cuts in.
+  while (!interrupted && M5.Speaker.isPlaying(PLAY_CHANNEL)) {
+    if (stopIfPressed()) interrupted = true;
+    delay(5);
+  }
+
+  M5.Speaker.stop();
+  M5.Speaker.end();
+  if (reply.timedOut()) Serial.println("Reply stream stalled; gave up.");
+  Serial.printf("Played %.1f s%s\n", (float)playedSamples / ATOM_SAMPLE_RATE,
+                interrupted ? " (interrupted)" : "");
+  return interrupted;
+}
+
+// ── One question ─────────────────────────────────────────────────────────────
+
+/**
+ * Streams a question to the server and plays the answer.
+ *
+ * The mic is already running. Audio is read from the ring — including a little
+ * from before the trigger — and uploaded with HTTP chunked transfer as it's
+ * read, until the person stops talking (or lets go of the button).
+ */
+static Outcome ask(Trigger trigger) {
+  ledRecording();
+  if (trigger == Trigger::WakeWord) ring.rewindMs(ATOM_PREROLL_MS, ATOM_SAMPLE_RATE);
+  if (trigger == Trigger::FollowUp) ring.rewindMs(ATOM_ONSET_MS, ATOM_SAMPLE_RATE);
+  uint32_t started = millis();
+
+  // Audio keeps collecting in the ring while this connects.
+  if (!ensureWifi()) return Outcome::Failed;
+  ledRecording();
   WiFiClient client;
-  // Also bounds the wait for the server's reply, which covers transcription
-  // plus several agent tool turns — easily past 10 s. The route allows 60.
-  client.setTimeout(45000);
+  client.setTimeout(10000);
   if (!client.connect(SERVER_HOST, SERVER_PORT)) {
     Serial.printf("Could not reach %s:%d\n", SERVER_HOST, SERVER_PORT);
-    blinkError();
-    return false;
+    return Outcome::Failed;
   }
 
   client.printf("POST %s HTTP/1.1\r\n", ATOM_ENDPOINT_PATH);
   client.printf("Host: %s:%d\r\n", SERVER_HOST, SERVER_PORT);
   client.printf("%s: %s\r\n", ATOM_TOKEN_HEADER, DEVICE_TOKEN);
+  client.printf("%s: %s\r\n", ATOM_SESSION_HEADER, sessionId);
   client.print("Content-Type: application/octet-stream\r\n");
   client.print("Transfer-Encoding: chunked\r\n");
   client.print("Connection: close\r\n\r\n");
 
-  // Speaker off before the mic starts — they share G33 and the I2S port.
-  M5.Speaker.end();
-  M5.Mic.begin();
-  ledRecording();
-  Serial.println("Recording...");
+  // Button: held past ATOM_PTT_HOLD_MS it's push-to-talk and release ends the
+  // question; a shorter tap makes it hands-free, like the wake word.
+  bool pushToTalk = false;
+  bool buttonDown = trigger == Trigger::Button;
 
-  uint32_t chunks = 0;
+  bool heardSpeech = trigger == Trigger::FollowUp;  // that's how it started
+  uint32_t lastSpeechAt = millis();
+  uint32_t frames = 0;
+  uint32_t speechFrames = 0;
+  const uint32_t maxFrames = (uint32_t)ATOM_MAX_SECONDS * 1000 / FRAME_MS;
   bool ok = true;
 
-  while (chunks < MAX_CHUNKS) {
-    M5.update();
-    if (!M5.BtnA.isPressed()) break;
+  Serial.println(trigger == Trigger::WakeWord   ? "Listening (wake word)..."
+                 : trigger == Trigger::FollowUp ? "Listening (follow-up)..."
+                                                : "Listening (button)...");
 
-    int16_t* buf = (chunks % 2 == 0) ? chunkA : chunkB;
-    if (!M5.Mic.record(buf, ATOM_CHUNK_SAMPLES, ATOM_SAMPLE_RATE)) {
+  while (frames < maxFrames) {
+    if (!ring.read(frame, ATOM_FRAME_SAMPLES)) {
       ok = false;
       break;
     }
-    while (M5.Mic.isRecording()) delay(1);
 
-    // One chunked-encoding frame: size in hex, CRLF, bytes, CRLF.
-    client.printf("%x\r\n", (unsigned)CHUNK_BYTES);
-    if (client.write((const uint8_t*)buf, CHUNK_BYTES) != CHUNK_BYTES) {
+    client.printf("%x\r\n", (unsigned)FRAME_BYTES);
+    if (client.write((const uint8_t*)frame, FRAME_BYTES) != FRAME_BYTES) {
       ok = false;
       break;
     }
     client.print("\r\n");
-    chunks++;
+    frames++;
+
+    if (gate.isSpeech(frame, ATOM_FRAME_SAMPLES)) {
+      heardSpeech = true;
+      speechFrames++;
+      lastSpeechAt = millis();
+    }
+
+    M5.update();
+    if (buttonDown) {
+      if (M5.BtnA.isPressed()) {
+        if (!pushToTalk && millis() - started >= ATOM_PTT_HOLD_MS) pushToTalk = true;
+      } else {
+        buttonDown = false;
+        if (pushToTalk) break;  // released: send
+      }
+    } else if (M5.BtnA.wasPressed()) {
+      break;  // a tap while talking hands-free means "that's it"
+    }
+    if (pushToTalk) continue;
+
+    if (heardSpeech && millis() - lastSpeechAt >= ATOM_END_SILENCE_MS) break;
+    if (!heardSpeech && millis() - started >= ATOM_NO_SPEECH_MS) break;
   }
 
-  M5.Mic.end();
-  client.print("0\r\n\r\n");  // terminating chunk
-  ledSending();
-  Serial.printf("Sent %lu chunks (%.1f s)\n", (unsigned long)chunks,
-                (float)chunks * ATOM_CHUNK_SAMPLES / ATOM_SAMPLE_RATE);
-
+  float seconds = (float)frames * FRAME_MS / 1000.0f;
+  bool saidSomething = pushToTalk || speechFrames * FRAME_MS >= ATOM_MIN_SECONDS * 1000;
   if (!ok) {
     client.stop();
-    blinkError();
-    return false;
+    return Outcome::Failed;
+  }
+  if (!saidSomething) {
+    // Wake word with nothing after it, or a tap. Hang up; nothing to ask.
+    client.stop();
+    Serial.println("Nothing said.");
+    return Outcome::Cancelled;
   }
 
-  String status = client.readStringUntil('\n');
-  status.trim();
-  Serial.printf("Server: %s\n", status.c_str());
-  bool success = status.indexOf(" 200 ") > 0;
+  client.print("0\r\n\r\n");  // terminating chunk
+  micOff();
+  ledThinking();
+  Serial.printf("Sent %.1f s (floor %.0f, threshold %.0f)\n", seconds, gate.floor(), gate.threshold());
 
-  // The server replies with chunked encoding and closes the connection (we
-  // sent Connection: close). Headers and body often land in separate TCP
-  // segments, so read until the server closes — stopping when the buffer is
-  // merely empty for a moment drops the body and prints nothing.
-  String body;
-  uint32_t start = millis();
-  while ((client.connected() || client.available()) && millis() - start < 20000) {
-    while (client.available()) body += (char)client.read();
-    delay(5);
+  ReplyReader reply(client);
+  if (!reply.readHeaders()) {
+    client.stop();
+    if (reply.interrupted()) return Outcome::Interrupted;
+    Serial.println("No response from server.");
+    return Outcome::Failed;
   }
+
+  if (reply.status() != 200) {
+    // Errors are short JSON, e.g. {"error":"No speech detected"}.
+    char body[257];
+    size_t n = reply.read((uint8_t*)body, sizeof(body) - 1);
+    body[n] = '\0';
+    Serial.printf("Error: %s\n", body);
+    client.stop();
+    return Outcome::Failed;
+  }
+
+  // Hanging up mid-answer tells the server to end the voice session.
+  bool interrupted = playReply(reply);
   client.stop();
+  return interrupted ? Outcome::Interrupted : Outcome::Answered;
+}
 
-  // The chunk-size framing wraps the JSON; print just the object.
-  int open = body.indexOf('{');
-  int close = body.lastIndexOf('}');
-  if (open >= 0 && close > open) {
-    Serial.printf("Reply: %s\n", body.substring(open, close + 1).c_str());
-  } else {
-    Serial.printf("Reply: (no JSON body received, %u bytes)\n", body.length());
+/**
+ * After an answer: listen briefly for more without the wake word. Returns the
+ * trigger for the next question, or false to go back to waiting for the wake
+ * word.
+ */
+static bool awaitFollowUp(Trigger* next) {
+  if (ATOM_FOLLOW_UP_MS == 0) return false;
+  ledFollowUp();
+  uint32_t start = millis();
+  uint8_t loud = 0;
+  while (millis() - start < ATOM_FOLLOW_UP_MS) {
+    if (!ring.read(frame, ATOM_FRAME_SAMPLES)) return false;
+    // Two loud frames in a row (~130 ms) — a word, not a clink or a cough.
+    loud = gate.isSpeech(frame, ATOM_FRAME_SAMPLES) ? loud + 1 : 0;
+    if (loud >= 2) {
+      *next = Trigger::FollowUp;
+      return true;
+    }
+    M5.update();
+    if (M5.BtnA.wasPressed()) {
+      *next = Trigger::Button;
+      return true;
+    }
+  }
+  return false;
+}
+
+/** A whole exchange: the question, its answer, and any follow-ups. */
+static void converse(Trigger trigger) {
+  for (;;) {
+    Outcome outcome = ask(trigger);
+    if (!micRunning) micOn();  // back to listening after the speaker
+
+    if (outcome == Outcome::Failed) {
+      blinkError();
+      break;
+    }
+    if (outcome == Outcome::Cancelled) break;
+    if (outcome == Outcome::Interrupted) {
+      // The press that stopped the answer may be a hold: take the question.
+      trigger = Trigger::Button;
+      continue;
+    }
+    if (!awaitFollowUp(&trigger)) break;
   }
 
-  return success;
+  // Forget everything heard during the exchange before listening for the
+  // wake word again, so the answer's echo in the room can't trigger it.
+  ring.skipToNow();
+  if (wakeWordReady) detector.reset();
+  ledIdle();
+  Serial.println(wakeWordReady ? "Ready. Say \"" WAKE_WORD_NAMES "\" or tap the button."
+                               : "Ready. Tap or hold the button to talk.");
 }
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
@@ -226,30 +486,57 @@ void setup() {
 
   configureAudioPins();
   ledIdle();
+  newSession();
+
+  // Load the wake word models before Wi-Fi takes its share of the heap.
+  wakeWordReady = detector.begin(WAKE_WORD_MODELS, WAKE_WORD_MODEL_COUNT);
+  Serial.printf("Wake word %s; free heap %u bytes\n", wakeWordReady ? "ready" : "UNAVAILABLE (button only)",
+                (unsigned)ESP.getFreeHeap());
 
   beep(1000, 200);
   ensureWifi();
   ledIdle();
 
-  Serial.println("Ready. Hold the button to talk.");
+  // Same core as loop(), higher priority: it mostly sleeps inside record().
+  xTaskCreatePinnedToCore(captureTask, "capture", 4096, nullptr, 3, nullptr, 1);
+  micOn();
+
+  Serial.println(wakeWordReady ? "Ready. Say \"" WAKE_WORD_NAMES "\" or tap the button."
+                               : "Ready. Tap or hold the button to talk.");
 }
 
 void loop() {
-  M5.update();
-
-  if (M5.BtnA.wasPressed()) {
-    bool ok = recordAndSend();
-
-    if (ok) {
-      ledOk();
-      beep(1400, 120);
-      delay(300);
-    } else {
-      blinkError();
-    }
-    ledIdle();
-    Serial.println("Ready. Hold the button to talk.");
+  if (!ring.read(frame, ATOM_FRAME_SAMPLES)) {
+    Serial.println("Mic stopped delivering audio; restarting it.");
+    micOff();
+    micOn();
+    return;
   }
 
-  delay(1);
+  // Learn the room's noise floor while idle, so questions end at the right time.
+  gate.isSpeech(frame, ATOM_FRAME_SAMPLES);
+
+  M5.update();
+  if (M5.BtnA.wasPressed()) {
+    converse(Trigger::Button);
+    return;
+  }
+
+  if (wakeWordReady) {
+    const WakeWordModel* heard = detector.feed(frame, ATOM_FRAME_SAMPLES);
+    if (heard) {
+      Serial.printf("Wake word: %s\n", heard->wakeWord);
+      converse(Trigger::WakeWord);
+      return;
+    }
+  }
+
+  // A heartbeat for tuning: how close the room came to firing, and its noise.
+  static uint32_t lastReport = 0;
+  if (millis() - lastReport > 5000) {
+    lastReport = millis();
+    Serial.printf("[idle] wake peak %u/255, rms %.0f, floor %.0f, overruns %u\n",
+                  wakeWordReady ? detector.takePeakProbability() : 0, gate.lastRms(), gate.floor(),
+                  (unsigned)ring.overruns());
+  }
 }

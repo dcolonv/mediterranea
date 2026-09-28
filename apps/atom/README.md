@@ -174,11 +174,33 @@ normal speech at a short distance.
 
 ---
 
-## Push-to-talk (Phase 2)
+## Voice assistant (Phase 2): "Hola Olivia"
 
-Hold the top button to record, release to send. Audio streams to
-`/api/atom/speech` in `apps/web`, which transcribes it and runs the text through
-the booking agent.
+Hands-free. The device listens for its wake word **on the device**; nothing
+leaves it until the wake word fires.
+
+1. Say **"Hola Olivia"** or **"Hi Olivia"** — the LED turns red. You can go
+   straight on with the question in the same breath.
+2. Ask, then stop talking. One second of silence ends the question.
+3. The answer plays through the speaker (teal).
+4. For six seconds afterwards (soft green) it takes a follow-up without the
+   wake word. Silence, and it goes back to waiting for "Hola Olivia".
+
+Questions chain into a conversation ("How long is the second one?" works).
+Restarting the device, or saying "nueva conversación" / "new conversation",
+starts a fresh one.
+
+The button still works:
+
+- **Tap** — same as saying the wake word; during an answer, stops it.
+- **Hold** — push-to-talk; release to send.
+
+The mic and speaker share a pin, so it cannot hear you while it speaks: use the
+button to cut in.
+
+> Until the "Hola Olivia" model is trained (see **Wake word** below), the
+> stock **"Okay Nabu"** model stands in, so everything else can be used and
+> tuned now.
 
 ### Setup
 
@@ -213,17 +235,20 @@ the WAV header.
 
 WebSocket was the other candidate and was rejected: Vercel's serverless
 functions do not support WebSocket servers, so it would need a separate
-always-on service for no gain here. The reply rides back in the HTTP response.
+always-on service for no gain here. The reply rides back in the HTTP response,
+as raw PCM16 at 16 kHz, played through a ring of three 4 KB buffers with
+~0.4 s of prebuffer.
 
 ### LED states
 
 | Colour | Meaning |
 |---|---|
-| Off | Idle |
+| Off | Waiting for the wake word |
 | Blue | Connecting to Wi-Fi |
-| Red | Recording |
-| Amber | Sending |
-| Green | Success |
+| Red | Listening to the question |
+| Amber | Thinking (waiting for the answer to start) |
+| Teal | Speaking |
+| Soft green | Listening for a follow-up (no wake word needed) |
 | Red, blinking ×3 | Error |
 
 M5Unified does not expose this board's SK6812, so it is driven directly on G27
@@ -234,23 +259,60 @@ with `rgbLedWrite()`, which is built into the ESP32 core — no extra library.
 `apps/web/app/api/atom/speech/route.ts` — Node runtime (Edge will not take a
 binary body), shared-token auth compared in constant time, rate limited.
 
-It rejects clips that are too short, too long, or silent **before** spending a
-transcription call. The agent runs with `proposeWrites: false`: the device has
-no screen and no way to confirm, so it can answer questions but not book
-anything.
+It rejects clips that are too short, too long, or silent **before** opening a
+voice session. Each press is one [GPT-Live](https://developers.openai.com/api/docs/guides/live)
+session (`apps/web/lib/atom/live-session.ts`): GPT-Live listens and speaks, and
+hands anything about appointments, treatments or prices to the same booking
+agent the backoffice uses. That agent runs **read-only** here — the write tools
+are withheld, since the device has no way to confirm a booking — and names
+clients by first name only.
 
-Not built yet: playing a spoken reply. The response is text. Speaking it needs
-TTS audio streamed back and buffered on a device that has no room for it, and
-the 0.5 W speaker is poor for speech — the LED and beep carry the outcome
-instead.
+GPT-Live is built for full-duplex calls, not push-to-talk; the header of
+`live-session.ts` explains the three adjustments that make it work. After any
+GPT-Live update, re-run the end-to-end check from `apps/web`:
+
+```sh
+npx tsx scripts/atom-voice-test.ts "What INDIBA treatments do you offer?" "How long is the second one?"
+```
+
+Cost is about $0.05 per billed minute: roughly €0.015 for a question that needs
+a lookup, less for one answered from the conversation.
 
 ### Wake word
 
-Not viable on this hardware. microWakeWord targets ESP32-S3 with PSRAM; this is
-an ESP32-PICO-D4 with none. Espressif's ESP-SR is memory-hungry and custom wake
-words go through their service. Doing it server-side means streaming audio
-continuously, which is wrong for a treatment room on both bandwidth and privacy.
-Revisit only on S3-based hardware.
+Runs on the ESP32 with [microWakeWord](https://github.com/OHF-Voice/micro-wake-word)
+models — the same ones ESPHome runs on this exact device.
+`firmware/src/wake_word.cpp` is a port of ESPHome's `micro_wake_word` component
+to plain Arduino: TensorFlow Lite Micro and its ops come prebuilt in the ESP32
+core; the audio front-end (`src/microfrontend`, `src/kissfft`) is vendored from
+TensorFlow Lite Micro, Apache-2.0 / BSD. The kissfft sources are named `*_impl.h`
+because arduino-cli only copies files with known extensions, and they must not
+be compiled on their own (they are included into `kiss_fft_int16.cc`).
+
+**Training "Hola Olivia".** Open `training/train_hola_olivia.ipynb` in Google
+Colab (it needs a GPU and ~6 GB of downloads; this Mac has neither to spare) and
+follow its first cell. It trains one model that fires on "Hola Olivia" and "Hi
+Olivia" but not on "Olivia" alone, from every Spanish Piper voice, 900+ English
+voices, and — best of all — real recordings of the team. Then:
+
+```sh
+unzip ~/Downloads/hola_olivia.zip -d models/
+python3 scripts/embed-model.py models/hola_olivia.json --use
+pnpm flash:atom
+```
+
+Edit `training/build_notebook.py`, not the notebook, and re-run it.
+
+**Tuning.** `pnpm monitor:atom` prints every 5 s how close the room came to the
+wake word (`wake peak x/255`, fires above the manifest's cutoff) and the noise
+floor the speech detector has learnt. False triggers: raise
+`probability_cutoff` in the model's `.json` and re-embed. Questions cut off
+early or never ending: adjust `ATOM_END_SILENCE_MS`, `ATOM_SPEECH_FACTOR` and
+`ATOM_MIN_SPEECH_RMS` in `audio_config.h`.
+
+**Memory.** The capture ring (1 s, 32 KB) keeps audio flowing while Wi-Fi
+connects, and holds the half-second before the wake word fired, which is sent
+with the question. Each model needs ~25–40 KB of arena.
 
 ---
 
