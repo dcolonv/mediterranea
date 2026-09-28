@@ -42,10 +42,37 @@ export async function getCalendarAppointments(filters: {
   }
 }
 
+/** Practitioners' time off in a date range, for showing blocked time on the calendar. */
+export async function getCalendarBlocks(filters: { startDate: string; endDate: string; staffId?: string }) {
+  try {
+    return { success: true as const, data: await data.listBlockedTimes(filters) };
+  } catch (error) {
+    console.error('Error loading blocked times:', error);
+    return { success: false as const, error: 'Failed to load blocked times.' };
+  }
+}
+
 export async function getAvailability(serviceId: string, date: string, staffId?: string) {
   return data.findAvailability({ serviceId, date, staffId });
 }
 
+/**
+ * Every slot on a date, open or taken, with the free staff/rooms for the open
+ * ones. Backoffice view: past dates and times are included for backfilling.
+ */
+export async function getBackofficeSlots(
+  serviceId: string,
+  date: string,
+  opts: { staffId?: string; ignoreAppointmentId?: string } = {}
+) {
+  return data.findDaySlots({ serviceId, date, ...opts, allowPast: true });
+}
+
+/**
+ * Book from the backoffice. Only a name is required: without an email the
+ * client gets no confirmation, so `emailed` tells staff to confirm in person.
+ * A time already past is a backfill: saved as completed, with no messages sent.
+ */
 export async function bookWalkIn(input: {
   serviceId: string;
   date: string;
@@ -53,11 +80,27 @@ export async function bookWalkIn(input: {
   staffId: string;
   roomId: string;
   clientName: string;
-  clientEmail: string;
-  clientPhone: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  /** Set when an existing client was picked from search. */
+  customerId?: string;
   notes?: string;
 }) {
-  return data.createAppointment({ ...input, source: 'walk-in' });
+  const clientEmail = input.clientEmail?.trim() ?? '';
+  const past = data.isPastInStudio(input.date, input.time);
+  const res = await data.createAppointment({
+    ...input,
+    clientName: input.clientName.trim(),
+    clientEmail,
+    clientPhone: input.clientPhone?.trim() ?? '',
+    source: 'walk-in',
+    ...(past && { status: 'completed' as const, notify: false }),
+  });
+  if (!res.success) return res;
+  const settings = await data.getStudioSettings();
+  const emailed =
+    !past && Boolean(clientEmail) && settings.notifications?.confirmationEnabled !== false;
+  return { ...res, emailed, past };
 }
 
 /**
@@ -104,10 +147,13 @@ export async function bookWalkInResolved(input: {
   });
 }
 
-/** Reschedule / reassign an appointment; re-runs the transactional conflict check. */
+/**
+ * Reschedule / reassign an appointment, or switch its treatment; re-runs the
+ * transactional conflict check. Past dates are allowed (correcting history).
+ */
 export async function rescheduleAppointment(
   id: string,
-  patch: { date?: string; time?: string; staffId?: string; roomId?: string }
+  patch: { date?: string; time?: string; staffId?: string; roomId?: string; serviceId?: string }
 ) {
   return data.updateAppointment(id, patch);
 }

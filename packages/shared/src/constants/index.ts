@@ -120,6 +120,8 @@ export const DEFAULT_STUDIO_SETTINGS = {
     slotIntervalMinutes: 30,
     // Fixed booking slots already include prep time, so no extra buffer by default.
     bufferMinutes: 0,
+    // Any treatment can start at closing time (18:30) and finish by 20:30.
+    afterHoursMinutes: 120,
   },
   cancellation: {
     cutoffHours: 24,

@@ -2,7 +2,8 @@
 
 import * as data from '@/lib/agent/data';
 import { serializeDoc } from '@/lib/firebase/serialize';
-import type { Appointment, Staff, Room } from '@mediterranea/shared/types';
+import type { BlockedTime } from '@/lib/agent/availability';
+import type { Appointment, Service, Staff, Room } from '@mediterranea/shared/types';
 
 /** The studio operates in Europe/Madrid; anchor "today" there, not on the server's clock. */
 function todayInMalaga(): string {
@@ -19,6 +20,10 @@ export interface UpcomingData {
   today: string;
   /** Everything from today onwards, soonest first. */
   appointments: Appointment[];
+  /** Practitioners' time off from today onwards, soonest first. */
+  blocks: BlockedTime[];
+  /** Active treatments, for booking a new appointment from the page. */
+  services: Service[];
   staff: Staff[];
   rooms: Room[];
 }
@@ -37,8 +42,10 @@ export async function getUpcomingAppointments(): Promise<
     const today = todayInMalaga();
 
     // listAppointments already orders by date then time, ascending.
-    const [appointments, staff, rooms] = await Promise.all([
+    const [appointments, blocks, services, staff, rooms] = await Promise.all([
       data.listAppointments({ startDate: today }),
+      data.listBlockedTimes({ startDate: today }),
+      data.listServices(false),
       data.listStaff(true),
       data.listRooms(true),
     ]);
@@ -48,6 +55,8 @@ export async function getUpcomingAppointments(): Promise<
       data: {
         today,
         appointments: appointments.map((a) => serializeDoc(a)),
+        blocks,
+        services: (services as Service[]).map((s) => serializeDoc(s)),
         staff: (staff as Staff[]).map((s) => serializeDoc(s)),
         rooms: (rooms as Room[]).map((r) => serializeDoc(r)),
       },

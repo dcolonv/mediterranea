@@ -84,6 +84,53 @@ export function staffOffAt(
   });
 }
 
+/** One day of a practitioner's time off, for showing on calendars. */
+export interface BlockedTime {
+  /** Unique per staff member, time-off entry and day. */
+  id: string;
+  date: string;
+  /** Omitted when the whole day is off. */
+  start?: string;
+  end?: string;
+  staffId: string;
+  reason?: string;
+}
+
+/**
+ * Expand staff time off into one entry per day between `from` and `to`
+ * (inclusive; `to` null = no end), keeping only days where `isOpen` holds.
+ * Sorted by date, whole days first, then by start time.
+ */
+export function expandTimeOff(
+  staff: { id: string; timeOff?: (AvailTimeOff & { reason?: string })[] }[],
+  from: string,
+  to: string | null,
+  isOpen: (date: string) => boolean
+): BlockedTime[] {
+  const out: BlockedTime[] = [];
+  for (const s of staff) {
+    (s.timeOff ?? []).forEach((t, i) => {
+      const last = t.endDate || t.date;
+      const stop = to && to < last ? to : last;
+      // Cap the walk so a malformed range can't spin for ever.
+      let d = t.date < from ? from : t.date;
+      for (let n = 0; d <= stop && n < 400; n++, d = addDaysStr(d, 1)) {
+        if (!isOpen(d)) continue;
+        out.push({
+          id: `${s.id}:${i}:${d}`,
+          date: d,
+          ...(t.start && t.end && { start: t.start, end: t.end }),
+          staffId: s.id,
+          ...(t.reason && { reason: t.reason }),
+        });
+      }
+    });
+  }
+  return out.sort(
+    (a, b) => a.date.localeCompare(b.date) || (a.start ?? '').localeCompare(b.start ?? '')
+  );
+}
+
 export interface ComputeSlotsInput {
   date: string;
   weekday: Weekday;
@@ -188,6 +235,11 @@ export interface ComputeFixedSlotsInput {
   weekday?: Weekday;
   /** When true, a slot must also fit inside the practitioner's working hours. */
   respectStaffHours?: boolean;
+  /**
+   * Studio closing time (minutes since midnight) and how long a booking may run
+   * past it. A practitioner whose shift lasts until closing covers that window.
+   */
+  afterHours?: { close: number; minutes: number };
   /** Qualified staff. Time off always blocks. */
   staff: AvailStaff[];
   /** Active rooms of the required type. */
@@ -196,19 +248,34 @@ export interface ComputeFixedSlotsInput {
   dayAppointments: AvailAppt[];
 }
 
-/** Candidate start times on a grid within business hours that fit before closing. */
+/**
+ * Candidate start times on a grid within business hours. A slot may start as
+ * late as closing time, as long as it ends within `afterHoursMinutes` of it.
+ */
 export function gridTimes(
   businessHours: DayHours,
   duration: number,
-  intervalMinutes: number
+  intervalMinutes: number,
+  afterHoursMinutes = 0
 ): string[] {
   const open = timeToMinutes(businessHours.open);
   const close = timeToMinutes(businessHours.close);
+  const lastEnd = close + afterHoursMinutes;
   const times: string[] = [];
-  for (let start = open; start + duration <= close; start += intervalMinutes) {
+  for (let start = open; start <= close && start + duration <= lastEnd; start += intervalMinutes) {
     times.push(minutesToTime(start));
   }
   return times;
+}
+
+/**
+ * Latest a practitioner can finish: the end of their shift, stretched into the
+ * after-hours window when they work until closing.
+ */
+function staffLastEnd(wh: DayHours, afterHours?: { close: number; minutes: number }): number {
+  const shiftEnd = timeToMinutes(wh.close);
+  if (!afterHours || shiftEnd < afterHours.close) return shiftEnd;
+  return Math.max(shiftEnd, afterHours.close + afterHours.minutes);
 }
 
 /**
@@ -240,7 +307,7 @@ export function computeFixedSlots(input: ComputeFixedSlotsInput): FixedSlot[] {
         if (input.respectStaffHours && input.weekday) {
           const wh = s.workingHours?.[input.weekday];
           if (!wh) return false;
-          if (start < timeToMinutes(wh.open) || end > timeToMinutes(wh.close)) return false;
+          if (start < timeToMinutes(wh.open) || end > staffLastEnd(wh, input.afterHours)) return false;
         }
         if (staffOffAt(s, date, start, end)) return false;
         return !input.dayAppointments.some((a) => a.staffId === s.id && clashes(start, end, a));

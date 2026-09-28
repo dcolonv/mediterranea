@@ -17,7 +17,9 @@ import {
   computeFixedSlots,
   gridTimes,
   detectConflicts,
+  expandTimeOff,
   type AvailAppt,
+  type BlockedTime,
   type FixedSlot,
 } from '@/lib/agent/availability';
 import type {
@@ -47,6 +49,12 @@ function malagaNow(): { date: string; minutes: number } {
   const date = `${get('year')}-${get('month')}-${get('day')}`;
   const minutes = (Number(get('hour')) % 24) * 60 + Number(get('minute'));
   return { date, minutes };
+}
+
+/** True when a date + start time is already behind us in the studio's timezone. */
+export function isPastInStudio(date: string, time: string): boolean {
+  const now = malagaNow();
+  return date < now.date || (date === now.date && timeToMinutes(time) < now.minutes);
 }
 
 /** Read studio settings, falling back to defaults when unset. */
@@ -150,6 +158,22 @@ export async function getAppointment(id: string): Promise<Appointment | null> {
   return doc.exists ? docData<Appointment>(doc) : null;
 }
 
+/**
+ * Active practitioners' time off, one entry per day the studio is open, from
+ * `startDate` to `endDate` (inclusive; omit for no end).
+ */
+export async function listBlockedTimes(filters: {
+  startDate: string;
+  endDate?: string;
+  staffId?: string;
+}): Promise<BlockedTime[]> {
+  const [staff, settings] = await Promise.all([listStaff(true), getStudioSettings()]);
+  const scoped = filters.staffId ? staff.filter((s) => s.id === filters.staffId) : staff;
+  return expandTimeOff(scoped, filters.startDate, filters.endDate ?? null, (d) =>
+    Boolean(settings.businessHours?.[weekdayOf(d)])
+  );
+}
+
 // ── Availability ───────────────────────────────────────────────────────────────
 
 export interface AvailabilitySlot {
@@ -181,13 +205,18 @@ export interface DaySlotsResult {
  *
  * All services share one grid of start times across business hours (the studio's
  * slot interval). What differs per service is how long each booking blocks —
- * `blockMinutes` when set, otherwise the treatment duration — so a slot must fit
- * before closing and not collide with existing bookings, time off, or a busy room.
+ * `blockMinutes` when set, otherwise the treatment duration — so a slot must
+ * start by closing, finish within the after-hours allowance, and not collide
+ * with existing bookings, time off, or a busy room.
  */
 async function evaluateDay(input: {
   serviceId: string;
   date: string;
   staffId?: string;
+  /** Backoffice: past dates and times are fair game (backfilling), no lead time. */
+  allowPast?: boolean;
+  /** Leave this appointment out, so editing one doesn't clash with itself. */
+  ignoreAppointmentId?: string;
 }): Promise<DaySlotsResult | { error: string }> {
   const service = await getService(input.serviceId);
   if (!service) return { error: `No service found for "${input.serviceId}".` };
@@ -206,11 +235,11 @@ async function evaluateDay(input: {
   const empty = { ...base, slots: [] as FixedSlot[] };
 
   // Booking window: not before the opening date (or today, whichever is later),
-  // no dates beyond maxAdvanceDays, studio open.
+  // no dates beyond maxAdvanceDays, studio open. The backoffice may go back in time.
   const now = malagaNow();
   const earliestDate = now.date > BOOKING_OPENS_DATE ? now.date : BOOKING_OPENS_DATE;
   const maxDate = addDaysStr(now.date, settings.booking.maxAdvanceDays);
-  if (input.date < earliestDate || input.date > maxDate) return empty;
+  if ((!input.allowPast && input.date < earliestDate) || input.date > maxDate) return empty;
 
   const bh = settings.businessHours?.[weekday] ?? null;
   if (!bh) return empty;
@@ -223,7 +252,7 @@ async function evaluateDay(input: {
   );
 
   const dayAppts = (await listAppointments({ date: input.date }))
-    .filter((a) => ACTIVE_STATUSES.includes(a.status))
+    .filter((a) => ACTIVE_STATUSES.includes(a.status) && a.id !== input.ignoreAppointmentId)
     .map((a) => ({
       staffId: a.staffId,
       roomId: a.roomId,
@@ -232,20 +261,26 @@ async function evaluateDay(input: {
     }));
 
   const earliestMinutes =
-    input.date === now.date ? now.minutes + settings.booking.minLeadHours * 60 : 0;
+    input.date === now.date && !input.allowPast
+      ? now.minutes + settings.booking.minLeadHours * 60
+      : 0;
+
+  const afterHoursMinutes =
+    settings.booking.afterHoursMinutes ?? DEFAULT_STUDIO_SETTINGS.booking.afterHoursMinutes;
 
   // Every service uses the same grid of start times within business hours; the
   // service's own block length decides how much each booking occupies. Every
   // candidate is returned with an availability flag so the UI can grey out
   // times that are already taken.
   const slots: FixedSlot[] = computeFixedSlots({
-    candidateTimes: gridTimes(bh, duration, settings.booking.slotIntervalMinutes),
+    candidateTimes: gridTimes(bh, duration, settings.booking.slotIntervalMinutes, afterHoursMinutes),
     duration,
     bufferMinutes: settings.booking.bufferMinutes ?? 0,
     earliestMinutes,
     date: input.date,
     weekday,
     respectStaffHours: true,
+    afterHours: { close: timeToMinutes(bh.close), minutes: afterHoursMinutes },
     staff: staffList.map((s) => ({ id: s.id, workingHours: s.workingHours, timeOff: s.timeOff })),
     rooms: rooms.map((r) => ({ id: r.id })),
     dayAppointments: dayAppts,
@@ -278,11 +313,15 @@ export async function findAvailability(input: {
 
 /**
  * Every candidate slot for a service on a date with an availability flag — for
- * the public month-calendar UI, which shows both open and blocked times.
+ * the month-calendar UIs (public and backoffice), which show both open and
+ * blocked times.
  */
 export async function findDaySlots(input: {
   serviceId: string;
   date: string;
+  staffId?: string;
+  allowPast?: boolean;
+  ignoreAppointmentId?: string;
 }): Promise<DaySlotsResult | { error: string }> {
   return evaluateDay(input);
 }
@@ -329,11 +368,19 @@ export interface CreateAppointmentInput {
   staffId: string;
   roomId: string;
   clientName: string;
+  /** May be empty for a backoffice booking; confirmations then skip email. */
   clientEmail: string;
+  /** May be empty for a backoffice booking; confirmations then skip SMS. */
   clientPhone: string;
+  /** An existing customer to link, when the caller already knows it. */
+  customerId?: string;
   notes?: string;
   /** How the booking was made; defaults to 'agent'. */
   source?: 'online' | 'walk-in' | 'agent';
+  /** Defaults to 'confirmed'; a backfilled past visit is saved as 'completed'. */
+  status?: AppointmentStatus;
+  /** Send the client confirmation and staff alert; defaults to true. */
+  notify?: boolean;
   /** Language the client booked in; notifications are sent in it. */
   locale?: 'en' | 'es';
 }
@@ -378,6 +425,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
     email: input.clientEmail,
     phone: input.clientPhone,
     appointmentDate: input.date,
+    customerId: input.customerId,
   });
 
   const newRef = db.collection('appointments').doc();
@@ -421,7 +469,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         serviceMinutes: service.durationMinutes,
         notes: input.notes ?? '',
         // Bookings are auto-confirmed — no manual backoffice confirmation step.
-        status: 'confirmed' as AppointmentStatus,
+        status: input.status ?? ('confirmed' as AppointmentStatus),
         createdAt: now,
         updatedAt: now,
       });
@@ -440,11 +488,21 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
   }
 
   // Best-effort confirmation (email + SMS). Dynamic import avoids a module cycle.
-  try {
-    const { notifyBookingCreated } = await import('@/lib/notifications/dispatch');
-    await notifyBookingCreated(newRef.id);
-  } catch {
-    /* notifications are best-effort */
+  if (input.notify !== false) {
+    try {
+      const { notifyBookingCreated } = await import('@/lib/notifications/dispatch');
+      await notifyBookingCreated(newRef.id);
+    } catch {
+      /* notifications are best-effort */
+    }
+  }
+  if (input.status === 'completed') {
+    try {
+      const { awardLoyaltyForCompletion } = await import('@/actions/loyalty');
+      await awardLoyaltyForCompletion(newRef.id);
+    } catch {
+      /* best-effort */
+    }
   }
 
   return { success: true, id: newRef.id };
@@ -455,6 +513,8 @@ export interface UpdateAppointmentInput {
   time?: string;
   staffId?: string;
   roomId?: string;
+  /** Switch the treatment; the calendar block follows the new service. */
+  serviceId?: string;
   status?: AppointmentStatus;
   notes?: string;
 }
@@ -475,9 +535,20 @@ export async function updateAppointment(
   };
   const status = patch.status ?? existing.status;
 
-  const reschedules = Boolean(patch.date || patch.time || patch.staffId || patch.roomId);
+  const newService =
+    patch.serviceId && patch.serviceId !== existing.serviceId ? await getService(patch.serviceId) : null;
+  if (patch.serviceId && patch.serviceId !== existing.serviceId && !newService) {
+    return { success: false, error: `No service found for "${patch.serviceId}".` };
+  }
+  const blockMinutes = newService
+    ? newService.blockMinutes || newService.durationMinutes
+    : existing.durationMinutes;
+
+  const reschedules = Boolean(
+    patch.date || patch.time || patch.staffId || patch.roomId || newService
+  );
   const start = timeToMinutes(next.time);
-  const end = start + existing.durationMinutes;
+  const end = start + blockMinutes;
   const bufferMinutes = (await getStudioSettings()).booking.bufferMinutes ?? 0;
 
   try {
@@ -516,6 +587,12 @@ export async function updateAppointment(
         appointmentTime: next.time,
         ...(next.staffId !== undefined && { staffId: next.staffId }),
         ...(next.roomId !== undefined && { roomId: next.roomId }),
+        ...(newService && {
+          serviceId: newService.id,
+          serviceName: newService.name,
+          durationMinutes: blockMinutes,
+          serviceMinutes: newService.durationMinutes,
+        }),
         status,
         ...(patch.notes !== undefined && { notes: patch.notes }),
         updatedAt: Timestamp.now(),

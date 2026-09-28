@@ -107,7 +107,7 @@ export function BackofficeClients() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${c.email.replace(/[^a-z0-9]/gi, '_')}-data.json`;
+    a.download = `${(c.email || c.name).replace(/[^a-z0-9]/gi, '_')}-data.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -169,8 +169,8 @@ export function BackofficeClients() {
 
   async function save() {
     const data = toFormData(form);
-    if (!data.name || !data.email || !data.phone) {
-      setError('Name, email, and phone are required.');
+    if (!data.name) {
+      setError('Name is required.');
       return;
     }
     setSaving(true);
@@ -210,7 +210,7 @@ export function BackofficeClients() {
           />
           <Input
             id="client-email"
-            label="Email"
+            label="Email (optional)"
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -218,7 +218,7 @@ export function BackofficeClients() {
           />
           <Input
             id="client-phone"
-            label="Phone"
+            label="Phone (optional)"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             placeholder="+34 600 000 000"
@@ -279,12 +279,16 @@ export function BackofficeClients() {
             <div>
               <h2 className="font-serif text-2xl text-white">{active.name}</h2>
               <div className="mt-2 space-y-1 text-sm">
-                <a href={`mailto:${active.email}`} className="block text-gold hover:text-gold-light">
-                  {active.email}
-                </a>
-                <a href={`tel:${active.phone}`} className="block text-gold hover:text-gold-light">
-                  {active.phone}
-                </a>
+                {active.email && (
+                  <a href={`mailto:${active.email}`} className="block text-gold hover:text-gold-light">
+                    {active.email}
+                  </a>
+                )}
+                {active.phone && (
+                  <a href={`tel:${active.phone}`} className="block text-gold hover:text-gold-light">
+                    {active.phone}
+                  </a>
+                )}
               </div>
             </div>
             <div className="text-right text-sm text-white-50">
@@ -524,7 +528,7 @@ export function BackofficeClients() {
                   ))}
                 </div>
                 <div className="truncate text-sm text-white-50">
-                  {c.email} · {c.phone}
+                  {[c.email, c.phone].filter(Boolean).join(' · ')}
                 </div>
               </div>
               <div className="shrink-0 text-right text-xs text-white-30">

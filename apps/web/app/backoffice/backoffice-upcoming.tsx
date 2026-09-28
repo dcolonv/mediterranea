@@ -6,6 +6,9 @@ import { Badge, Button } from '@/components/ui';
 import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
 import { getUpcomingAppointments, type UpcomingData } from '@/actions/upcoming';
 import { AppointmentModal } from '@/components/appointments';
+import { WalkInBooking } from '@/components/scheduling/walk-in-booking';
+import { mergeDayItems, dayItemKey, BLOCKED_STRIPES } from '@/components/scheduling/day-items';
+import type { BlockedTime } from '@/lib/agent/availability';
 import type { Appointment, AppointmentStatus } from '@mediterranea/shared/types';
 
 /** Statuses that still represent a booking the studio expects to honour. */
@@ -23,6 +26,7 @@ export function BackofficeUpcoming() {
   const [upcoming, setUpcoming] = useState<UpcomingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Appointment | null>(null);
+  const [booking, setBooking] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
 
   const load = useCallback(async () => {
@@ -43,16 +47,25 @@ export function BackofficeUpcoming() {
     [upcoming, showCancelled]
   );
 
-  // The action already returns them soonest first, so grouping in order is enough.
+  // Each day's bookings and blocked time together, soonest day first.
   const days = useMemo(() => {
-    const byDate = new Map<string, Appointment[]>();
-    for (const a of visible) {
-      const list = byDate.get(a.appointmentDate);
-      if (list) list.push(a);
-      else byDate.set(a.appointmentDate, [a]);
-    }
-    return [...byDate.entries()];
-  }, [visible]);
+    const byDate = new Map<string, { appts: Appointment[]; blocks: BlockedTime[] }>();
+    const dayOf = (date: string) => {
+      let day = byDate.get(date);
+      if (!day) byDate.set(date, (day = { appts: [], blocks: [] }));
+      return day;
+    };
+    for (const a of visible) dayOf(a.appointmentDate).appts.push(a);
+    for (const b of upcoming?.blocks ?? []) dayOf(b.date).blocks.push(b);
+    return [...byDate.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, { appts, blocks }]) => ({
+        date,
+        apptCount: appts.length,
+        blockCount: blocks.length,
+        items: mergeDayItems(appts, blocks),
+      }));
+  }, [visible, upcoming]);
 
   const cancelledCount = (upcoming?.appointments.length ?? 0) - (upcoming?.appointments ?? []).filter((a) => LIVE.has(a.status)).length;
 
@@ -90,6 +103,9 @@ export function BackofficeUpcoming() {
           <Button variant="outline" size="sm" onClick={load}>
             Refresh
           </Button>
+          <Button variant="elegant" size="sm" onClick={() => setBooking(true)}>
+            + New Appointment
+          </Button>
         </div>
       </div>
 
@@ -99,7 +115,7 @@ export function BackofficeUpcoming() {
         </div>
       ) : (
         <div className="space-y-8">
-          {days.map(([date, appts]) => (
+          {days.map(({ date, apptCount, blockCount, items }) => (
             <div key={date}>
               <div className="mb-3 flex items-baseline gap-3">
                 <h2 className="font-serif text-xl text-white">{dayLabel(date)}</h2>
@@ -107,12 +123,27 @@ export function BackofficeUpcoming() {
                   {format(parseISO(date), 'd MMMM yyyy')}
                 </span>
                 <span className="ml-auto text-xs text-white-30">
-                  {appts.length} {appts.length === 1 ? 'appointment' : 'appointments'}
+                  {[
+                    apptCount > 0 && `${apptCount} ${apptCount === 1 ? 'appointment' : 'appointments'}`,
+                    blockCount > 0 && `${blockCount} blocked`,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </span>
               </div>
 
               <div className="border border-white-10 bg-dark-800">
-                {appts.map((apt) => {
+                {items.map((item) => {
+                  if (item.kind === 'block') {
+                    return (
+                      <BlockedRow
+                        key={dayItemKey(item)}
+                        block={item.block}
+                        staffName={staffName(item.block.staffId)}
+                      />
+                    );
+                  }
+                  const apt = item.apt;
                   const dimmed = !LIVE.has(apt.status);
                   return (
                     <button
@@ -156,6 +187,33 @@ export function BackofficeUpcoming() {
           onUpdate={load}
         />
       )}
+      {booking && (
+        <WalkInBooking
+          services={upcoming.services}
+          staff={upcoming.staff}
+          rooms={upcoming.rooms}
+          initialDate={upcoming.today}
+          onClose={() => setBooking(false)}
+          onBooked={load}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Time a practitioner blocked off, laid out like an appointment row. */
+function BlockedRow({ block, staffName }: { block: BlockedTime; staffName?: string }) {
+  return (
+    <div className={`flex w-full items-center gap-4 border-b border-white-10 p-4 last:border-b-0 ${BLOCKED_STRIPES}`}>
+      <div className="w-16 shrink-0 text-white-50">
+        <div className="text-sm font-medium">{block.start ?? 'All day'}</div>
+        {block.end && <div className="text-[10px] text-white-30">until {block.end}</div>}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-white-70">{block.reason || 'Time off'}</div>
+        {staffName && <div className="truncate text-[11px] text-white-30">{staffName}</div>}
+      </div>
+      <Badge>Blocked</Badge>
     </div>
   );
 }

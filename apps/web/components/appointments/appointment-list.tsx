@@ -143,21 +143,29 @@ export function AppointmentList() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 text-sm mb-6">
                 <div>
                   <span className="text-white-50">Email: </span>
-                  <a
-                    href={`mailto:${appointment.clientEmail}`}
-                    className="text-gold hover:text-gold-light transition-colors"
-                  >
-                    {appointment.clientEmail}
-                  </a>
+                  {appointment.clientEmail ? (
+                    <a
+                      href={`mailto:${appointment.clientEmail}`}
+                      className="text-gold hover:text-gold-light transition-colors"
+                    >
+                      {appointment.clientEmail}
+                    </a>
+                  ) : (
+                    <span className="text-white-30">—</span>
+                  )}
                 </div>
                 <div>
                   <span className="text-white-50">Phone: </span>
-                  <a
-                    href={`tel:${appointment.clientPhone}`}
-                    className="text-gold hover:text-gold-light transition-colors"
-                  >
-                    {appointment.clientPhone}
-                  </a>
+                  {appointment.clientPhone ? (
+                    <a
+                      href={`tel:${appointment.clientPhone}`}
+                      className="text-gold hover:text-gold-light transition-colors"
+                    >
+                      {appointment.clientPhone}
+                    </a>
+                  ) : (
+                    <span className="text-white-30">—</span>
+                  )}
                 </div>
                 {appointment.notes && (
                   <div className="sm:col-span-3">

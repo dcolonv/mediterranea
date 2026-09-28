@@ -81,9 +81,11 @@ export async function createCustomer(data: CustomerFormData) {
     const email = normalizeEmail(result.data.email);
 
     // Prevent duplicates by email.
-    const existing = await db.collection(COLLECTION).where('email', '==', email).limit(1).get();
-    if (!existing.empty) {
-      return { success: false, error: 'A customer with this email already exists.' };
+    if (email) {
+      const existing = await db.collection(COLLECTION).where('email', '==', email).limit(1).get();
+      if (!existing.empty) {
+        return { success: false, error: 'A customer with this email already exists.' };
+      }
     }
 
     const now = Timestamp.now();
@@ -117,9 +119,11 @@ export async function updateCustomer(id: string, data: CustomerFormData) {
     const email = normalizeEmail(result.data.email);
 
     // Ensure no other customer already uses this email.
-    const existing = await db.collection(COLLECTION).where('email', '==', email).limit(1).get();
-    if (!existing.empty && existing.docs[0].id !== id) {
-      return { success: false, error: 'Another customer already uses this email.' };
+    if (email) {
+      const existing = await db.collection(COLLECTION).where('email', '==', email).limit(1).get();
+      if (!existing.empty && existing.docs[0].id !== id) {
+        return { success: false, error: 'Another customer already uses this email.' };
+      }
     }
 
     await db.collection(COLLECTION).doc(id).update({
@@ -139,8 +143,28 @@ export async function updateCustomer(id: string, data: CustomerFormData) {
 }
 
 /**
+ * Match a customer by email or, for contacts booked without one, by phone.
+ * With an email in hand, a phone match only adopts a record that has no email
+ * yet — two different emails sharing a phone are never merged.
+ */
+async function findCustomerByContact(email: string, phone: string) {
+  const customers = getAdminDb().collection(COLLECTION);
+  if (email) {
+    const byEmail = await customers.where('email', '==', email).limit(1).get();
+    if (!byEmail.empty) return byEmail.docs[0];
+  }
+  if (phone) {
+    const byPhone = await customers.where('phone', '==', phone).get();
+    const match = byPhone.docs.find((d) => !email || !d.data().email);
+    if (match) return match;
+  }
+  return null;
+}
+
+/**
  * Find-or-create a customer for an appointment's contact info and refresh
- * rollups (totalVisits, lastVisitDate). Returns the customerId, or null on error.
+ * rollups (totalVisits, lastVisitDate). Email and phone may be empty (a
+ * backoffice booking needs only a name). Returns the customerId, or null on error.
  * Safe to call from the public booking flow (uses the Admin SDK).
  */
 export async function upsertCustomerForAppointment(input: {
@@ -148,18 +172,23 @@ export async function upsertCustomerForAppointment(input: {
   email: string;
   phone: string;
   appointmentDate: string;
+  /** A customer already picked in the backoffice; skips matching by contact info. */
+  customerId?: string;
 }): Promise<string | null> {
   try {
     const db = getAdminDb();
     const email = normalizeEmail(input.email);
-    const existing = await db.collection(COLLECTION).where('email', '==', email).limit(1).get();
+    const phone = input.phone.trim();
+    const doc = input.customerId
+      ? await db.collection(COLLECTION).doc(input.customerId).get()
+      : await findCustomerByContact(email, phone);
     const now = Timestamp.now();
 
-    if (existing.empty) {
+    if (!doc?.exists) {
       const docRef = await db.collection(COLLECTION).add({
         name: input.name,
         email,
-        phone: input.phone,
+        phone,
         notes: '',
         tags: [],
         totalVisits: 1,
@@ -170,16 +199,17 @@ export async function upsertCustomerForAppointment(input: {
       return docRef.id;
     }
 
-    const doc = existing.docs[0];
-    const data = doc.data();
+    const data = doc.data()!;
     const lastVisitDate =
       !data.lastVisitDate || input.appointmentDate > data.lastVisitDate
         ? input.appointmentDate
         : data.lastVisitDate;
 
     await doc.ref.update({
-      // keep the latest phone on file; name left as-is to avoid clobbering edits
-      phone: input.phone,
+      // keep the latest phone on file and fill a missing email; name left as-is
+      // to avoid clobbering edits
+      ...(phone && { phone }),
+      ...(email && !data.email && { email }),
       totalVisits: (data.totalVisits ?? 0) + 1,
       lastVisitDate,
       updatedAt: now,
@@ -201,13 +231,24 @@ export async function deleteCustomer(id: string) {
   }
 }
 
+/**
+ * Appointments booked under a customer's email — older bookings predate the
+ * customerId link. An empty email matches nothing: it would otherwise match
+ * every booking made without one.
+ */
+async function appointmentsByEmail(email: string): Promise<QueryDocumentSnapshot[]> {
+  if (!email) return [];
+  const snap = await getAdminDb().collection('appointments').where('clientEmail', '==', email).get();
+  return snap.docs;
+}
+
 /** Total spend = sum of service prices across the customer's completed appointments. */
 export async function getCustomerTotalSpend(customerId: string, email: string) {
   try {
     const db = getAdminDb();
     const [byId, byEmail, servicesSnap] = await Promise.all([
       db.collection('appointments').where('customerId', '==', customerId).get(),
-      db.collection('appointments').where('clientEmail', '==', email).get(),
+      appointmentsByEmail(email),
       db.collection('services').get(),
     ]);
     const priceOf = new Map<string, number>();
@@ -215,7 +256,7 @@ export async function getCustomerTotalSpend(customerId: string, email: string) {
 
     const seen = new Set<string>();
     let total = 0;
-    for (const doc of [...byId.docs, ...byEmail.docs]) {
+    for (const doc of [...byId.docs, ...byEmail]) {
       if (seen.has(doc.id)) continue;
       seen.add(doc.id);
       const a = doc.data();
@@ -238,10 +279,10 @@ export async function exportCustomerData(customerId: string) {
 
     const [byId, byEmail] = await Promise.all([
       db.collection('appointments').where('customerId', '==', customerId).get(),
-      db.collection('appointments').where('clientEmail', '==', customer.email).get(),
+      appointmentsByEmail(customer.email),
     ]);
     const map = new Map<string, Record<string, unknown>>();
-    for (const d of [...byId.docs, ...byEmail.docs]) map.set(d.id, { id: d.id, ...d.data() });
+    for (const d of [...byId.docs, ...byEmail]) map.set(d.id, { id: d.id, ...d.data() });
 
     // Firestore Timestamps → ISO strings so the payload serializes cleanly.
     const plain = JSON.parse(
@@ -268,9 +309,9 @@ export async function hardDeleteCustomer(customerId: string) {
 
     const [byId, byEmail] = await Promise.all([
       db.collection('appointments').where('customerId', '==', customerId).get(),
-      db.collection('appointments').where('clientEmail', '==', email).get(),
+      appointmentsByEmail(email),
     ]);
-    const ids = new Set<string>([...byId.docs, ...byEmail.docs].map((d) => d.id));
+    const ids = new Set<string>([...byId.docs, ...byEmail].map((d) => d.id));
 
     let batch = db.batch();
     let ops = 0;
