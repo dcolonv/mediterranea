@@ -33,11 +33,12 @@
 #define ATOM_CAPTURE_SAMPLES 512
 
 /**
- * The capture ring: the last second of audio (32 KB). The mic task writes into
- * it continuously, so audio keeps accumulating while Wi-Fi connects or the
- * network stalls, and the moments before a wake word are still there to send.
+ * The capture ring: the last 1.5 s of audio (48 KB). The mic task writes into
+ * it continuously, so audio keeps accumulating while Wi-Fi connects, the HTTPS
+ * handshake runs (about a second) or the network stalls — and the moments
+ * before a wake word are still there to send.
  */
-#define ATOM_RING_SAMPLES 16000
+#define ATOM_RING_SAMPLES 24000
 
 /** Samples processed and uploaded at a time (64 ms, 2 KB per upload chunk). */
 #define ATOM_FRAME_SAMPLES 1024

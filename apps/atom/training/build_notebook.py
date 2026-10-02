@@ -23,13 +23,17 @@ Trains one [microWakeWord](https://github.com/OHF-Voice/micro-wake-word) model t
 and **"Hi Olivia"** — but not on "Olivia" alone, so saying a client's name doesn't wake the device.
 
 **Run it on Google Colab with a GPU:** *Runtime → Change runtime type → T4 GPU*, then *Runtime → Run all*.
-It downloads ~6 GB of training data and takes a few hours; Colab's free tier may disconnect on long runs, and
-the training cell resumes from its last checkpoint if you re-run it.
+It takes a few hours. Keep this tab open, in only one tab, and the computer awake.
+
+**It survives disconnects.** Step 2 asks to connect Google Drive (approve the popup). Everything slow to make —
+samples, features, training checkpoints — is saved in `My Drive/hola_olivia/`, so if Colab disconnects,
+reconnect and *Run all* again: finished work is skipped and training resumes from its last checkpoint. The
+big downloads (~6 GB) stay on the Colab machine and are simply fetched again.
 
 **Optional, strongly recommended:** real recordings. Synthetic Spanish voices are few (nine speakers), and the
 model will be best at the voices it has heard. Record each person in the studio saying *"Hola Olivia"* and
 *"Hi Olivia"* 20–30 times each (phone voice memos are fine — vary distance, speed and tone), and upload them into
-a `real_samples/` folder in the Colab file browser before running the "real recordings" cell.
+`My Drive/hola_olivia/real_samples/` (from Google Drive on your phone or computer) before running the notebook.
 
 When it finishes, it downloads `hola_olivia.zip` with `hola_olivia.tflite` and `hola_olivia.json`. Then, in the repo:
 
@@ -48,6 +52,7 @@ pnpm flash:atom
 code(r"""
 # 1. Install microWakeWord and the sample generator. Restart the session afterwards
 #    if Colab asks you to (Runtime → Restart session), then continue from step 2.
+%cd /content
 !pip install -q 'git+https://github.com/whatsnowplaying/audio-metadata@d4ebb238e6a401bb1a5aaaac60c9e2b3cb30929f'
 !git clone -q https://github.com/OHF-Voice/micro-wake-word microWakeWord
 !pip install -q -e ./microWakeWord
@@ -55,10 +60,25 @@ code(r"""
 # package and fails with "No module named 'piper_train'" (see step 3).
 ![ -d piper-sample-generator ] || git clone -q --branch v3.2.0 https://github.com/rhasspy/piper-sample-generator
 !pip install -q ./piper-sample-generator
+# datasets 4 decodes audio into objects microWakeWord can't read ("AudioDecoder
+# object is not subscriptable" in steps 6-7); it's written for datasets 3.
+!pip install -q "datasets<4"
+# piper-sample-generator pins audiomentations 0.33, which lacks AddColorNoise
+# (step 7). Sample generation doesn't use it, so take the current one back.
+!pip install -q -U "audiomentations>=0.42"
 """)
 
 code(r"""
-# 2. What to train. Phonetic spellings help the English voices say the Spanish phrase.
+# 2. Save progress to Google Drive (approve the popup), then: what to train.
+import os
+from google.colab import drive
+drive.mount("/content/drive")
+WORK = "/content/drive/MyDrive/hola_olivia"   # samples, features, checkpoints: survive disconnects
+CACHE = "/content"                            # big re-downloadable data: lost on disconnect, that's fine
+os.makedirs(WORK, exist_ok=True)
+os.chdir(WORK)
+
+# Phonetic spellings help the English voices say the Spanish phrase.
 MODEL_ID = "hola_olivia"
 WAKE_WORD = "Hola Olivia / Hi Olivia"
 
@@ -84,7 +104,7 @@ import os, urllib.request
 
 # Make the sample generator's `piper_train` importable in the `!python3 -m ...`
 # commands below (the pip package doesn't ship it).
-os.environ["PYTHONPATH"] = os.path.abspath("piper-sample-generator") + os.pathsep + os.environ.get("PYTHONPATH", "")
+os.environ["PYTHONPATH"] = f"{CACHE}/piper-sample-generator" + os.pathsep + os.environ.get("PYTHONPATH", "")
 
 SPANISH_VOICES = [
     "es/es_ES/davefx/medium/es_ES-davefx-medium",
@@ -96,16 +116,18 @@ SPANISH_VOICES = [
     "es/es_MX/claude/high/es_MX-claude-high",
     "es/es_AR/daniela/high/es_AR-daniela-high",
 ]
-os.makedirs("voices", exist_ok=True)
+VOICES = f"{CACHE}/voices"
+os.makedirs(VOICES, exist_ok=True)
 base = "https://huggingface.co/rhasspy/piper-voices/resolve/main/"
 for v in SPANISH_VOICES:
     name = v.split("/")[-1]
     for ext in (".onnx", ".onnx.json"):
-        path = f"voices/{name}{ext}"
+        path = f"{VOICES}/{name}{ext}"
         if not os.path.exists(path):
             urllib.request.urlretrieve(base + v + ext, path)
 
-EN_GENERATOR = "voices/en_US-libritts_r-medium.pt"
+# Must sit next to its settings file, which ships in the repo's models/ folder.
+EN_GENERATOR = f"{CACHE}/piper-sample-generator/models/en_US-libritts_r-medium.pt"
 if not os.path.exists(EN_GENERATOR):
     urllib.request.urlretrieve(
         "https://github.com/rhasspy/piper-sample-generator/releases/download/v2.0.0/en_US-libritts_r-medium.pt",
@@ -114,35 +136,35 @@ print("voices ready")
 """)
 
 code(r"""
-# 4. Generate positive and negative samples.
+# 4. Generate positive and negative samples. Each (voice, phrase) batch that's
+#    already in Drive is skipped, so re-running after a disconnect carries on.
 import glob, shutil
 
 for d in ("positives", "negatives"):
     os.makedirs(d, exist_ok=True)
 
+def generate(text, model, tag, kind, count, batch=1):
+    if glob.glob(f"{kind}/{tag}_*.wav"):
+        return  # done in an earlier run
+    tmp = f"{CACHE}/tmp_{kind}_{tag}"
+    shutil.rmtree(tmp, ignore_errors=True)
+    !python3 -m piper_sample_generator "{text}" --model {model} --max-samples {count} --batch-size {batch} --output-dir {tmp}
+    for f in glob.glob(f"{tmp}/*.wav"):
+        shutil.copy(f, f"{kind}/{tag}_{os.path.basename(f)}")
+    shutil.rmtree(tmp, ignore_errors=True)
+
 for v in SPANISH_VOICES:
-    model = f"voices/{v.split('/')[-1]}.onnx"
-    tag = v.split('/')[-1]
+    name = v.split("/")[-1]
+    model = f"{VOICES}/{name}.onnx"
     for i, text in enumerate(SPANISH_POSITIVES):
-        out = f"positives_raw/{tag}_{i}"
-        !python3 -m piper_sample_generator "{text}" --model {model} --max-samples {POSITIVES_PER_SPANISH_VOICE // len(SPANISH_POSITIVES) + 1} --output-dir {out}
+        generate(text, model, f"{name}_{i}", "positives", POSITIVES_PER_SPANISH_VOICE // len(SPANISH_POSITIVES) + 1)
     for i, text in enumerate(SPANISH_NEGATIVES):
-        out = f"negatives_raw/{tag}_{i}"
-        !python3 -m piper_sample_generator "{text}" --model {model} --max-samples {NEGATIVES_PER_SPANISH_VOICE // len(SPANISH_NEGATIVES) + 1} --output-dir {out}
+        generate(text, model, f"{name}_{i}", "negatives", NEGATIVES_PER_SPANISH_VOICE // len(SPANISH_NEGATIVES) + 1)
 
 for i, text in enumerate(ENGLISH_POSITIVES):
-    out = f"positives_raw/en_{i}"
-    !python3 -m piper_sample_generator "{text}" --model {EN_GENERATOR} --max-samples {ENGLISH_POSITIVES_TOTAL // len(ENGLISH_POSITIVES)} --batch-size 100 --output-dir {out}
+    generate(text, EN_GENERATOR, f"en_{i}", "positives", ENGLISH_POSITIVES_TOTAL // len(ENGLISH_POSITIVES), batch=100)
 for i, text in enumerate(ENGLISH_NEGATIVES):
-    out = f"negatives_raw/en_{i}"
-    !python3 -m piper_sample_generator "{text}" --model {EN_GENERATOR} --max-samples {ENGLISH_NEGATIVES_TOTAL // len(ENGLISH_NEGATIVES)} --batch-size 100 --output-dir {out}
-
-# Flatten into one folder each, with unique names.
-for raw, flat in (("positives_raw", "positives"), ("negatives_raw", "negatives")):
-    for sub in sorted(glob.glob(f"{raw}/*")):
-        for f in glob.glob(f"{sub}/*.wav"):
-            shutil.move(f, f"{flat}/{os.path.basename(sub)}_{os.path.basename(f)}")
-    shutil.rmtree(raw, ignore_errors=True)
+    generate(text, EN_GENERATOR, f"en_{i}", "negatives", ENGLISH_NEGATIVES_TOTAL // len(ENGLISH_NEGATIVES), batch=100)
 
 print(len(glob.glob("positives/*.wav")), "positives,", len(glob.glob("negatives/*.wav")), "negatives")
 """)
@@ -174,33 +196,33 @@ import datasets, scipy, numpy as np
 from pathlib import Path
 from tqdm import tqdm
 
-if not os.path.exists("mit_rirs"):
-    os.mkdir("mit_rirs")
+if not os.path.exists(f"{CACHE}/mit_rirs"):
+    os.mkdir(f"{CACHE}/mit_rirs")
     for row in tqdm(datasets.load_dataset("davidscripka/MIT_environmental_impulse_responses", split="train", streaming=True)):
         name = row['audio']['path'].split('/')[-1]
-        scipy.io.wavfile.write(os.path.join("mit_rirs", name), 16000, (row['audio']['array'] * 32767).astype(np.int16))
+        scipy.io.wavfile.write(os.path.join(f"{CACHE}/mit_rirs", name), 16000, (row['audio']['array'] * 32767).astype(np.int16))
 
-if not os.path.exists("audioset_16k"):
-    os.makedirs("audioset", exist_ok=True)
-    !wget -q -O audioset/bal_train09.tar https://huggingface.co/datasets/agkphysics/AudioSet/resolve/main/data/bal_train09.tar
-    !cd audioset && tar -xf bal_train09.tar
-    os.mkdir("audioset_16k")
-    ds = datasets.Dataset.from_dict({"audio": [str(i) for i in Path("audioset/audio").glob("**/*.flac")]})
+if not os.path.exists(f"{CACHE}/audioset_16k"):
+    os.makedirs(f"{CACHE}/audioset", exist_ok=True)
+    !wget -q -O {CACHE}/audioset/bal_train09.tar https://huggingface.co/datasets/agkphysics/AudioSet/resolve/main/data/bal_train09.tar
+    !cd {CACHE}/audioset && tar -xf bal_train09.tar
+    os.mkdir(f"{CACHE}/audioset_16k")
+    ds = datasets.Dataset.from_dict({"audio": [str(i) for i in Path(f"{CACHE}/audioset/audio").glob("**/*.flac")]})
     ds = ds.cast_column("audio", datasets.Audio(sampling_rate=16000))
     for row in tqdm(ds):
         name = row['audio']['path'].split('/')[-1].replace(".flac", ".wav")
-        scipy.io.wavfile.write(os.path.join("audioset_16k", name), 16000, (row['audio']['array'] * 32767).astype(np.int16))
+        scipy.io.wavfile.write(os.path.join(f"{CACHE}/audioset_16k", name), 16000, (row['audio']['array'] * 32767).astype(np.int16))
 
-if not os.path.exists("fma_16k"):
-    os.makedirs("fma", exist_ok=True)
-    !wget -q -O fma/fma_xs.zip https://huggingface.co/datasets/mchl914/fma_xsmall/resolve/main/fma_xs.zip
-    !cd fma && unzip -q fma_xs.zip
-    os.mkdir("fma_16k")
-    ds = datasets.Dataset.from_dict({"audio": [str(i) for i in Path("fma/fma_small").glob("**/*.mp3")]})
+if not os.path.exists(f"{CACHE}/fma_16k"):
+    os.makedirs(f"{CACHE}/fma", exist_ok=True)
+    !wget -q -O {CACHE}/fma/fma_xs.zip https://huggingface.co/datasets/mchl914/fma_xsmall/resolve/main/fma_xs.zip
+    !cd {CACHE}/fma && unzip -q fma_xs.zip
+    os.mkdir(f"{CACHE}/fma_16k")
+    ds = datasets.Dataset.from_dict({"audio": [str(i) for i in Path(f"{CACHE}/fma/fma_small").glob("**/*.mp3")]})
     ds = ds.cast_column("audio", datasets.Audio(sampling_rate=16000))
     for row in tqdm(ds):
         name = row['audio']['path'].split('/')[-1].replace(".mp3", ".wav")
-        scipy.io.wavfile.write(os.path.join("fma_16k", name), 16000, (row['audio']['array'] * 32767).astype(np.int16))
+        scipy.io.wavfile.write(os.path.join(f"{CACHE}/fma_16k", name), 16000, (row['audio']['array'] * 32767).astype(np.int16))
 """)
 
 code(r"""
@@ -216,8 +238,8 @@ augmenter = Augmentation(
         "SevenBandParametricEQ": 0.1, "TanhDistortion": 0.1, "PitchShift": 0.1, "BandStopFilter": 0.1,
         "AddColorNoise": 0.1, "AddBackgroundNoise": 0.75, "Gain": 1.0, "RIR": 0.5,
     },
-    impulse_paths=["mit_rirs"],
-    background_paths=["fma_16k", "audioset_16k"],
+    impulse_paths=[f"{CACHE}/mit_rirs"],
+    background_paths=[f"{CACHE}/fma_16k", f"{CACHE}/audioset_16k"],
     background_min_snr_db=-5,
     background_max_snr_db=10,
     min_jitter_s=0.195,
@@ -244,12 +266,13 @@ features("negatives", "adversarial_features")
 
 code(r"""
 # 8. Negative datasets: general speech, dinner-party chatter, and non-speech noise.
-os.makedirs("negative_datasets", exist_ok=True)
+NEG = f"{CACHE}/negative_datasets"
+os.makedirs(NEG, exist_ok=True)
 for fname in ["dinner_party.zip", "dinner_party_eval.zip", "no_speech.zip", "speech.zip"]:
-    if not os.path.exists(f"negative_datasets/{fname[:-4]}"):
-        !wget -q -O negative_datasets/{fname} https://huggingface.co/datasets/kahrendt/microwakeword/resolve/main/{fname}
-        !unzip -q negative_datasets/{fname} -d negative_datasets
-        os.remove(f"negative_datasets/{fname}")
+    if not os.path.exists(f"{NEG}/{fname[:-4]}"):
+        !wget -q -O {NEG}/{fname} https://huggingface.co/datasets/kahrendt/microwakeword/resolve/main/{fname}
+        !unzip -q {NEG}/{fname} -d {NEG}
+        os.remove(f"{NEG}/{fname}")
 """)
 
 code(r"""
@@ -264,13 +287,13 @@ config = {
          "truncation_strategy": "truncate_start", "type": "mmap"},
         {"features_dir": "adversarial_features", "sampling_weight": 4.0, "penalty_weight": 2.0, "truth": False,
          "truncation_strategy": "truncate_start", "type": "mmap"},
-        {"features_dir": "negative_datasets/speech", "sampling_weight": 10.0, "penalty_weight": 1.0, "truth": False,
+        {"features_dir": f"{NEG}/speech", "sampling_weight": 10.0, "penalty_weight": 1.0, "truth": False,
          "truncation_strategy": "random", "type": "mmap"},
-        {"features_dir": "negative_datasets/dinner_party", "sampling_weight": 10.0, "penalty_weight": 1.0,
+        {"features_dir": f"{NEG}/dinner_party", "sampling_weight": 10.0, "penalty_weight": 1.0,
          "truth": False, "truncation_strategy": "random", "type": "mmap"},
-        {"features_dir": "negative_datasets/no_speech", "sampling_weight": 5.0, "penalty_weight": 1.0,
+        {"features_dir": f"{NEG}/no_speech", "sampling_weight": 5.0, "penalty_weight": 1.0,
          "truth": False, "truncation_strategy": "random", "type": "mmap"},
-        {"features_dir": "negative_datasets/dinner_party_eval", "sampling_weight": 0.0, "penalty_weight": 1.0,
+        {"features_dir": f"{NEG}/dinner_party_eval", "sampling_weight": 0.0, "penalty_weight": 1.0,
          "truth": False, "truncation_strategy": "split", "type": "mmap"},
     ],
     "training_steps": [20000],

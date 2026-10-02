@@ -28,6 +28,7 @@
  */
 #include <Arduino.h>
 #include <M5Unified.h>
+#include <NetworkClientSecure.h>
 #include <WiFi.h>
 
 #include <atomic>
@@ -40,6 +41,21 @@
 #include "src/speech_gate.h"
 #include "src/wake_word.h"
 #include "wake_words.h"
+
+/** HTTPS unless told otherwise: on by default for port 443 (production). */
+#ifndef SERVER_TLS
+#define SERVER_TLS (SERVER_PORT == 443)
+#endif
+
+#if SERVER_TLS
+/**
+ * Mozilla's root certificates, built into the ESP32 core. Verifying against
+ * the whole bundle — rather than pinning one root — keeps working when the
+ * host's certificate authority rotates its chain.
+ */
+extern const uint8_t rootCaBundleStart[] asm("_binary_x509_crt_bundle_start");
+extern const uint8_t rootCaBundleEnd[] asm("_binary_x509_crt_bundle_end");
+#endif
 
 /** SK6812 RGB LED. M5Unified does not expose it on this board, so it is driven
  *  directly with the core's built-in single-pixel helper. */
@@ -304,18 +320,31 @@ static Outcome ask(Trigger trigger) {
   if (trigger == Trigger::FollowUp) ring.rewindMs(ATOM_ONSET_MS, ATOM_SAMPLE_RATE);
   uint32_t started = millis();
 
-  // Audio keeps collecting in the ring while this connects.
+  // Audio keeps collecting in the ring while this connects (and, over HTTPS,
+  // while the TLS handshake runs — the slowest part, about a second).
   if (!ensureWifi()) return Outcome::Failed;
   ledRecording();
+#if SERVER_TLS
+  NetworkClientSecure client;
+  client.setCACertBundle(rootCaBundleStart, rootCaBundleEnd - rootCaBundleStart);
+#else
   WiFiClient client;
+#endif
   client.setTimeout(10000);
+  uint32_t connectStarted = millis();
   if (!client.connect(SERVER_HOST, SERVER_PORT)) {
-    Serial.printf("Could not reach %s:%d\n", SERVER_HOST, SERVER_PORT);
+    Serial.printf("Could not reach %s:%d%s\n", SERVER_HOST, SERVER_PORT,
+                  SERVER_TLS ? " (HTTPS: is the host name right?)" : "");
     return Outcome::Failed;
   }
+  Serial.printf("Connected in %lu ms\n", (unsigned long)(millis() - connectStarted));
 
   client.printf("POST %s HTTP/1.1\r\n", ATOM_ENDPOINT_PATH);
+#if SERVER_PORT == 443 || SERVER_PORT == 80
+  client.printf("Host: %s\r\n", SERVER_HOST);
+#else
   client.printf("Host: %s:%d\r\n", SERVER_HOST, SERVER_PORT);
+#endif
   client.printf("%s: %s\r\n", ATOM_TOKEN_HEADER, DEVICE_TOKEN);
   client.printf("%s: %s\r\n", ATOM_SESSION_HEADER, sessionId);
   client.print("Content-Type: application/octet-stream\r\n");
