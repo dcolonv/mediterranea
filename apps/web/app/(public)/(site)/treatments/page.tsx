@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button, PriceTag } from '@/components/ui';
-import { getBookingServices } from '@/actions/public-booking';
+import { getBookingServices, type PublicService } from '@/actions/public-booking';
+import { treatmentCards } from '@/lib/booking/treatment-cards';
 import { getServerDictionary } from '@/lib/i18n/server';
 import { durationLabel } from '@/lib/i18n/duration';
 import { serviceName, serviceDescription } from '@/lib/i18n/service';
@@ -24,21 +25,16 @@ export default async function TreatmentsPage() {
   const t = dict.technology;
   const p = dict.products;
 
-  const groupPricing = (group: string) => {
-    const inGroup = services.filter((sv) => sv.bookingGroup === group);
-    if (!inGroup.length) return null;
-    const prices = inGroup.map((sv) => sv.price);
+  // A card's price: the lowest price (and intro price) among its treatments.
+  const pricingOf = (list: PublicService[]) => {
+    const prices = list.map((sv) => sv.price);
     return {
       regular: Math.min(...prices),
-      first: Math.min(...inGroup.map((sv) => sv.firstVisitPrice || sv.price)),
+      first: Math.min(...list.map((sv) => sv.firstVisitPrice || sv.price)),
       // "from" only earns its place when the group spans more than one price.
       varies: Math.min(...prices) !== Math.max(...prices),
     };
   };
-
-  const customPricing = groupPricing('custom');
-  const indibaPricing = groupPricing('indiba');
-  const focusPricing = groupPricing('focus');
 
   interface Card {
     name: string;
@@ -50,50 +46,33 @@ export default async function TreatmentsPage() {
     href: string;
   }
 
-  // The three permanent formats.
-  const formats: Card[] = [
-    {
-      name: s.customName,
-      duration: s.customDuration,
-      description: s.customDesc,
-      pricing: customPricing,
-      from: customPricing?.varies ?? false,
-      href: '/book?group=custom',
-    },
-    {
-      name: s.indibaName,
-      duration: s.indibaDuration,
-      description: s.indibaDesc,
-      pricing: indibaPricing,
-      from: indibaPricing?.varies ?? false,
-      href: '/book?group=indiba',
-    },
-    {
-      name: s.focusName,
-      duration: s.focusDuration,
-      description: s.focusDesc,
-      pricing: focusPricing,
-      from: focusPricing?.varies ?? false,
-      href: '/book?group=focus',
-    },
-  ];
+  const formatCopy = {
+    custom: { name: s.customName, duration: s.customDuration, description: s.customDesc },
+    focus: { name: s.focusName, duration: s.focusDuration, description: s.focusDesc },
+    indiba: { name: s.indibaName, duration: s.indibaDuration, description: s.indibaDesc },
+  };
 
-  // Standalone treatments (no booking group) book directly — currently the
-  // seasonal facials, which lead the grid but are only on the page while they
-  // run.
-  const seasonal: Card[] = services
-    .filter((sv) => !sv.bookingGroup)
-    .map((sv) => ({
-      name: serviceName(sv, locale),
-      duration: durationLabel(sv.durationMinutes, locale),
-      description: serviceDescription(sv, locale),
-      pricing: { regular: sv.price, first: sv.firstVisitPrice || sv.price },
-      from: false,
-      badge: sv.temporary ? s.seasonal : undefined,
-      href: `/book?service=${sv.slug}`,
-    }));
-
-  const cards = [...seasonal, ...formats];
+  // Catalogue order, as on the booking page: a format (booking group) sits where
+  // its first treatment does, and a group with no active treatments has no card.
+  // Standalone treatments — seasonal facials, or ones taken out of a group —
+  // book directly.
+  const cards: Card[] = treatmentCards(services).map((c) => {
+    if (c.kind === 'service') {
+      const sv = c.service;
+      return {
+        name: serviceName(sv, locale),
+        duration: durationLabel(sv.durationMinutes, locale),
+        description: serviceDescription(sv, locale),
+        pricing: { regular: sv.price, first: sv.firstVisitPrice || sv.price },
+        from: false,
+        badge: sv.temporary ? s.seasonal : undefined,
+        href: `/book?service=${sv.slug}`,
+      };
+    }
+    const pricing = pricingOf(c.services);
+    return { ...formatCopy[c.group], pricing, from: pricing.varies, href: `/book?group=${c.group}` };
+  });
+  const hasSeasonal = services.some((sv) => !sv.bookingGroup && sv.temporary);
 
   const card = (c: Card) => (
     <div
@@ -138,7 +117,7 @@ export default async function TreatmentsPage() {
   return (
     <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-36 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        {/* The facial formats, plus any standalone/seasonal facials */}
+        {/* The facial formats, plus any standalone or seasonal treatments */}
         <div className="mb-16 text-center">
           <div className="mb-6 flex items-center justify-center gap-5">
             <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
@@ -148,15 +127,15 @@ export default async function TreatmentsPage() {
             <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />
           </div>
           <h1 className="font-serif text-4xl tracking-wide text-white sm:text-5xl">
-            {seasonal.length ? s.allTitle : s.title}
+            {/* "Three ways…" only holds while there are exactly three cards. */}
+            {cards.length === 3 ? s.title : s.allTitle}
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-white-50">
-            {seasonal.length ? s.allSubtitle : s.subtitle}
+            {hasSeasonal ? s.allSubtitle : s.subtitle}
           </p>
         </div>
 
-        {/* Two columns while a seasonal facial makes four cards; back to three
-            across once it ends and only the permanent formats remain. */}
+        {/* Two columns for an even number of cards (e.g. four), three across for three. */}
         <div className={`grid gap-6 ${cards.length % 2 === 0 ? 'sm:grid-cols-2' : 'md:grid-cols-3'}`}>
           {cards.map(card)}
         </div>

@@ -28,8 +28,12 @@ export default async function BookPage({
     : group === 'custom'
       ? (services.find((s) => s.bookingGroup === 'custom') ?? null)
       : null;
-  // Focus / INDIBA open straight into their submenu.
-  const startGroup = group === 'focus' || group === 'indiba' ? group : undefined;
+  // Focus / INDIBA open straight into their submenu — while the group has
+  // treatments; an old link to an emptied group lands on the full list.
+  const startGroup =
+    (group === 'focus' || group === 'indiba') && services.some((sv) => sv.bookingGroup === group)
+      ? group
+      : undefined;
   const prefill = customer
     ? { name: customer.name, email: customer.email, phone: customer.phone }
     : null;
