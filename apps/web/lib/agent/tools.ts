@@ -17,6 +17,8 @@ export interface ToolSpec {
 }
 
 const STATUS_ENUM = ['pending', 'confirmed', 'checked-in', 'completed', 'cancelled', 'no-show'];
+/** What the assistant may set: no check-in step, appointments go straight to completed. */
+const SETTABLE_STATUS_ENUM = STATUS_ENUM.filter((s) => s !== 'checked-in');
 
 export const tools: ToolSpec[] = [
   {
@@ -165,7 +167,7 @@ export const tools: ToolSpec[] = [
         time: { type: 'string', description: 'HH:MM (24h).' },
         staffId: { type: 'string' },
         roomId: { type: 'string' },
-        status: { type: 'string', enum: STATUS_ENUM },
+        status: { type: 'string', enum: SETTABLE_STATUS_ENUM },
         notes: { type: 'string' },
       },
       required: ['appointmentId'],

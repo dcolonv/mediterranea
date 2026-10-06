@@ -65,7 +65,7 @@ export function AppointmentList() {
       { next: 'cancelled', label: 'Cancel' },
     ],
     confirmed: [
-      { next: 'checked-in', label: 'Check In' },
+      { next: 'completed', label: 'Complete' },
       { next: 'no-show', label: 'No-show' },
       { next: 'rejected', label: 'Reject' },
       { next: 'cancelled', label: 'Cancel' },

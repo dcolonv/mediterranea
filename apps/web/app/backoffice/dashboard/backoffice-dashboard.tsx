@@ -52,7 +52,6 @@ export function BackofficeDashboard() {
   const { metrics, todayAppointments, today } = dash;
   const cards: { label: string; value: string; hint?: string }[] = [
     { label: 'Today', value: String(metrics.todayTotal), hint: 'booked' },
-    { label: 'Checked in', value: String(metrics.todayCheckedIn), hint: 'in the studio' },
     { label: 'Completed today', value: String(metrics.todayCompleted) },
     { label: 'Awaiting confirmation', value: String(metrics.pendingUpcoming), hint: 'upcoming' },
     { label: 'This week', value: String(metrics.weekTotal), hint: 'appointments' },

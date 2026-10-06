@@ -34,12 +34,14 @@ const statusActions: Record<
     { next: 'rejected', label: 'Reject', tone: 'danger' },
     { next: 'cancelled', label: 'Cancel', tone: 'danger' },
   ],
+  // No check-in step: staff complete an appointment straight away when it's done.
   confirmed: [
-    { next: 'checked-in', label: 'Check In', tone: 'primary' },
+    { next: 'completed', label: 'Complete', tone: 'primary' },
     { next: 'no-show', label: 'No-show', tone: 'neutral' },
     { next: 'rejected', label: 'Reject', tone: 'danger' },
     { next: 'cancelled', label: 'Cancel', tone: 'danger' },
   ],
+  // Older appointments may still be checked in.
   'checked-in': [
     { next: 'completed', label: 'Complete', tone: 'primary' },
     { next: 'no-show', label: 'No-show', tone: 'neutral' },

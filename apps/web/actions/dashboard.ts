@@ -18,7 +18,6 @@ function todayInMalaga(): string {
 export interface DashboardMetrics {
   todayTotal: number;
   todayCompleted: number;
-  todayCheckedIn: number;
   pendingUpcoming: number;
   weekTotal: number;
   weekRevenue: number;
@@ -72,7 +71,6 @@ export async function getDashboard(): Promise<
     const metrics: DashboardMetrics = {
       todayTotal: todayAppts.filter(active).length,
       todayCompleted: todayAppts.filter((a) => a.status === 'completed').length,
-      todayCheckedIn: todayAppts.filter((a) => a.status === 'checked-in').length,
       pendingUpcoming: pending.length,
       weekTotal: weekAppts.filter(active).length,
       weekRevenue: revenueOf(weekAppts),

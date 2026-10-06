@@ -14,7 +14,7 @@ export default function DashboardPage() {
         </div>
         <h1 className="font-serif text-3xl text-white">Today at the studio</h1>
         <p className="mt-2 text-white-50">
-          Today’s schedule and a pulse on the week. Book, check in, and act on appointments.
+          Today’s schedule and a pulse on the week. Book and act on appointments.
         </p>
       </div>
 
