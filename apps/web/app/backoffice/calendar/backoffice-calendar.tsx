@@ -127,7 +127,7 @@ export function BackofficeCalendar() {
         onClick={() => setSelected(apt)}
         className="w-full text-left p-3 border border-white-10 hover:border-white-30 transition-colors"
       >
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
           <span className="text-sm font-medium text-gold">{apt.appointmentTime}</span>
           <Badge variant={apt.status}>{APPOINTMENT_STATUSES[apt.status].label}</Badge>
         </div>
@@ -163,62 +163,80 @@ export function BackofficeCalendar() {
 
   return (
     <div>
-      {/* Toolbar */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="flex border border-white-10">
-          {(['day', 'week', 'month'] as View[]).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
-                view === v ? 'bg-gold text-charcoal' : 'text-white-50 hover:text-white'
-              }`}
+      {/* Toolbar: one row on desktop; stacked on phones, main action full width. */}
+      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => shift(-1)} aria-label="Previous" className="px-3 sm:px-5">
+              ‹
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setAnchor(new Date())} className="px-3 sm:px-5">
+              Today
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => shift(1)} aria-label="Next" className="px-3 sm:px-5">
+              ›
+            </Button>
+          </div>
+
+          <span className="font-serif text-lg text-white">{rangeLabel}</span>
+
+          <div className="flex w-full border border-white-10 sm:ml-auto sm:w-auto lg:ml-0">
+            {(['day', 'week', 'month'] as View[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`flex-1 px-4 py-2 text-xs uppercase tracking-wider transition-colors sm:flex-none ${
+                  view === v ? 'bg-gold text-charcoal' : 'text-white-50 hover:text-white'
+                }`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:ml-auto">
+          {/* Filters only earn their place with more than one practitioner or room. */}
+          {(refs.staff.length > 1 || refs.rooms.length > 1) && (
+            <div className="grid grid-cols-2 gap-3 sm:flex">
+              {refs.staff.length > 1 && (
+                <div className="sm:w-40">
+                  <Select
+                    id="cal-staff"
+                    value={staffId}
+                    onChange={(e) => setStaffId(e.target.value)}
+                    options={[{ value: '', label: 'All staff' }, ...refs.staff.map((s) => ({ value: s.id, label: s.name }))]}
+                  />
+                </div>
+              )}
+              {refs.rooms.length > 1 && (
+                <div className="sm:w-40">
+                  <Select
+                    id="cal-room"
+                    value={roomId}
+                    onChange={(e) => setRoomId(e.target.value)}
+                    options={[{ value: '', label: 'All rooms' }, ...refs.rooms.map((r) => ({ value: r.id, label: r.name }))]}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-2 sm:ml-auto sm:flex sm:gap-3">
+            <Button
+              variant="elegant"
+              size="sm"
+              onClick={() => setBooking(true)}
+              className="col-span-2 whitespace-nowrap sm:order-last"
             >
-              {v}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => shift(-1)}>
-            ‹
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setAnchor(new Date())}>
-            Today
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => shift(1)}>
-            ›
-          </Button>
-        </div>
-
-        <span className="font-serif text-lg text-white">{rangeLabel}</span>
-
-        <div className="ml-auto flex flex-wrap items-center gap-3">
-          <div className="w-40">
-            <Select
-              id="cal-staff"
-              value={staffId}
-              onChange={(e) => setStaffId(e.target.value)}
-              options={[{ value: '', label: 'All staff' }, ...refs.staff.map((s) => ({ value: s.id, label: s.name }))]}
-            />
+              + New Appointment
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setAssistantOpen(true)} className="whitespace-nowrap">
+              ✦ Assistant
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setBlocking(true)} className="whitespace-nowrap">
+              + Block Time
+            </Button>
           </div>
-          <div className="w-40">
-            <Select
-              id="cal-room"
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
-              options={[{ value: '', label: 'All rooms' }, ...refs.rooms.map((r) => ({ value: r.id, label: r.name }))]}
-            />
-          </div>
-          <Button variant="outline" size="sm" onClick={() => setAssistantOpen(true)}>
-            ✦ Assistant
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setBlocking(true)}>
-            + Block Time
-          </Button>
-          <Button variant="elegant" size="sm" onClick={() => setBooking(true)}>
-            + New Appointment
-          </Button>
         </div>
       </div>
 
@@ -301,23 +319,24 @@ function WeekView({
 }) {
   const days = Array.from({ length: 6 }, (_, i) => addDays(start, i)); // Mon–Sat
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       {days.map((day) => {
         const rows = forDay(day);
         return (
           <div key={day.toISOString()} className="border border-white-10 bg-dark-800">
+            {/* A single line on phones ("MON 5"), stacked in the narrow columns above. */}
             <button
               onClick={() => onDayHeader(day)}
-              className={`w-full border-b border-white-10 p-2 text-center hover:bg-white-10 ${
+              className={`flex w-full items-baseline gap-2 border-b border-white-10 px-3 py-2 text-left hover:bg-white-10 sm:block sm:p-2 sm:text-center ${
                 isToday(day) ? 'text-gold' : 'text-white-70'
               }`}
             >
-              <div className="text-[10px] uppercase tracking-wider">{format(day, 'EEE')}</div>
-              <div className="text-lg font-medium">{format(day, 'd')}</div>
+              <span className="text-[10px] uppercase tracking-wider sm:block">{format(day, 'EEE')}</span>
+              <span className="text-lg font-medium sm:block">{format(day, 'd')}</span>
             </button>
             <div className="space-y-2 p-2">
               {rows.length === 0 ? (
-                <p className="py-4 text-center text-[11px] text-white-30">—</p>
+                <p className="py-2 text-center text-[11px] text-white-30 sm:py-4">—</p>
               ) : (
                 rows.map((item) => (
                   <ItemRow key={dayItemKey(item)} item={item} />
@@ -367,7 +386,7 @@ function MonthView({
     <div className="border border-white-10 bg-dark-800">
       <div className="grid grid-cols-6 border-b border-white-10">
         {WEEKDAY_HEADERS.map((d) => (
-          <div key={d} className="p-3 text-center text-xs font-medium tracking-wider uppercase text-white-30">
+          <div key={d} className="p-2 text-center text-xs font-medium tracking-wider uppercase text-white-30 sm:p-3">
             {d}
           </div>
         ))}
@@ -382,7 +401,7 @@ function MonthView({
               <button
                 key={day.toISOString()}
                 onClick={() => onPickDay(day)}
-                className={`relative min-h-[84px] border-r border-white-10 p-2 text-left last:border-r-0 transition-colors ${
+                className={`relative min-h-[64px] border-r border-white-10 p-1.5 text-left last:border-r-0 transition-colors sm:min-h-[84px] sm:p-2 ${
                   inMonth ? 'hover:bg-white-10' : 'opacity-30'
                 }`}
               >

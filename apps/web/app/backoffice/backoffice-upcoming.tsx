@@ -92,24 +92,34 @@ export function BackofficeUpcoming() {
         <span className="text-sm text-white-50">
           {visible.length} {visible.length === 1 ? 'appointment' : 'appointments'} ahead
         </span>
-        <div className="ml-auto flex items-center gap-3">
-          {cancelledCount > 0 && (
-            <button
-              type="button"
-              onClick={() => setShowCancelled((v) => !v)}
-              className="cursor-pointer text-xs uppercase tracking-wider text-white-50 transition-colors hover:text-white"
-            >
-              {showCancelled ? 'Hide' : 'Show'} cancelled ({cancelledCount})
-            </button>
-          )}
-          <Button variant="outline" size="sm" onClick={load}>
+        {cancelledCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowCancelled((v) => !v)}
+            className="ml-auto cursor-pointer text-xs uppercase tracking-wider text-white-50 transition-colors hover:text-white"
+          >
+            {showCancelled ? 'Hide' : 'Show'} cancelled ({cancelledCount})
+          </button>
+        )}
+        {/* On phones the main action gets a full-width row of its own. */}
+        <div
+          className={`grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:gap-3 ${
+            cancelledCount > 0 ? '' : 'sm:ml-auto'
+          }`}
+        >
+          <Button
+            variant="elegant"
+            size="sm"
+            onClick={() => setBooking(true)}
+            className="col-span-2 whitespace-nowrap sm:order-last"
+          >
+            + New Appointment
+          </Button>
+          <Button variant="outline" size="sm" onClick={load} className="whitespace-nowrap">
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setBlocking(true)}>
+          <Button variant="outline" size="sm" onClick={() => setBlocking(true)} className="whitespace-nowrap">
             + Block Time
-          </Button>
-          <Button variant="elegant" size="sm" onClick={() => setBooking(true)}>
-            + New Appointment
           </Button>
         </div>
       </div>
@@ -122,7 +132,7 @@ export function BackofficeUpcoming() {
         <div className="space-y-8">
           {days.map(({ date, apptCount, blockCount, items }) => (
             <div key={date}>
-              <div className="mb-3 flex items-baseline gap-3">
+              <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <h2 className="font-serif text-xl text-white">{dayLabel(date)}</h2>
                 <span className="text-sm text-white-50">
                   {format(parseISO(date), 'd MMMM yyyy')}
@@ -154,7 +164,7 @@ export function BackofficeUpcoming() {
                     <button
                       key={apt.id}
                       onClick={() => setSelected(apt)}
-                      className={`flex w-full cursor-pointer items-center gap-4 border-b border-white-10 p-4 text-left transition-colors last:border-b-0 hover:bg-white-10 ${
+                      className={`flex w-full cursor-pointer items-center gap-3 border-b border-white-10 p-3 text-left transition-colors last:border-b-0 hover:bg-white-10 sm:gap-4 sm:p-4 ${
                         dimmed ? 'opacity-50' : ''
                       }`}
                     >
@@ -172,8 +182,14 @@ export function BackofficeUpcoming() {
                               .join(' · ')}
                           </div>
                         )}
+                        <Badge variant={apt.status} className="mt-2 sm:hidden">
+                          {APPOINTMENT_STATUSES[apt.status].label}
+                        </Badge>
                       </div>
-                      <Badge variant={apt.status}>{APPOINTMENT_STATUSES[apt.status].label}</Badge>
+                      {/* Beside the details on wider screens; under them on phones, where it would squeeze the text. */}
+                      <Badge variant={apt.status} className="hidden sm:inline-flex">
+                        {APPOINTMENT_STATUSES[apt.status].label}
+                      </Badge>
                     </button>
                   );
                 })}
@@ -217,7 +233,9 @@ export function BackofficeUpcoming() {
 /** Time a practitioner blocked off, laid out like an appointment row. */
 function BlockedRow({ block, staffName }: { block: BlockedTime; staffName?: string }) {
   return (
-    <div className={`flex w-full items-center gap-4 border-b border-white-10 p-4 last:border-b-0 ${BLOCKED_STRIPES}`}>
+    <div
+      className={`flex w-full items-center gap-3 border-b border-white-10 p-3 last:border-b-0 sm:gap-4 sm:p-4 ${BLOCKED_STRIPES}`}
+    >
       <div className="w-16 shrink-0 text-white-50">
         <div className="text-sm font-medium">{block.start ?? 'All day'}</div>
         {block.end && <div className="text-[10px] text-white-30">until {block.end}</div>}
