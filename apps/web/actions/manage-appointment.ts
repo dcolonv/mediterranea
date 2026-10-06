@@ -154,7 +154,7 @@ export async function rescheduleManagedAppointment(
   const roomId = slot.roomIds[0];
   if (!staffId || !roomId) return { success: false, error: 'That time is no longer available.' };
 
-  const res = await data.updateAppointment(appt.id, { date, time, staffId, roomId });
+  const res = await data.updateAppointment(appt.id, { date, time, staffId, roomId }, 'the client');
   if (!res.success) return { success: false, error: res.error ?? 'Could not reschedule.' };
 
   const { notifyAppointmentRescheduled } = await import('@/lib/notifications/dispatch');
@@ -180,7 +180,11 @@ export async function cancelManagedAppointment(): Promise<{ success: true } | Fa
       updatedAt: Timestamp.now(),
     });
     const { notifyAppointmentCancelled } = await import('@/lib/notifications/dispatch');
-    await notifyAppointmentCancelled(appt.id);
+    const { notifyTeam } = await import('@/lib/notifications/team');
+    await Promise.all([
+      notifyAppointmentCancelled(appt.id),
+      notifyTeam({ kind: 'updated', before: appt, after: { ...appt, status: 'cancelled' } }, 'the client'),
+    ]);
     return { success: true };
   } catch (error) {
     console.error('Error cancelling appointment from link:', error);

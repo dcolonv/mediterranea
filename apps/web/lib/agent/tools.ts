@@ -305,10 +305,10 @@ export async function executeTool(name: string, args: Args): Promise<unknown> {
         roomId: args.roomId as string | undefined,
         status: args.status as never,
         notes: args.notes as string | undefined,
-      });
+      }, 'the booking assistant');
 
     case 'delete_appointment':
-      return data.deleteAppointment(String(args.appointmentId));
+      return data.deleteAppointment(String(args.appointmentId), 'the booking assistant');
 
     default:
       return { error: `Unknown tool: ${name}` };

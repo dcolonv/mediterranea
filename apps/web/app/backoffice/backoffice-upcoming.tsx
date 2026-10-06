@@ -7,6 +7,7 @@ import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
 import { getUpcomingAppointments, type UpcomingData } from '@/actions/upcoming';
 import { AppointmentModal } from '@/components/appointments';
 import { WalkInBooking } from '@/components/scheduling/walk-in-booking';
+import { BlockTimeDialog } from '@/components/scheduling/block-time-dialog';
 import { mergeDayItems, dayItemKey, BLOCKED_STRIPES } from '@/components/scheduling/day-items';
 import type { BlockedTime } from '@/lib/agent/availability';
 import type { Appointment, AppointmentStatus } from '@mediterranea/shared/types';
@@ -27,6 +28,7 @@ export function BackofficeUpcoming() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Appointment | null>(null);
   const [booking, setBooking] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
 
   const load = useCallback(async () => {
@@ -102,6 +104,9 @@ export function BackofficeUpcoming() {
           )}
           <Button variant="outline" size="sm" onClick={load}>
             Refresh
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setBlocking(true)}>
+            + Block Time
           </Button>
           <Button variant="elegant" size="sm" onClick={() => setBooking(true)}>
             + New Appointment
@@ -195,6 +200,14 @@ export function BackofficeUpcoming() {
           initialDate={upcoming.today}
           onClose={() => setBooking(false)}
           onBooked={load}
+        />
+      )}
+      {blocking && (
+        <BlockTimeDialog
+          staff={upcoming.staff}
+          initialDate={upcoming.today}
+          onClose={() => setBlocking(false)}
+          onSaved={load}
         />
       )}
     </div>

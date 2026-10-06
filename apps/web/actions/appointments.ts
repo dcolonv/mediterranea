@@ -8,6 +8,8 @@ import { serializeDoc } from '@/lib/firebase/serialize';
 import { appointmentSchema, type AppointmentFormData } from '@mediterranea/shared/validations';
 import { SERVICES_SEED, BUSINESS_HOURS, TIME_SLOTS } from '@mediterranea/shared/constants';
 import { upsertCustomerForAppointment } from '@/actions/customers';
+import { getAppointment, deleteAppointment as deleteAppointmentRecord } from '@/lib/agent/data';
+import { notifyTeam } from '@/lib/notifications/team';
 import type { Appointment, AppointmentStatus } from '@mediterranea/shared/types';
 
 type DayOfWeek = keyof typeof BUSINESS_HOURS;
@@ -117,6 +119,9 @@ export async function createAppointment(data: AppointmentFormData) {
 
     const docRef = await addDoc(collection(db, 'appointments'), appointmentData);
 
+    const created = await getAppointment(docRef.id);
+    if (created) await notifyTeam({ kind: 'created', appt: created }, 'the client, booking online');
+
     return { success: true, id: docRef.id };
   } catch (error) {
     console.error('Error creating appointment:', error);
@@ -162,10 +167,12 @@ export async function updateAppointmentStatus(
   status: AppointmentStatus
 ) {
   try {
+    const before = await getAppointment(appointmentId);
     await getAdminDb().collection('appointments').doc(appointmentId).update({
       status,
       updatedAt: AdminTimestamp.now(),
     });
+    if (before) await notifyTeam({ kind: 'updated', before, after: { ...before, status } });
 
     if (status === 'cancelled') {
       const { notifyAppointmentCancelled } = await import('@/lib/notifications/dispatch');
@@ -197,11 +204,7 @@ export async function saveAppointmentNotes(appointmentId: string, notes: string)
 }
 
 export async function deleteAppointment(appointmentId: string) {
-  try {
-    await getAdminDb().collection('appointments').doc(appointmentId).delete();
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting appointment:', error);
-    return { success: false, error: 'Failed to delete appointment.' };
-  }
+  // The data layer also emails the team about the deletion.
+  const res = await deleteAppointmentRecord(appointmentId);
+  return res.success ? { success: true } : { success: false, error: 'Failed to delete appointment.' };
 }
