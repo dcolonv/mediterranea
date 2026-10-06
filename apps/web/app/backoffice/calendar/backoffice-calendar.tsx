@@ -22,6 +22,7 @@ import { getSchedulingRefs, getCalendarAppointments, getCalendarBlocks } from '@
 import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
 import { AppointmentModal } from '@/components/appointments';
 import { WalkInBooking } from '@/components/scheduling/walk-in-booking';
+import { BlockTimeDialog } from '@/components/scheduling/block-time-dialog';
 import { BookingAssistant } from '@/components/scheduling/booking-assistant';
 import {
   mergeDayItems,
@@ -54,6 +55,7 @@ export function BackofficeCalendar() {
 
   const [selected, setSelected] = useState<Appointment | null>(null);
   const [booking, setBooking] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   const staffName = (id?: string) => refs.staff.find((s) => s.id === id)?.name;
@@ -211,6 +213,9 @@ export function BackofficeCalendar() {
           <Button variant="outline" size="sm" onClick={() => setAssistantOpen(true)}>
             ✦ Assistant
           </Button>
+          <Button variant="outline" size="sm" onClick={() => setBlocking(true)}>
+            + Block Time
+          </Button>
           <Button variant="elegant" size="sm" onClick={() => setBooking(true)}>
             + New Appointment
           </Button>
@@ -244,6 +249,15 @@ export function BackofficeCalendar() {
           initialDate={ymd(view === 'month' ? new Date() : anchor)}
           onClose={() => setBooking(false)}
           onBooked={load}
+        />
+      )}
+      {blocking && (
+        <BlockTimeDialog
+          staff={refs.staff}
+          initialDate={ymd(view === 'month' ? new Date() : anchor)}
+          initialStaffId={staffId}
+          onClose={() => setBlocking(false)}
+          onSaved={load}
         />
       )}
       {assistantOpen && (
