@@ -12,6 +12,7 @@ import { serviceName } from '@/lib/i18n/service';
 import { durationLabel } from '@/lib/i18n/duration';
 import { MonthCalendar, firstSelectableDate } from './month-calendar';
 import { GroupCard } from './group-card';
+import { treatmentCards } from '@/lib/booking/treatment-cards';
 import { googleCalendarUrl } from '@/lib/calendar/ics';
 import type { WorkingHours } from '@mediterranea/shared/types';
 import {
@@ -107,9 +108,6 @@ export function BookingFlow({
   const customService = services.find((s) => s.bookingGroup === 'custom') ?? null;
   const focusServices = services.filter((s) => s.bookingGroup === 'focus');
   const indibaServices = services.filter((s) => s.bookingGroup === 'indiba');
-  const ungrouped = services.filter(
-    (s) => !['custom', 'focus', 'indiba'].includes(s.bookingGroup)
-  );
 
   const STEPS: { key: Step; label: string }[] = [
     { key: 'type', label: b.stepTreatment },
@@ -374,56 +372,55 @@ export function BookingFlow({
               <p className="text-white-50">{b.noTreatments}</p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
-                {ungrouped.map((s) => (
-                  <GroupCard
-                    key={s.id}
-                    title={svcName(s)}
-                    hint={durationLabel(s.durationMinutes, locale)}
-                    description={locale === 'es' && s.descriptionEs ? s.descriptionEs : s.description}
-                    price={s.price}
-                    firstPrice={s.firstVisitPrice}
-                    firstLabel={copy.firstVisit}
-                    badge={s.temporary ? copy.seasonal : undefined}
-                    onClick={() => void chooseService(s)}
-                  />
-                ))}
-                {customService && (
-                  <GroupCard
-                    title={svcName(customService)}
-                    hint={copy.customDuration}
-                    description={svcName(customService) === copy.customName ? copy.customDesc : customService.description}
-                    price={customService.price}
-                    firstPrice={customService.firstVisitPrice}
-                    firstLabel={copy.firstVisit}
-                    onClick={() => chooseGroup('custom')}
-                  />
-                )}
-                {indibaServices.length > 0 && (
-                  <GroupCard
-                    title={copy.indibaName}
-                    hint={copy.indibaDuration}
-                    description={copy.indibaDesc}
-                    price={minPrice(indibaServices)}
-                    firstPrice={minFirstPrice(indibaServices)}
-                    from={priceVaries(indibaServices)}
-                    fromLabel={b.from}
-                    firstLabel={copy.firstVisit}
-                    onClick={() => chooseGroup('indiba')}
-                  />
-                )}
-                {focusServices.length > 0 && (
-                  <GroupCard
-                    title={copy.focusName}
-                    hint={copy.focusDuration}
-                    description={copy.focusDesc}
-                    price={minPrice(focusServices)}
-                    firstPrice={minFirstPrice(focusServices)}
-                    from={priceVaries(focusServices)}
-                    fromLabel={b.from}
-                    firstLabel={copy.firstVisit}
-                    onClick={() => chooseGroup('focus')}
-                  />
-                )}
+                {/* Catalogue order; a group sits where its first treatment does. */}
+                {treatmentCards(services).map((card) => {
+                  if (card.kind === 'service') {
+                    const s = card.service;
+                    return (
+                      <GroupCard
+                        key={s.id}
+                        title={svcName(s)}
+                        hint={durationLabel(s.durationMinutes, locale)}
+                        description={locale === 'es' && s.descriptionEs ? s.descriptionEs : s.description}
+                        price={s.price}
+                        firstPrice={s.firstVisitPrice}
+                        firstLabel={copy.firstVisit}
+                        badge={s.temporary ? copy.seasonal : undefined}
+                        onClick={() => void chooseService(s)}
+                      />
+                    );
+                  }
+                  if (card.group === 'custom') {
+                    const s = card.services[0];
+                    return (
+                      <GroupCard
+                        key="custom"
+                        title={svcName(s)}
+                        hint={copy.customDuration}
+                        description={svcName(s) === copy.customName ? copy.customDesc : s.description}
+                        price={s.price}
+                        firstPrice={s.firstVisitPrice}
+                        firstLabel={copy.firstVisit}
+                        onClick={() => chooseGroup('custom')}
+                      />
+                    );
+                  }
+                  const focus = card.group === 'focus';
+                  return (
+                    <GroupCard
+                      key={card.group}
+                      title={focus ? copy.focusName : copy.indibaName}
+                      hint={focus ? copy.focusDuration : copy.indibaDuration}
+                      description={focus ? copy.focusDesc : copy.indibaDesc}
+                      price={minPrice(card.services)}
+                      firstPrice={minFirstPrice(card.services)}
+                      from={priceVaries(card.services)}
+                      fromLabel={b.from}
+                      firstLabel={copy.firstVisit}
+                      onClick={() => chooseGroup(card.group)}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
