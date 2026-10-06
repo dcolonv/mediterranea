@@ -71,10 +71,10 @@ export const STATUS_STYLES: Record<AppointmentStatus, StatusStyle> = {
   'no-show': { label: 'No Show', color: '#6b6b6b', tint: 'rgba(107,107,107,0.12)' },
 };
 
+/** Statuses staff can set. No check-in step: appointments go straight to completed. */
 export const APPOINTMENT_STATUSES: AppointmentStatus[] = [
   'pending',
   'confirmed',
-  'checked-in',
   'completed',
   'cancelled',
   'no-show',

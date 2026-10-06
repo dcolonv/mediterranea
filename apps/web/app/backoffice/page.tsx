@@ -14,8 +14,8 @@ export default function BackofficePage() {
         </div>
         <h1 className="font-serif text-2xl text-white sm:text-3xl">Upcoming appointments</h1>
         <p className="mt-2 hidden text-white-50 sm:block">
-          Everything from today onwards, soonest first. Select one to confirm, check in, reschedule
-          or leave a note.
+          Everything from today onwards, soonest first. Select one to complete, reschedule or leave a
+          note.
         </p>
       </div>
 
