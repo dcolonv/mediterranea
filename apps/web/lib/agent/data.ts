@@ -30,6 +30,7 @@ import type {
   AppointmentStatus,
   StudioSettings,
 } from '@mediterranea/shared/types';
+import type { TeamEvent } from '@/lib/notifications/team-templates';
 
 /** Statuses that occupy a staff member / room on the calendar. */
 const ACTIVE_STATUSES: AppointmentStatus[] = ['pending', 'confirmed', 'checked-in', 'completed'];
@@ -55,6 +56,19 @@ function malagaNow(): { date: string; minutes: number } {
 export function isPastInStudio(date: string, time: string): boolean {
   const now = malagaNow();
   return date < now.date || (date === now.date && timeToMinutes(time) < now.minutes);
+}
+
+/**
+ * Email the team about an appointment change. Best-effort; the dynamic import
+ * avoids a module cycle (the team mailer reads staff and rooms from here).
+ */
+async function tellTeam(event: TeamEvent, by?: string): Promise<void> {
+  try {
+    const { notifyTeam } = await import('@/lib/notifications/team');
+    await notifyTeam(event, by);
+  } catch {
+    /* best-effort */
+  }
 }
 
 /** Read studio settings, falling back to defaults when unset. */
@@ -505,6 +519,9 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
     }
   }
 
+  const created = await getAppointment(newRef.id);
+  if (created) await tellTeam({ kind: 'created', appt: created });
+
   return { success: true, id: newRef.id };
 }
 
@@ -519,9 +536,11 @@ export interface UpdateAppointmentInput {
   notes?: string;
 }
 
+/** @param by Who made the change, for the team email when the request can't tell (e.g. "the client"). */
 export async function updateAppointment(
   id: string,
-  patch: UpdateAppointmentInput
+  patch: UpdateAppointmentInput,
+  by?: string
 ): Promise<WriteResult> {
   const db = getAdminDb();
   const existing = await getAppointment(id);
@@ -611,6 +630,9 @@ export async function updateAppointment(
     return { success: false, error: 'Failed to update the appointment.' };
   }
 
+  const updated = await getAppointment(id);
+  if (updated) await tellTeam({ kind: 'updated', before: existing, after: updated }, by);
+
   // Both cancelling and rejecting notify the customer the appointment won't happen.
   const declined = status === 'cancelled' || status === 'rejected';
   const wasDeclined = existing.status === 'cancelled' || existing.status === 'rejected';
@@ -634,12 +656,17 @@ export async function updateAppointment(
   return { success: true, id };
 }
 
-export async function deleteAppointment(id: string): Promise<WriteResult> {
+/** @param by Who deleted it, for the team email when the request can't tell. */
+export async function deleteAppointment(id: string, by?: string): Promise<WriteResult> {
+  let existing: Appointment | null;
   try {
+    // Read it first: the team email describes what was deleted.
+    existing = await getAppointment(id);
     await getAdminDb().collection('appointments').doc(id).delete();
-    return { success: true, id };
   } catch (e) {
     console.error('deleteAppointment failed:', e);
     return { success: false, error: 'Failed to delete the appointment.' };
   }
+  if (existing) await tellTeam({ kind: 'deleted', appt: existing }, by);
+  return { success: true, id };
 }
