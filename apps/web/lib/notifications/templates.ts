@@ -3,6 +3,7 @@
  * bodies. Kept free of provider concerns so templates are easy to review.
  */
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
+import { formatPrice } from '@mediterranea/shared/utils';
 
 const STUDIO = 'Mediterránea Face Studio';
 
@@ -19,6 +20,20 @@ export interface NotificationContext {
   locale?: NotificationLocale;
   /** Signed link letting the client reschedule or cancel. Omitted if unavailable. */
   manageUrl?: string;
+  /** Set when the appointment is a session of a prepaid pass (name in the client's language). */
+  pass?: { name: string; session: number; sessions: number; price: number };
+}
+
+/** "Session 2 of 5 of your Pack 5 INDIBA Sessions", plus how to pay on the first session. */
+function passNote(ctx: NotificationContext): string {
+  const p = ctx.pass;
+  if (!p) return '';
+  if (ctx.locale === 'es') {
+    const pay = p.session === 1 ? ` El pack cuesta ${formatPrice(p.price)} y se paga en el estudio.` : '';
+    return `Es la sesión ${p.session} de ${p.sessions} de tu ${p.name}.${pay}`;
+  }
+  const pay = p.session === 1 ? ` The pack is ${formatPrice(p.price)}, paid at the studio.` : '';
+  return `This is session ${p.session} of ${p.sessions} of your ${p.name}.${pay}`;
 }
 
 export interface RenderedMessage {
@@ -90,6 +105,10 @@ export function bookingConfirmed(ctx: NotificationContext): RenderedMessage {
     ? `<p style="font-size:12px;color:#8a8378">${ctx.policyText}</p>`
     : '';
 
+  const pass = passNote(ctx);
+  const passHtml = pass ? `<p>${pass}</p>` : '';
+  const passText = pass ? ` ${pass}` : '';
+
   if (ctx.locale === 'es') {
     return {
       subject: `Tu cita en ${STUDIO} está confirmada`,
@@ -98,11 +117,12 @@ export function bookingConfirmed(ctx: NotificationContext): RenderedMessage {
         `<p>Hola ${ctx.clientName}:</p>
          <p>Tu cita está reservada:</p>
          <p style="font-size:16px"><strong>${summary}</strong></p>
+         ${passHtml}
          ${manageActions(ctx)}
          ${policy}
          <p>Te esperamos.</p>`
       ),
-      text: `Hola ${ctx.clientName}, tu cita en ${STUDIO} está confirmada: ${summary}.${
+      text: `Hola ${ctx.clientName}, tu cita en ${STUDIO} está confirmada: ${summary}.${passText}${
         ctx.policyText ? ` ${ctx.policyText}` : ''
       }${manageLine(ctx)}`,
       sms: `${STUDIO}: tu cita está confirmada — ${summary}.`,
@@ -116,11 +136,12 @@ export function bookingConfirmed(ctx: NotificationContext): RenderedMessage {
       `<p>Hi ${ctx.clientName},</p>
        <p>Your appointment is booked:</p>
        <p style="font-size:16px"><strong>${summary}</strong></p>
+       ${passHtml}
        ${manageActions(ctx)}
        ${policy}
        <p>We look forward to seeing you.</p>`
     ),
-    text: `Hi ${ctx.clientName}, your appointment at ${STUDIO} is confirmed: ${summary}.${
+    text: `Hi ${ctx.clientName}, your appointment at ${STUDIO} is confirmed: ${summary}.${passText}${
       ctx.policyText ? ` ${ctx.policyText}` : ''
     }${manageLine(ctx)}`,
     sms: `${STUDIO}: your appointment is confirmed — ${summary}.`,

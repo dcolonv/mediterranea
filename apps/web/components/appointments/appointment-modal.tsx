@@ -1,16 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Button, Badge, Textarea, Select } from '@/components/ui';
 import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
-import { formatDuration } from '@mediterranea/shared/utils';
+import { formatDuration, formatPrice } from '@mediterranea/shared/utils';
 import {
   updateAppointmentStatus,
   deleteAppointment,
   saveAppointmentNotes,
 } from '@/actions/appointments';
-import { getBackofficeSlots, getSchedulingRefs, rescheduleAppointment } from '@/actions/scheduling';
+import {
+  getAppointmentPassInfo,
+  getBackofficeSlots,
+  getSchedulingRefs,
+  rescheduleAppointment,
+} from '@/actions/scheduling';
+import type { AppointmentPass } from '@/lib/agent/data';
 import { SlotPicker, type BackofficeSlot } from '@/components/scheduling/slot-picker';
 import type { Appointment, AppointmentStatus, Service, Staff, Room } from '@mediterranea/shared/types';
 
@@ -89,6 +95,13 @@ export function AppointmentModal({
   const [chosenRoom, setChosenRoom] = useState('');
   const [saving, setSaving] = useState(false);
   const [eError, setEError] = useState<string | null>(null);
+
+  // The pass this appointment is a session of, if any.
+  const [pass, setPass] = useState<AppointmentPass | null>(null);
+  useEffect(() => {
+    if (!appointment.passId) return;
+    getAppointmentPassInfo(appointment.id).then(setPass);
+  }, [appointment.id, appointment.passId]);
 
   const [notes, setNotes] = useState(appointment.notes ?? '');
   const [savedNotes, setSavedNotes] = useState(appointment.notes ?? '');
@@ -228,7 +241,8 @@ export function AppointmentModal({
         ...(refs.services.some((sv) => sv.id === appointment.serviceId)
           ? []
           : [{ value: appointment.serviceId, label: appointment.serviceName }]),
-        ...refs.services.map((sv) => ({
+        // An appointment is one session, so passes aren't offered as its treatment.
+        ...refs.services.filter((sv) => !sv.bundle).map((sv) => ({
           value: sv.id,
           label: `${sv.name} (${formatDuration(sv.durationMinutes)})`,
         })),
@@ -427,6 +441,24 @@ export function AppointmentModal({
               </p>
             </div>
           </div>
+
+          {pass && (
+            <div className="text-sm">
+              <span className="text-white-30 text-xs uppercase tracking-wider">Pack</span>
+              <p className="text-white mt-1">
+                {pass.name}
+                {pass.session ? ` · session ${pass.session} of ${pass.sessions}` : ''}
+              </p>
+              <p className="mt-0.5 text-xs text-white-50">
+                {pass.used} used · {pass.booked} booked · {pass.remaining} left to book
+              </p>
+              {pass.session === 1 && (
+                <p className="mt-1 text-xs text-gold">
+                  First session: {formatPrice(pass.price)} for the pack, paid at the studio.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Treatment notes (editable) */}
           <div className="text-sm">

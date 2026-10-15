@@ -58,7 +58,10 @@ export async function getDashboard(): Promise<
     const active = (a: Appointment) => a.status !== 'cancelled' && a.status !== 'no-show';
     const priceOf = new Map((services as Service[]).map((s) => [s.id, s.price]));
     const revenueOf = (list: Appointment[]) =>
-      list.filter((a) => a.status === 'completed').reduce((sum, a) => sum + (priceOf.get(a.serviceId) ?? 0), 0);
+      list
+        .filter((a) => a.status === 'completed')
+        // A pass session carries its own price (its share of the pass).
+        .reduce((sum, a) => sum + (a.price ?? priceOf.get(a.serviceId) ?? 0), 0);
 
     // Top treatment this month (non-cancelled).
     const counts = new Map<string, number>();

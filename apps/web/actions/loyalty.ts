@@ -34,9 +34,9 @@ export async function awardLoyaltyForCompletion(appointmentId: string): Promise<
     }
     if (!customerRef) return;
 
-    // Points = round(service price × earn rate).
+    // Points = round(price × earn rate); a pass session is worth its share of the pass.
     const service = await data.getService(appt.serviceId);
-    const price = service?.price ?? 0;
+    const price = (appt.price as number | undefined) ?? service?.price ?? 0;
     const points = Math.round(price * loyalty.earnPointsPerEuro);
     if (points <= 0) {
       await apptRef.update({ loyaltyAwarded: true });

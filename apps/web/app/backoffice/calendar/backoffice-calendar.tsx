@@ -133,9 +133,9 @@ export function BackofficeCalendar() {
         </div>
         <p className="mt-1 text-sm text-white truncate">{apt.clientName}</p>
         <p className="text-xs text-white-50 truncate">{apt.serviceName}</p>
-        {(staffName(apt.staffId) || roomName(apt.roomId)) && (
+        {(staffName(apt.staffId) || roomName(apt.roomId) || apt.passId) && (
           <p className="mt-1 text-[11px] text-white-30 truncate">
-            {[staffName(apt.staffId), roomName(apt.roomId)].filter(Boolean).join(' · ')}
+            {[staffName(apt.staffId), roomName(apt.roomId), apt.passId && 'Pack'].filter(Boolean).join(' · ')}
           </p>
         )}
       </button>

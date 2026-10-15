@@ -50,7 +50,8 @@ export async function getReports(
       counts.total++;
       if (a.status === 'completed') {
         counts.completed++;
-        const price = priceOf.get(a.serviceId) ?? 0;
+        // A pass session carries its own price (its share of the pass).
+        const price = a.price ?? priceOf.get(a.serviceId) ?? 0;
         revenue += price;
         if (a.staffId) {
           const s = perStaff.get(a.staffId) ?? { completed: 0, revenue: 0 };

@@ -14,6 +14,7 @@ export function GroupCard({
   firstLabel,
   badge,
   onClick,
+  className = '',
 }: {
   title: string;
   hint: string;
@@ -26,11 +27,13 @@ export function GroupCard({
   /** Optional tag shown above the title (e.g. "Seasonal"). */
   badge?: string;
   onClick: () => void;
+  /** Extra classes for the card, e.g. spanning grid columns. */
+  className?: string;
 }) {
   return (
     <button
       onClick={onClick}
-      className="group flex h-full flex-col border border-white-10 p-6 text-left transition-colors hover:border-gold/40"
+      className={`group flex h-full flex-col border border-white-10 p-6 text-left transition-colors hover:border-gold/40 ${className}`}
     >
       {badge && (
         <span className="mb-2 inline-flex w-fit border border-gold/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-gold">

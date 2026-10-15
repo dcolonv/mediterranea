@@ -6,7 +6,7 @@
  * appointments run inside a Firestore transaction with an overlap check, so the
  * agent can never create a double-booking even if the model reasons incorrectly.
  */
-import { Timestamp, type DocumentSnapshot } from 'firebase-admin/firestore';
+import { Timestamp, FieldValue, type DocumentSnapshot, type Transaction } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { upsertCustomerForAppointment } from '@/actions/customers';
 import { DEFAULT_STUDIO_SETTINGS, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
@@ -22,6 +22,7 @@ import {
   type BlockedTime,
   type FixedSlot,
 } from '@/lib/agent/availability';
+import { passUsage, sessionNumber, sessionPrice, type PassUsage } from '@/lib/agent/passes';
 import type {
   Service,
   Staff,
@@ -29,6 +30,7 @@ import type {
   Appointment,
   AppointmentStatus,
   StudioSettings,
+  ServicePass,
 } from '@mediterranea/shared/types';
 import type { TeamEvent } from '@/lib/notifications/team-templates';
 
@@ -109,6 +111,11 @@ export async function getService(idOrSlug: string): Promise<Service | null> {
   return bySlug.empty ? null : docData<Service>(bySlug.docs[0]);
 }
 
+/** The treatment a booking is actually for: a pass books sessions of another treatment. */
+async function treatmentOf(service: Service): Promise<Service | null> {
+  return service.bundle ? getService(service.bundle.serviceId) : service;
+}
+
 // ── Staff ─────────────────────────────────────────────────────────────────────
 
 export async function listStaff(activeOnly = true): Promise<Staff[]> {
@@ -133,9 +140,10 @@ export async function getStaffServices(staffId: string): Promise<Service[]> {
 /** Active staff qualified for a given service. */
 export async function getServiceStaff(serviceId: string): Promise<Staff[]> {
   const service = await getService(serviceId);
-  if (!service) return [];
+  const treatment = service && (await treatmentOf(service));
+  if (!treatment) return [];
   const staff = await listStaff(true);
-  return staff.filter((s) => s.serviceIds.includes(service.id));
+  return staff.filter((s) => s.serviceIds.includes(treatment.id));
 }
 
 // ── Appointments (calendar) ─────────────────────────────────────────────────────
@@ -170,6 +178,36 @@ export async function listAppointments(filters: AppointmentFilters = {}): Promis
 export async function getAppointment(id: string): Promise<Appointment | null> {
   const doc = await getAdminDb().collection('appointments').doc(id).get();
   return doc.exists ? docData<Appointment>(doc) : null;
+}
+
+export interface AppointmentPass extends PassUsage {
+  passId: string;
+  name: string;
+  nameEs?: string;
+  price: number;
+  /** Which session of the pass this appointment is; null once it no longer counts. */
+  session: number | null;
+}
+
+/** The pass an appointment is taken from: which session it is and what's left. */
+export async function getAppointmentPass(appt: Pick<Appointment, 'id' | 'passId'>): Promise<AppointmentPass | null> {
+  if (!appt.passId) return null;
+  const db = getAdminDb();
+  const [passSnap, apptsSnap] = await Promise.all([
+    db.collection('passes').doc(appt.passId).get(),
+    db.collection('appointments').where('passId', '==', appt.passId).get(),
+  ]);
+  if (!passSnap.exists) return null;
+  const p = passSnap.data() as ServicePass;
+  const appts = apptsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Appointment, 'id'>) }));
+  return {
+    passId: appt.passId,
+    name: p.bundleName,
+    nameEs: p.bundleNameEs,
+    price: p.price,
+    session: sessionNumber(appts, appt.id),
+    ...passUsage(p.sessions, appts),
+  };
 }
 
 /**
@@ -234,9 +272,12 @@ async function evaluateDay(input: {
 }): Promise<DaySlotsResult | { error: string }> {
   const service = await getService(input.serviceId);
   if (!service) return { error: `No service found for "${input.serviceId}".` };
+  // A pass is booked as a session of its treatment.
+  const treatment = await treatmentOf(service);
+  if (!treatment) return { error: `"${service.name}" is a pack for a treatment that no longer exists.` };
 
   // Calendar block length can exceed the treatment's display duration.
-  const duration = service.blockMinutes || service.durationMinutes;
+  const duration = treatment.blockMinutes || treatment.durationMinutes;
   const weekday = weekdayOf(input.date);
   const settings = await getStudioSettings();
 
@@ -262,7 +303,7 @@ async function evaluateDay(input: {
   if (input.staffId) staffList = staffList.filter((s) => s.id === input.staffId);
 
   const rooms = (await listRooms(true)).filter(
-    (r) => !service.roomType || r.type === service.roomType
+    (r) => !treatment.roomType || r.type === treatment.roomType
   );
 
   const dayAppts = (await listAppointments({ date: input.date }))
@@ -399,9 +440,29 @@ export interface CreateAppointmentInput {
   locale?: 'en' | 'es';
 }
 
+/** The pass a new booking was taken from (or opened). */
+export interface PassUse {
+  passId: string;
+  name: string;
+  nameEs?: string;
+  /** Which session of the pass this booking is. */
+  session: number;
+  sessions: number;
+  /** Price of the whole pass, paid at the studio. */
+  price: number;
+  /** True when this booking bought the pass. */
+  opened: boolean;
+}
+
 export type WriteResult =
-  | { success: true; id: string }
+  | { success: true; id: string; pass?: PassUse }
   | { success: false; error: string; conflicts?: { staff?: boolean; room?: boolean } };
+
+/** Appointments taken from a pass, read inside a transaction. */
+async function passAppointments(tx: Transaction, passId: string) {
+  const snap = await tx.get(getAdminDb().collection('appointments').where('passId', '==', passId));
+  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Appointment, 'id'>) }));
+}
 
 class ConflictError extends Error {
   constructor(public staff: boolean, public room: boolean) {
@@ -412,8 +473,14 @@ class ConflictError extends Error {
 export async function createAppointment(input: CreateAppointmentInput): Promise<WriteResult> {
   const db = getAdminDb();
 
-  const service = await getService(input.serviceId);
-  if (!service) return { success: false, error: `No service found for "${input.serviceId}".` };
+  const booked = await getService(input.serviceId);
+  if (!booked) return { success: false, error: `No service found for "${input.serviceId}".` };
+  // Booking a pass books its first session; the appointment is for the treatment.
+  const service = await treatmentOf(booked);
+  if (!service) {
+    return { success: false, error: `"${booked.name}" is a pack for a treatment that no longer exists.` };
+  }
+  const bundle = booked.bundle ? booked : null;
 
   const staff = await getStaff(input.staffId);
   if (!staff || !staff.active) return { success: false, error: 'Staff member not found or inactive.' };
@@ -443,9 +510,12 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
   });
 
   const newRef = db.collection('appointments').doc();
+  const newPassRef = bundle ? db.collection('passes').doc() : null;
+  let pass: PassUse | undefined;
 
   try {
     await db.runTransaction(async (tx) => {
+      pass = undefined; // the transaction may retry
       const daySnap = await tx.get(
         db
           .collection('appointments')
@@ -463,7 +533,56 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
       });
       if (staffClash || roomClash) throw new ConflictError(staffClash, roomClash);
 
+      // Which pass this session comes from: a new one when buying the pass,
+      // otherwise the client's oldest pass for this treatment with a session free.
+      const newAppt = { id: newRef.id, status: input.status ?? ('confirmed' as AppointmentStatus), appointmentDate: input.date, appointmentTime: input.time };
+      if (bundle && newPassRef) {
+        pass = {
+          passId: newPassRef.id,
+          name: bundle.name,
+          nameEs: bundle.nameEs,
+          session: 1,
+          sessions: bundle.bundle!.sessions,
+          price: bundle.price,
+          opened: true,
+        };
+      } else if (customerId) {
+        const passesSnap = await tx.get(
+          db.collection('passes').where('customerId', '==', customerId).where('serviceId', '==', service.id)
+        );
+        const passes = passesSnap.docs
+          .map((d) => ({ id: d.id, ...(d.data() as Omit<ServicePass, 'id'>) }))
+          .sort((a, b) => a.createdAt.toMillis() - b.createdAt.toMillis());
+        for (const p of passes) {
+          const appts = await passAppointments(tx, p.id);
+          if (passUsage(p.sessions, appts).remaining === 0) continue;
+          pass = {
+            passId: p.id,
+            name: p.bundleName,
+            nameEs: p.bundleNameEs,
+            session: sessionNumber([...appts, newAppt], newRef.id) ?? appts.length + 1,
+            sessions: p.sessions,
+            price: p.price,
+            opened: false,
+          };
+          break;
+        }
+      }
+
       const now = Timestamp.now();
+      if (bundle && newPassRef && pass) {
+        tx.set(newPassRef, {
+          bundleId: bundle.id,
+          bundleName: bundle.name,
+          bundleNameEs: bundle.nameEs ?? '',
+          serviceId: service.id,
+          sessions: pass.sessions,
+          price: bundle.price,
+          customerId: customerId ?? null,
+          clientName: input.clientName,
+          createdAt: now,
+        });
+      }
       tx.set(newRef, {
         serviceId: service.id,
         serviceName: service.name,
@@ -484,6 +603,8 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         notes: input.notes ?? '',
         // Bookings are auto-confirmed — no manual backoffice confirmation step.
         status: input.status ?? ('confirmed' as AppointmentStatus),
+        // A pass session is worth its share of the pass, not the list price.
+        ...(pass && { passId: pass.passId, price: sessionPrice(pass.price, pass.sessions) }),
         createdAt: now,
         updatedAt: now,
       });
@@ -522,7 +643,7 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
   const created = await getAppointment(newRef.id);
   if (created) await tellTeam({ kind: 'created', appt: created });
 
-  return { success: true, id: newRef.id };
+  return { success: true, id: newRef.id, ...(pass && { pass }) };
 }
 
 export interface UpdateAppointmentInput {
@@ -612,6 +733,8 @@ export async function updateAppointment(
           durationMinutes: blockMinutes,
           serviceMinutes: newService.durationMinutes,
         }),
+        // A different treatment is no longer a session of the pass.
+        ...(newService && existing.passId && { passId: FieldValue.delete(), price: FieldValue.delete() }),
         status,
         ...(patch.notes !== undefined && { notes: patch.notes }),
         updatedAt: Timestamp.now(),
