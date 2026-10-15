@@ -12,7 +12,7 @@ import { serviceName } from '@/lib/i18n/service';
 import { durationLabel } from '@/lib/i18n/duration';
 import { MonthCalendar, firstSelectableDate } from './month-calendar';
 import { GroupCard } from './group-card';
-import { treatmentCards } from '@/lib/booking/treatment-cards';
+import { treatmentCards, spanIfLoneLast } from '@/lib/booking/treatment-cards';
 import { googleCalendarUrl } from '@/lib/calendar/ics';
 import type { WorkingHours } from '@mediterranea/shared/types';
 import {
@@ -388,11 +388,13 @@ export function BookingFlow({
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* Catalogue order; a group sits where its first treatment does. */}
-                {treatmentCards(services).map((card) => {
+                {treatmentCards(services).map((card, i, all) => {
+                  const wide = spanIfLoneLast(i, all.length);
                   if (card.kind === 'service') {
                     const s = card.service;
                     return (
                       <GroupCard
+                        className={wide}
                         key={s.id}
                         title={svcName(s)}
                         hint={
@@ -413,6 +415,7 @@ export function BookingFlow({
                     const s = card.services[0];
                     return (
                       <GroupCard
+                        className={wide}
                         key="custom"
                         title={svcName(s)}
                         hint={copy.customDuration}
@@ -427,6 +430,7 @@ export function BookingFlow({
                   const focus = card.group === 'focus';
                   return (
                     <GroupCard
+                      className={wide}
                       key={card.group}
                       title={focus ? copy.focusName : copy.indibaName}
                       hint={focus ? copy.focusDuration : copy.indibaDuration}
@@ -452,11 +456,11 @@ export function BookingFlow({
               {group === 'focus' ? b.chooseFocus : b.chooseIndiba}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              {(group === 'focus' ? focusServices : indibaServices).map((s) => (
+              {(group === 'focus' ? focusServices : indibaServices).map((s, i, all) => (
                 <button
                   key={s.id}
                   onClick={() => void chooseService(s)}
-                  className="flex flex-col border border-white-10 p-5 text-left transition-colors hover:border-gold/40"
+                  className={`flex flex-col border border-white-10 p-5 text-left transition-colors hover:border-gold/40 ${spanIfLoneLast(i, all.length)}`}
                 >
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                     <span className="font-serif text-lg text-white">{svcName(s)}</span>

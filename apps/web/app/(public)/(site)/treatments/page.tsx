@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button, PriceTag } from '@/components/ui';
 import { getBookingServices, type PublicService } from '@/actions/public-booking';
-import { treatmentCards } from '@/lib/booking/treatment-cards';
+import { treatmentCards, spanIfLoneLast } from '@/lib/booking/treatment-cards';
 import { getServerDictionary } from '@/lib/i18n/server';
 import { durationLabel } from '@/lib/i18n/duration';
 import { serviceName, serviceDescription } from '@/lib/i18n/service';
@@ -76,10 +76,10 @@ export default async function TreatmentsPage() {
   });
   const hasSeasonal = services.some((sv) => !sv.bookingGroup && sv.temporary);
 
-  const card = (c: Card) => (
+  const card = (c: Card, i: number) => (
     <div
       key={c.name}
-      className="group flex h-full min-w-0 flex-col border border-white-10 bg-dark-800/40 p-6 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70 sm:p-8"
+      className={`group flex h-full min-w-0 flex-col border border-white-10 bg-dark-800/40 p-6 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70 sm:p-8 ${spanIfLoneLast(i, cards.length)}`}
     >
       <div className="mb-4 flex flex-wrap items-center gap-y-2 text-xs uppercase tracking-wider text-white-30">
         <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
@@ -137,8 +137,8 @@ export default async function TreatmentsPage() {
           </p>
         </div>
 
-        {/* Two columns for an even number of cards (e.g. four), three across for three. */}
-        <div className={`grid gap-6 ${cards.length % 2 === 0 ? 'sm:grid-cols-2' : 'md:grid-cols-3'}`}>
+        {/* Two columns; an odd last card spans both. */}
+        <div className="grid gap-6 sm:grid-cols-2">
           {cards.map(card)}
         </div>
 

@@ -5,6 +5,10 @@ export type TreatmentCard<S> =
   | { kind: 'service'; service: S }
   | { kind: 'group'; group: BookingGroup; services: S[] };
 
+/** On a two-column grid, an odd last card spans both columns instead of sitting alone. */
+export const spanIfLoneLast = (index: number, count: number) =>
+  count % 2 === 1 && index === count - 1 ? 'sm:col-span-2' : '';
+
 const GROUPS: readonly string[] = ['custom', 'focus', 'indiba'] satisfies BookingGroup[];
 
 /**
