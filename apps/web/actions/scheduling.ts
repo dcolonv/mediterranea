@@ -42,6 +42,12 @@ export async function getCalendarAppointments(filters: {
   }
 }
 
+/** The pass an appointment is taken from, if any: which session it is and what's left. */
+export async function getAppointmentPassInfo(appointmentId: string) {
+  const appt = await data.getAppointment(appointmentId);
+  return appt ? data.getAppointmentPass(appt) : null;
+}
+
 /** Practitioners' time off in a date range, for showing blocked time on the calendar. */
 export async function getCalendarBlocks(filters: { startDate: string; endDate: string; staffId?: string }) {
   try {

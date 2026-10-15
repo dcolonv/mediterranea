@@ -24,6 +24,15 @@ export const serviceSchema = z.object({
   roomType: z.string().optional().default(''),
   isActive: z.boolean().optional().default(true),
   displayOrder: z.number().int().min(0).optional().default(0),
+  /** Sold as a pass of `sessions` sessions of another treatment; null = a single treatment. */
+  bundle: z
+    .object({
+      serviceId: z.string().min(1, 'Choose the treatment the pack is for'),
+      sessions: z.number().int().min(2, 'A pack needs at least 2 sessions').max(50),
+    })
+    .nullable()
+    .optional()
+    .default(null),
 });
 
 export type ServiceFormData = z.infer<typeof serviceSchema>;

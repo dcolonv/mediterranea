@@ -5,7 +5,7 @@ import { LuChevronLeft } from 'react-icons/lu';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button, Input, Textarea, PriceTag } from '@/components/ui';
-import { formatDuration } from '@mediterranea/shared/utils';
+import { formatDuration, formatPrice } from '@mediterranea/shared/utils';
 import { BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import { useLang } from '@/components/i18n/language-provider';
 import { serviceName } from '@/lib/i18n/service';
@@ -22,6 +22,7 @@ import {
   type PublicService,
   type PublicStaff,
 } from '@/actions/public-booking';
+import type { PassUse } from '@/lib/agent/data';
 
 type Step = 'type' | 'sub' | 'practitioner' | 'time' | 'details' | 'done';
 type Group = 'custom' | 'focus' | 'indiba';
@@ -137,6 +138,8 @@ export function BookingFlow({
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The pass this booking opened or used, for the confirmation.
+  const [passUse, setPassUse] = useState<PassUse | null>(null);
 
   const svcName = (s: PublicService) => serviceName(s, locale);
   const staffName = (id: string) => staffList.find((s) => s.id === id)?.name;
@@ -243,6 +246,7 @@ export function BookingFlow({
     });
     setSubmitting(false);
     if (res.success) {
+      setPassUse(res.pass ?? null);
       setStep('done');
       return;
     }
@@ -288,6 +292,7 @@ export function BookingFlow({
     setPhone(prefill?.phone ?? '');
     setNotes('');
     setError(null);
+    setPassUse(null);
     setStep(initialStep);
   }
 
@@ -307,6 +312,16 @@ export function BookingFlow({
           <br />
           {format(new Date(`${date}T00:00:00`), 'EEEE, d MMMM yyyy', { locale: dfLocale })} {b.at} {time}
         </p>
+        {passUse && (
+          <p className="mt-3 text-sm text-gold">
+            {b.passSession(
+              passUse.session,
+              passUse.sessions,
+              (locale === 'es' && passUse.nameEs) || passUse.name
+            )}{' '}
+            {passUse.session === 1 && b.passPay(formatPrice(passUse.price))}
+          </p>
+        )}
         <p className="mt-3 text-sm text-white-50">
           {b.confirmationPrefix}
           {email}
@@ -380,7 +395,11 @@ export function BookingFlow({
                       <GroupCard
                         key={s.id}
                         title={svcName(s)}
-                        hint={durationLabel(s.durationMinutes, locale)}
+                        hint={
+                          s.bundleSessions
+                            ? b.passHint(s.bundleSessions, durationLabel(s.durationMinutes, locale))
+                            : durationLabel(s.durationMinutes, locale)
+                        }
                         description={locale === 'es' && s.descriptionEs ? s.descriptionEs : s.description}
                         price={s.price}
                         firstPrice={s.firstVisitPrice}

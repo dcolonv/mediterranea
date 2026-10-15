@@ -33,6 +33,28 @@ export interface Service {
   displayOrder: number;
   /** Room type this treatment requires; when unset, any active room qualifies. */
   roomType?: string;
+  /**
+   * Sold as a pass: `sessions` sessions of another treatment for `price`.
+   * Booking it books the first session and opens a pass for the client.
+   */
+  bundle?: { serviceId: string; sessions: number } | null;
+  createdAt: Timestamp;
+}
+
+/** A client's prepaid pass of sessions, opened by booking a bundle service. */
+export interface ServicePass {
+  id: string;
+  /** The bundle service that was booked. */
+  bundleId: string;
+  bundleName: string;
+  bundleNameEs?: string;
+  /** The treatment each session is. */
+  serviceId: string;
+  sessions: number;
+  /** What the whole pass costs; paid at the studio. */
+  price: number;
+  customerId: string | null;
+  clientName: string;
   createdAt: Timestamp;
 }
 
@@ -119,6 +141,10 @@ export interface Appointment {
   status: AppointmentStatus;
   /** Set once loyalty points have been awarded for this appointment's completion. */
   loyaltyAwarded?: boolean;
+  /** The pass this session is taken from, if any. */
+  passId?: string;
+  /** What this appointment is worth when not the service's list price (a pass session: pass price ÷ sessions). */
+  price?: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

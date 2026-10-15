@@ -8,6 +8,7 @@ import { getAdminDb } from '@/lib/firebase/admin';
 import { getBackofficeAdminEmail } from '@/lib/auth/backoffice';
 import { siteUrl } from '@/lib/site-url';
 import * as data from '@/lib/agent/data';
+import { formatPrice } from '@mediterranea/shared/utils';
 import { sendEmail } from './providers';
 import { teamEmail, type TeamEvent } from './team-templates';
 
@@ -45,10 +46,20 @@ export async function notifyTeam(event: TeamEvent, by?: string): Promise<void> {
       rooms: Object.fromEntries(rooms.map((r) => [r.id, r.name])),
     };
     const source = event.kind === 'created' ? event.appt.source : undefined;
+    const appt = event.kind === 'updated' ? event.after : event.appt;
+    const pass = await data.getAppointmentPass(appt);
     const msg = teamEmail(event, {
       names,
       by: by ?? (source && CREATED_BY[source]) ?? actor ?? 'the backoffice',
       calendarUrl: `${siteUrl()}/backoffice/calendar`,
+      // The first session is when the pass gets paid, so say so.
+      ...(pass && {
+        pass: pass.session
+          ? `${pass.name} · session ${pass.session} of ${pass.sessions}${
+              pass.session === 1 ? ` (${formatPrice(pass.price)} at the studio)` : ''
+            }`
+          : pass.name,
+      }),
     });
     if (!msg) return;
 

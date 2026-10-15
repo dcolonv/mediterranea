@@ -38,6 +38,8 @@ export interface PublicService {
   firstVisitPrice: number;
   /** Limited-time / seasonal treatment. */
   temporary: boolean;
+  /** Sessions in the pass when this is sold as a pass; 0 = a single treatment. */
+  bundleSessions: number;
 }
 
 export interface PublicStaff {
@@ -59,6 +61,7 @@ function toPublicService(s: {
   price: number;
   firstVisitPrice?: number;
   temporary?: boolean;
+  bundle?: { sessions: number } | null;
 }): PublicService {
   return {
     id: s.id,
@@ -73,6 +76,7 @@ function toPublicService(s: {
     price: s.price,
     firstVisitPrice: s.firstVisitPrice ?? 0,
     temporary: s.temporary ?? false,
+    bundleSessions: s.bundle?.sessions ?? 0,
   };
 }
 

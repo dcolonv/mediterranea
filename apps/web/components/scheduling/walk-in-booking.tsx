@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { LuChevronLeft } from 'react-icons/lu';
 import { format } from 'date-fns';
 import { Button, Input, Select, Textarea, PriceTag } from '@/components/ui';
-import { formatDuration } from '@mediterranea/shared/utils';
+import { formatDuration, formatPrice } from '@mediterranea/shared/utils';
 import { BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { durationLabel } from '@/lib/i18n/duration';
@@ -15,6 +15,7 @@ import { treatmentCards } from '@/lib/booking/treatment-cards';
 import { SlotPicker, type BackofficeSlot } from '@/components/scheduling/slot-picker';
 import { getPublicPolicy } from '@/actions/public-booking';
 import { getBackofficeSlots, bookWalkIn, searchClients } from '@/actions/scheduling';
+import type { PassUse } from '@/lib/agent/data';
 import type { Service, Staff, Room, WorkingHours } from '@mediterranea/shared/types';
 
 type Step = 'type' | 'sub' | 'practitioner' | 'time' | 'details' | 'done';
@@ -93,6 +94,8 @@ export function WalkInBooking({
   const [error, setError] = useState<string | null>(null);
   const [emailed, setEmailed] = useState(false);
   const [past, setPast] = useState(false);
+  // The pass this booking opened or used, for the confirmation.
+  const [passUse, setPassUse] = useState<PassUse | null>(null);
 
   const staffName = (id: string) => staff.find((s) => s.id === id)?.name;
   const roomName = (id: string) => rooms.find((r) => r.id === id)?.name ?? id;
@@ -257,6 +260,7 @@ export function WalkInBooking({
     }
     setEmailed(res.emailed);
     setPast(res.past);
+    setPassUse(res.pass ?? null);
     setStep('done');
     onBooked();
   }
@@ -272,6 +276,15 @@ export function WalkInBooking({
   }
 
   // What happens next for the client, shown once the appointment is saved.
+  // Which session of which pass this was; the first one is when the pass is paid.
+  function passMessage(): string | null {
+    if (!passUse) return null;
+    const session = `Session ${passUse.session} of ${passUse.sessions}`;
+    return passUse.opened
+      ? `${session} of a new ${passUse.name}: collect ${formatPrice(passUse.price)} at the studio.`
+      : `${session} of ${name.trim()}’s ${passUse.name}.`;
+  }
+
   function doneMessage(): string {
     if (past) return 'Recorded as a completed visit. Nothing was sent to the client, since it’s in the past.';
     if (emailed) return `A confirmation email is on its way to ${email.trim()}.`;
@@ -290,6 +303,7 @@ export function WalkInBooking({
     setDaySlots(null);
     setSlot(null);
     clearClient();
+    setPassUse(null);
     setNotes('');
     setError(null);
   }
@@ -359,7 +373,11 @@ export function WalkInBooking({
                       <GroupCard
                         key={s.id}
                         title={s.name}
-                        hint={durationLabel(s.durationMinutes, 'en')}
+                        hint={
+                          s.bundle
+                            ? `${s.bundle.sessions} sessions · ${durationLabel(s.durationMinutes, 'en')} each`
+                            : durationLabel(s.durationMinutes, 'en')
+                        }
                         description={s.description}
                         price={s.price}
                         firstPrice={s.firstVisitPrice}
@@ -633,6 +651,7 @@ export function WalkInBooking({
               <br />
               {prettyDate} at {slot.time}
             </p>
+            {passMessage() && <p className="mx-auto mt-4 max-w-md text-sm text-gold">{passMessage()}</p>}
             <p className={`mx-auto mt-4 max-w-md text-sm ${emailed || past ? 'text-white-50' : 'text-gold'}`}>
               {doneMessage()}
             </p>

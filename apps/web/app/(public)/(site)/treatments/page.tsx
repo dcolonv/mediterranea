@@ -61,7 +61,9 @@ export default async function TreatmentsPage() {
       const sv = c.service;
       return {
         name: serviceName(sv, locale),
-        duration: durationLabel(sv.durationMinutes, locale),
+        duration: sv.bundleSessions
+          ? b.passHint(sv.bundleSessions, durationLabel(sv.durationMinutes, locale))
+          : durationLabel(sv.durationMinutes, locale),
         description: serviceDescription(sv, locale),
         pricing: { regular: sv.price, first: sv.firstVisitPrice || sv.price },
         from: false,

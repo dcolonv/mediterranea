@@ -41,9 +41,10 @@ function manageUrlFor(appt: Appointment): string | undefined {
 }
 
 async function buildContext(appt: Appointment): Promise<NotificationContext> {
-  const [staff, settings] = await Promise.all([
+  const [staff, settings, pass] = await Promise.all([
     appt.staffId ? data.getStaff(appt.staffId) : Promise.resolve(null),
     data.getStudioSettings(),
+    data.getAppointmentPass(appt),
   ]);
   // Write to the client in the language they booked in (older records default to English).
   const locale = appt.locale === 'es' ? 'es' : 'en';
@@ -57,6 +58,14 @@ async function buildContext(appt: Appointment): Promise<NotificationContext> {
     staffName: staff?.name ?? null,
     policyText: locale === 'es' ? policyTextEs || policyText : policyText,
     locale,
+    ...(pass?.session && {
+      pass: {
+        name: (locale === 'es' && pass.nameEs) || pass.name,
+        session: pass.session,
+        sessions: pass.sessions,
+        price: pass.price,
+      },
+    }),
   };
 }
 

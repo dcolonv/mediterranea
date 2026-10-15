@@ -31,6 +31,10 @@ interface FormState {
   roomType: string;
   displayOrder: string;
   isActive: boolean;
+  /** Sold as a pass of several sessions of another treatment. */
+  isPass: boolean;
+  passServiceId: string;
+  passSessions: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -49,6 +53,9 @@ const EMPTY_FORM: FormState = {
   roomType: '',
   displayOrder: '0',
   isActive: true,
+  isPass: false,
+  passServiceId: '',
+  passSessions: '5',
 };
 
 function slugify(text: string): string {
@@ -116,6 +123,9 @@ export function BackofficeServices() {
       roomType: svc.roomType ?? '',
       displayOrder: String(svc.displayOrder ?? 0),
       isActive: svc.isActive,
+      isPass: Boolean(svc.bundle),
+      passServiceId: svc.bundle?.serviceId ?? '',
+      passSessions: String(svc.bundle?.sessions ?? 5),
     });
     setSlugEdited(true);
     setQualifiedStaff(new Set(staffForService(svc.id).map((s) => s.id)));
@@ -151,6 +161,10 @@ export function BackofficeServices() {
       setError('Price must be zero or greater.');
       return;
     }
+    if (form.isPass && (!form.passServiceId || !(Number(form.passSessions) >= 2))) {
+      setError('A pack needs its treatment and at least 2 sessions.');
+      return;
+    }
 
     const payload: ServiceFormData = {
       name: form.name.trim(),
@@ -168,6 +182,7 @@ export function BackofficeServices() {
       roomType: form.roomType,
       isActive: form.isActive,
       displayOrder: Number(form.displayOrder) || 0,
+      bundle: form.isPass ? { serviceId: form.passServiceId, sessions: Number(form.passSessions) } : null,
     };
 
     setSaving(true);
@@ -297,7 +312,7 @@ export function BackofficeServices() {
             value={form.bookingGroup}
             onChange={(e) => setForm({ ...form, bookingGroup: e.target.value })}
             options={[
-              { value: '', label: 'Not on booking page' },
+              { value: '', label: 'None — its own card' },
               { value: 'custom', label: 'Custom — books directly' },
               { value: 'focus', label: 'Focus — shown in the Focus submenu' },
               { value: 'indiba', label: 'INDIBA — shown in the INDIBA submenu' },
@@ -342,12 +357,55 @@ export function BackofficeServices() {
             />
           </div>
 
+          {/* Pass of several sessions */}
+          <div className="space-y-4 border border-white-10 bg-dark-900 p-4">
+            <label className="flex items-center gap-3 text-white-70">
+              <input
+                type="checkbox"
+                checked={form.isPass}
+                onChange={(e) => setForm({ ...form, isPass: e.target.checked })}
+                className="h-4 w-4 accent-gold"
+              />
+              <span className="text-sm">Sold as a pack of several sessions</span>
+            </label>
+            {form.isPass && (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Select
+                    id="svc-pass-service"
+                    label="Each session is"
+                    placeholder="Select…"
+                    value={form.passServiceId}
+                    onChange={(e) => setForm({ ...form, passServiceId: e.target.value })}
+                    options={services
+                      .filter((sv) => !sv.bundle && sv.id !== editingId)
+                      .map((sv) => ({ value: sv.id, label: sv.name }))}
+                  />
+                  <Input
+                    id="svc-pass-sessions"
+                    label="Sessions in the pack"
+                    type="number"
+                    value={form.passSessions}
+                    onChange={(e) => setForm({ ...form, passSessions: e.target.value })}
+                  />
+                </div>
+                <p className="text-xs text-white-30">
+                  The price above is for the whole pack, paid at the studio. Booking it books the first
+                  session and opens a pack for the client; their next bookings of that treatment use it
+                  automatically until it runs out.
+                </p>
+              </>
+            )}
+          </div>
+
           {/* Qualifying staff */}
           <div>
             <span className="mb-2 block text-sm font-medium tracking-wide text-white-70">
               Qualified practitioners
             </span>
-            {staff.length === 0 ? (
+            {form.isPass ? (
+              <p className="text-sm text-white-30">A pack uses the practitioners of its treatment.</p>
+            ) : staff.length === 0 ? (
               <p className="text-sm text-white-30">
                 No staff yet. Add practitioners under Staff first.
               </p>

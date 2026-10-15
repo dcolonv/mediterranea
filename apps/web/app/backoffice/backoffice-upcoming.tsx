@@ -175,9 +175,9 @@ export function BackofficeUpcoming() {
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-white">{apt.clientName}</div>
                         <div className="truncate text-sm text-white-50">{apt.serviceName}</div>
-                        {(staffName(apt.staffId) || roomName(apt.roomId)) && (
+                        {(staffName(apt.staffId) || roomName(apt.roomId) || apt.passId) && (
                           <div className="truncate text-[11px] text-white-30">
-                            {[staffName(apt.staffId), roomName(apt.roomId)]
+                            {[staffName(apt.staffId), roomName(apt.roomId), apt.passId && 'Pack']
                               .filter(Boolean)
                               .join(' · ')}
                           </div>

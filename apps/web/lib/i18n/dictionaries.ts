@@ -322,6 +322,10 @@ const en = {
     confirmationSuffix: '. We look forward to seeing you.',
     addToCalendar: 'Add to calendar',
     bookAnother: 'Book another',
+    passHint: (sessions: number, each: string) => `${sessions} sessions · ${each} each`,
+    passSession: (session: number, sessions: number, name: string) =>
+      `Session ${session} of ${sessions} of your ${name}.`,
+    passPay: (price: string) => `The pack is ${price}, paid at the studio.`,
     provideDetails: 'Please provide your name, email, and phone.',
   },
   lang: {
@@ -692,6 +696,10 @@ const es: typeof en = {
     confirmationSuffix: '. Te esperamos con mucho gusto.',
     addToCalendar: 'Añadir al calendario',
     bookAnother: 'Reservar otra',
+    passHint: (sessions: number, each: string) => `${sessions} sesiones · ${each} cada una`,
+    passSession: (session: number, sessions: number, name: string) =>
+      `Sesión ${session} de ${sessions} de tu ${name}.`,
+    passPay: (price: string) => `El pack cuesta ${price} y se paga en el estudio.`,
     provideDetails: 'Por favor indica tu nombre, correo y teléfono.',
   },
   lang: {

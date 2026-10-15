@@ -260,7 +260,8 @@ export async function getCustomerTotalSpend(customerId: string, email: string) {
       if (seen.has(doc.id)) continue;
       seen.add(doc.id);
       const a = doc.data();
-      if (a.status === 'completed') total += priceOf.get(a.serviceId) ?? 0;
+      // A pass session carries its own price (its share of the pass).
+      if (a.status === 'completed') total += a.price ?? priceOf.get(a.serviceId) ?? 0;
     }
     return { success: true as const, total };
   } catch (error) {

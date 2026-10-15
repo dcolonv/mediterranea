@@ -67,7 +67,13 @@ export function describeChanges(
  */
 export function teamEmail(
   event: TeamEvent,
-  ctx: { names: TeamNames; by: string; calendarUrl: string }
+  ctx: {
+    names: TeamNames;
+    by: string;
+    calendarUrl: string;
+    /** "Pack 5 INDIBA Sessions · session 1 of 5 (€250 at the studio)", for a pack session. */
+    pass?: string;
+  }
 ): TeamEmail | null {
   const appt = event.kind === 'updated' ? event.after : event.appt;
   const changes = event.kind === 'updated' ? describeChanges(event.before, event.after, ctx.names) : [];
@@ -94,6 +100,7 @@ export function teamEmail(
     ['Practitioner', ctx.names.staff[appt.staffId ?? ''] ?? '—'],
     ['Room', ctx.names.rooms[appt.roomId ?? ''] ?? '—'],
     ['Status', statusLabel(appt)],
+    ...(ctx.pass ? [['Pack', ctx.pass] as [string, string]] : []),
     ...(appt.clientEmail ? [['Email', appt.clientEmail] as [string, string]] : []),
     ...(appt.clientPhone ? [['Phone', appt.clientPhone] as [string, string]] : []),
     ...(appt.notes ? [['Notes', appt.notes] as [string, string]] : []),
