@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Button, Badge, Textarea, Select } from '@/components/ui';
-import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
+import { APPOINTMENT_STATUSES, PAYMENT_METHODS } from '@mediterranea/shared/constants';
 import { formatDuration, formatPrice } from '@mediterranea/shared/utils';
 import {
   updateAppointmentStatus,
   deleteAppointment,
   saveAppointmentNotes,
   saveAppointmentPrice,
+  saveAppointmentPayment,
 } from '@/actions/appointments';
 import {
   getAppointmentPassInfo,
@@ -20,7 +21,14 @@ import {
 import type { AppointmentPass } from '@/lib/agent/data';
 import { SlotPicker, type BackofficeSlot } from '@/components/scheduling/slot-picker';
 import { TreatmentRecord } from '@/components/appointments/treatment-record';
-import type { Appointment, AppointmentStatus, Service, Staff, Room } from '@mediterranea/shared/types';
+import type {
+  Appointment,
+  AppointmentStatus,
+  PaymentMethod,
+  Service,
+  Staff,
+  Room,
+} from '@mediterranea/shared/types';
 
 interface Refs {
   services: Service[];
@@ -115,6 +123,8 @@ export function AppointmentModal({
   const [editingPrice, setEditingPrice] = useState(false);
   const [savingPrice, setSavingPrice] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
+  const [payment, setPayment] = useState<PaymentMethod | undefined>(appointment.paymentMethod);
+  const [savingPayment, setSavingPayment] = useState(false);
   const notesDirty = notes !== savedNotes;
 
   const staffName = appointment.staffId
@@ -146,6 +156,21 @@ export function AppointmentModal({
     }
     setPrice(Math.round(value * 100) / 100);
     setEditingPrice(false);
+    onUpdate();
+  }
+
+  // Tapping the recorded method again clears it.
+  async function handlePayment(method: PaymentMethod) {
+    const next = payment === method ? null : method;
+    setSavingPayment(true);
+    setPriceError(null);
+    const result = await saveAppointmentPayment(appointment.id, next);
+    setSavingPayment(false);
+    if (!result.success) {
+      setPriceError(result.error ?? 'Failed to save the payment method.');
+      return;
+    }
+    setPayment(next ?? undefined);
     onUpdate();
   }
 
@@ -457,6 +482,26 @@ export function AppointmentModal({
                 </button>
               </p>
             )}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-white-50">Paid by</span>
+              {(Object.keys(PAYMENT_METHODS) as PaymentMethod[]).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  disabled={savingPayment}
+                  aria-pressed={payment === m}
+                  onClick={() => void handlePayment(m)}
+                  className={`border px-3 py-1 text-xs transition-colors disabled:opacity-50 ${
+                    payment === m
+                      ? 'border-gold bg-gold/15 text-white'
+                      : 'border-white-10 text-white-50 hover:border-white-30 hover:text-white'
+                  }`}
+                >
+                  {PAYMENT_METHODS[m]}
+                </button>
+              ))}
+              {!editingPrice && priceError && <span className="text-xs text-red-400">{priceError}</span>}
+            </div>
           </div>
 
           {(staffName || roomName) && (

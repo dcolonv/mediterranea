@@ -19,7 +19,7 @@ import {
 } from 'date-fns';
 import { Button, Badge, Select } from '@/components/ui';
 import { getSchedulingRefs, getCalendarAppointments, getCalendarBlocks } from '@/actions/scheduling';
-import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
+import { APPOINTMENT_STATUSES, PAYMENT_METHODS } from '@mediterranea/shared/constants';
 import { formatPrice } from '@mediterranea/shared/utils';
 import { AppointmentModal } from '@/components/appointments';
 import { WalkInBooking } from '@/components/scheduling/walk-in-booking';
@@ -136,7 +136,7 @@ export function BackofficeCalendar() {
         <p className="text-xs text-white-50 truncate">{apt.serviceName}</p>
         {(staffName(apt.staffId) || roomName(apt.roomId) || apt.passId || apt.price !== undefined) && (
           <p className="mt-1 text-[11px] text-white-30 truncate">
-            {[staffName(apt.staffId), roomName(apt.roomId), apt.passId && 'Pack', apt.price !== undefined && formatPrice(apt.price)].filter(Boolean).join(' · ')}
+            {[staffName(apt.staffId), roomName(apt.roomId), apt.passId && 'Pack', apt.price !== undefined && formatPrice(apt.price), apt.paymentMethod && PAYMENT_METHODS[apt.paymentMethod]].filter(Boolean).join(' · ')}
           </p>
         )}
       </button>

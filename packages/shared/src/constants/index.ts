@@ -94,6 +94,13 @@ export const BOOKING_OPENS_DATE = '2026-09-08';
  * decides how long a booking occupies — that block folds in preparation time.
  */
 
+/** Payment methods taken at the studio, in the order staff pick from. */
+export const PAYMENT_METHODS = {
+  cash: 'Cash',
+  card: 'Card',
+  bizum: 'Bizum',
+} as const;
+
 export const APPOINTMENT_STATUSES = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
   confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-800' },

@@ -1,7 +1,7 @@
 'use server';
 
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { Timestamp as AdminTimestamp, type Query } from 'firebase-admin/firestore';
+import { Timestamp as AdminTimestamp, FieldValue as AdminFieldValue, type Query } from 'firebase-admin/firestore';
 import { db } from '@/lib/firebase/config';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { serializeDoc } from '@/lib/firebase/serialize';
@@ -11,7 +11,7 @@ import { upsertCustomerForAppointment } from '@/actions/customers';
 import { getAppointment, getService, deleteAppointment as deleteAppointmentRecord } from '@/lib/agent/data';
 import { payablePrice } from '@mediterranea/shared/utils';
 import { notifyTeam } from '@/lib/notifications/team';
-import type { Appointment, AppointmentStatus } from '@mediterranea/shared/types';
+import type { Appointment, AppointmentStatus, PaymentMethod } from '@mediterranea/shared/types';
 
 type DayOfWeek = keyof typeof BUSINESS_HOURS;
 
@@ -201,6 +201,26 @@ export async function saveAppointmentPrice(appointmentId: string, price: number)
   }
   try {
     await getAdminDb().collection('appointments').doc(appointmentId).update({
+/** Record how the client paid (null clears it, e.g. after a mis-tap). */
+export async function saveAppointmentPayment(appointmentId: string, method: PaymentMethod | null) {
+  if (method !== null && !['cash', 'card', 'bizum'].includes(method)) {
+    return { success: false, error: 'Unknown payment method.' };
+  }
+  try {
+    await getAdminDb()
+      .collection('appointments')
+      .doc(appointmentId)
+      .update({
+        paymentMethod: method ?? AdminFieldValue.delete(),
+        updatedAt: AdminTimestamp.now(),
+      });
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving payment method:', error);
+    return { success: false, error: 'Failed to save the payment method.' };
+  }
+}
+
       price: Math.round(price * 100) / 100,
       updatedAt: AdminTimestamp.now(),
     });
