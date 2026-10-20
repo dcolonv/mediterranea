@@ -143,7 +143,11 @@ export interface Appointment {
   loyaltyAwarded?: boolean;
   /** The pass this session is taken from, if any. */
   passId?: string;
-  /** What this appointment is worth when not the service's list price (a pass session: pass price ÷ sessions). */
+  /**
+   * The price agreed when booking (the treatment's payable price then, or a
+   * pack session's share), so later price changes don't rewrite it. Older
+   * appointments may lack it; they fall back to the service's list price.
+   */
   price?: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;

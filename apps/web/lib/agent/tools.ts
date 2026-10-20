@@ -233,6 +233,8 @@ function appointment(a: Appointment) {
     date: a.appointmentDate,
     time: a.appointmentTime,
     durationMinutes: a.durationMinutes,
+    // The price agreed when booking, when recorded.
+    price: a.price ?? null,
     status: a.status,
     notes: a.notes ?? '',
   };

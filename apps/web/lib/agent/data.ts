@@ -10,6 +10,7 @@ import { Timestamp, FieldValue, type DocumentSnapshot, type Transaction } from '
 import { getAdminDb } from '@/lib/firebase/admin';
 import { upsertCustomerForAppointment } from '@/actions/customers';
 import { DEFAULT_STUDIO_SETTINGS, BOOKING_OPENS_DATE } from '@mediterranea/shared/constants';
+import { payablePrice } from '@mediterranea/shared/utils';
 import {
   timeToMinutes,
   weekdayOf,
@@ -603,8 +604,10 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
         notes: input.notes ?? '',
         // Bookings are auto-confirmed — no manual backoffice confirmation step.
         status: input.status ?? ('confirmed' as AppointmentStatus),
-        // A pass session is worth its share of the pass, not the list price.
-        ...(pass && { passId: pass.passId, price: sessionPrice(pass.price, pass.sessions) }),
+        // The price agreed now, so later price changes don't rewrite it: a pack
+        // session's share of the pack, otherwise the treatment's payable price.
+        price: pass ? sessionPrice(pass.price, pass.sessions) : payablePrice(service),
+        ...(pass && { passId: pass.passId }),
         createdAt: now,
         updatedAt: now,
       });
@@ -733,8 +736,10 @@ export async function updateAppointment(
           durationMinutes: blockMinutes,
           serviceMinutes: newService.durationMinutes,
         }),
-        // A different treatment is no longer a session of the pass.
-        ...(newService && existing.passId && { passId: FieldValue.delete(), price: FieldValue.delete() }),
+        // A different treatment costs that treatment's price now, and is no
+        // longer a session of a pack.
+        ...(newService && { price: payablePrice(newService) }),
+        ...(newService && existing.passId && { passId: FieldValue.delete() }),
         status,
         ...(patch.notes !== undefined && { notes: patch.notes }),
         updatedAt: Timestamp.now(),

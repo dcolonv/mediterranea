@@ -9,6 +9,7 @@ import {
   updateAppointmentStatus,
   deleteAppointment,
   saveAppointmentNotes,
+  saveAppointmentPrice,
 } from '@/actions/appointments';
 import {
   getAppointmentPassInfo,
@@ -108,6 +109,13 @@ export function AppointmentModal({
   const [savingNotes, setSavingNotes] = useState(false);
   const notesDirty = notes !== savedNotes;
 
+  // The price agreed when booking; editable for corrections such as a discount.
+  const [price, setPrice] = useState<number | undefined>(appointment.price);
+  const [priceInput, setPriceInput] = useState('');
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [savingPrice, setSavingPrice] = useState(false);
+  const [priceError, setPriceError] = useState<string | null>(null);
+
   const staffName = appointment.staffId
     ? staff?.find((s) => s.id === appointment.staffId)?.name
     : undefined;
@@ -126,6 +134,21 @@ export function AppointmentModal({
   }
 
   async function handleSaveNotes() {
+  async function handleSavePrice() {
+    const value = Number(priceInput.replace(',', '.'));
+    setSavingPrice(true);
+    setPriceError(null);
+    const result = await saveAppointmentPrice(appointment.id, value);
+    setSavingPrice(false);
+    if (!result.success) {
+      setPriceError(result.error ?? 'Failed to save the price.');
+      return;
+    }
+    setPrice(Math.round(value * 100) / 100);
+    setEditingPrice(false);
+    onUpdate();
+  }
+
     setSavingNotes(true);
     const result = await saveAppointmentNotes(appointment.id, notes);
     if (result.success) {
@@ -397,6 +420,45 @@ export function AppointmentModal({
           </div>
 
           {(staffName || roomName) && (
+          <div className="text-sm">
+            <span className="text-white-30 text-xs uppercase tracking-wider">Price</span>
+            {editingPrice ? (
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={priceInput}
+                  onChange={(e) => setPriceInput(e.target.value)}
+                  aria-label="Price in euros"
+                  className="h-9 w-28 border border-white-10 bg-dark-800 px-3 text-white focus:border-gold focus:outline-none"
+                />
+                <Button variant="ghost" size="sm" onClick={handleSavePrice} disabled={savingPrice || !priceInput}>
+                  {savingPrice ? 'Saving…' : 'Save'}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setEditingPrice(false)} disabled={savingPrice}>
+                  Cancel
+                </Button>
+                {priceError && <span className="text-xs text-red-400">{priceError}</span>}
+              </div>
+            ) : (
+              <p className="text-white mt-1">
+                {price !== undefined ? formatPrice(price) : <span className="text-white-30">Not recorded</span>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPriceInput(price !== undefined ? String(price) : '');
+                    setPriceError(null);
+                    setEditingPrice(true);
+                  }}
+                  className="ml-3 text-xs text-gold hover:text-gold-light"
+                >
+                  {price !== undefined ? 'Change' : 'Set'}
+                </button>
+              </p>
+            )}
+          </div>
+
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-white-30 text-xs uppercase tracking-wider">Practitioner</span>
