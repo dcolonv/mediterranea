@@ -141,6 +141,10 @@ export interface Appointment {
   status: AppointmentStatus;
   /** Set once loyalty points have been awarded for this appointment's completion. */
   loyaltyAwarded?: boolean;
+  /** Treatment record, written by the practitioner: what was applied this visit. */
+  appliedTreatment?: string;
+  /** Treatment record: what to do at the client's next visit. */
+  nextTreatment?: string;
   /** The pass this session is taken from, if any. */
   passId?: string;
   /**
@@ -288,21 +292,21 @@ export interface Review {
   appointmentId?: string;
   /** Display name, as on the original review. */
   authorName: string;
+  /** Treatment it's about; may be empty. */
   serviceName: string;
   /** 1–5 stars. */
   rating: number;
   comment: string;
+  /** When the review was written (YYYY-MM-DD), for ones copied from Google. */
+  reviewDate?: string;
   status: ReviewStatus;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
-  /** Treatment it's about; may be empty. */
 
 export type CampaignChannel = 'email' | 'sms';
 export type CampaignStatus = 'draft' | 'sent';
 export type CampaignSegment = 'all' | 'marketing' | 'tag' | 'inactive';
-  /** When the review was written (YYYY-MM-DD), for ones copied from Google. */
-  reviewDate?: string;
 
 export interface Campaign {
   id: string;

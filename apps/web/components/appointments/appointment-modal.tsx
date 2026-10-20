@@ -19,6 +19,7 @@ import {
 } from '@/actions/scheduling';
 import type { AppointmentPass } from '@/lib/agent/data';
 import { SlotPicker, type BackofficeSlot } from '@/components/scheduling/slot-picker';
+import { TreatmentRecord } from '@/components/appointments/treatment-record';
 import type { Appointment, AppointmentStatus, Service, Staff, Room } from '@mediterranea/shared/types';
 
 interface Refs {
@@ -107,7 +108,6 @@ export function AppointmentModal({
   const [notes, setNotes] = useState(appointment.notes ?? '');
   const [savedNotes, setSavedNotes] = useState(appointment.notes ?? '');
   const [savingNotes, setSavingNotes] = useState(false);
-  const notesDirty = notes !== savedNotes;
 
   // The price agreed when booking; editable for corrections such as a discount.
   const [price, setPrice] = useState<number | undefined>(appointment.price);
@@ -115,6 +115,7 @@ export function AppointmentModal({
   const [editingPrice, setEditingPrice] = useState(false);
   const [savingPrice, setSavingPrice] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
+  const notesDirty = notes !== savedNotes;
 
   const staffName = appointment.staffId
     ? staff?.find((s) => s.id === appointment.staffId)?.name
@@ -133,7 +134,6 @@ export function AppointmentModal({
     setActionLoading(false);
   }
 
-  async function handleSaveNotes() {
   async function handleSavePrice() {
     const value = Number(priceInput.replace(',', '.'));
     setSavingPrice(true);
@@ -149,6 +149,7 @@ export function AppointmentModal({
     onUpdate();
   }
 
+  async function handleSaveNotes() {
     setSavingNotes(true);
     const result = await saveAppointmentNotes(appointment.id, notes);
     if (result.success) {
@@ -419,7 +420,6 @@ export function AppointmentModal({
             </div>
           </div>
 
-          {(staffName || roomName) && (
           <div className="text-sm">
             <span className="text-white-30 text-xs uppercase tracking-wider">Price</span>
             {editingPrice ? (
@@ -459,6 +459,7 @@ export function AppointmentModal({
             )}
           </div>
 
+          {(staffName || roomName) && (
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-white-30 text-xs uppercase tracking-wider">Practitioner</span>
@@ -522,10 +523,12 @@ export function AppointmentModal({
             </div>
           )}
 
-          {/* Treatment notes (editable) */}
+          <TreatmentRecord appointment={appointment} onSaved={onUpdate} />
+
+          {/* General notes (editable); also holds what the client wrote when booking. */}
           <div className="text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-white-30 text-xs uppercase tracking-wider">Treatment notes</span>
+              <span className="text-white-30 text-xs uppercase tracking-wider">Notes</span>
               {notesDirty && (
                 <Button
                   variant="ghost"
@@ -541,7 +544,7 @@ export function AppointmentModal({
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add treatment notes, observations, or aftercare given…"
+              placeholder="Booking notes, client requests, anything else…"
               rows={3}
               className="mt-2"
             />
