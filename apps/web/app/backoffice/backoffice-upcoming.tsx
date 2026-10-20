@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { format, isToday, isTomorrow, parseISO } from 'date-fns';
 import { Badge, Button } from '@/components/ui';
-import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
+import { APPOINTMENT_STATUSES, PAYMENT_METHODS } from '@mediterranea/shared/constants';
 import { formatPrice } from '@mediterranea/shared/utils';
 import { getUpcomingAppointments, type UpcomingData } from '@/actions/upcoming';
 import { AppointmentModal } from '@/components/appointments';
@@ -178,7 +178,7 @@ export function BackofficeUpcoming() {
                         <div className="truncate text-sm text-white-50">{apt.serviceName}</div>
                         {(staffName(apt.staffId) || roomName(apt.roomId) || apt.passId || apt.price !== undefined) && (
                           <div className="truncate text-[11px] text-white-30">
-                            {[staffName(apt.staffId), roomName(apt.roomId), apt.passId && 'Pack', apt.price !== undefined && formatPrice(apt.price)]
+                            {[staffName(apt.staffId), roomName(apt.roomId), apt.passId && 'Pack', apt.price !== undefined && formatPrice(apt.price), apt.paymentMethod && PAYMENT_METHODS[apt.paymentMethod]]
                               .filter(Boolean)
                               .join(' · ')}
                           </div>

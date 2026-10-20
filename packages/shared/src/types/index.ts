@@ -115,6 +115,9 @@ export type AppointmentStatus =
   | 'rejected'
   | 'no-show';
 
+/** How a client paid at the studio. */
+export type PaymentMethod = 'cash' | 'card' | 'bizum';
+
 export interface Appointment {
   id: string;
   serviceId: string;
@@ -153,6 +156,8 @@ export interface Appointment {
    * appointments may lack it; they fall back to the service's list price.
    */
   price?: number;
+  /** How the client paid; unset until it's recorded. */
+  paymentMethod?: PaymentMethod;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

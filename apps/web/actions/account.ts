@@ -158,6 +158,7 @@ export async function cancelMyAppointment(id: string) {
   try {
     await getAdminDb().collection('appointments').doc(id).update({
       status: 'cancelled',
+      ...data.chargeOnStatus('cancelled'),
       updatedAt: Timestamp.now(),
     });
     const { notifyAppointmentCancelled } = await import('@/lib/notifications/dispatch');

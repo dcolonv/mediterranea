@@ -177,6 +177,7 @@ export async function cancelManagedAppointment(): Promise<{ success: true } | Fa
   try {
     await getAdminDb().collection('appointments').doc(appt.id).update({
       status: 'cancelled',
+      ...data.chargeOnStatus('cancelled'),
       updatedAt: Timestamp.now(),
     });
     const { notifyAppointmentCancelled } = await import('@/lib/notifications/dispatch');

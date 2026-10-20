@@ -235,6 +235,7 @@ function appointment(a: Appointment) {
     durationMinutes: a.durationMinutes,
     // The price agreed when booking, when recorded.
     price: a.price ?? null,
+    paymentMethod: a.paymentMethod ?? null,
     // The practitioner's treatment record for the visit.
     appliedTreatment: a.appliedTreatment ?? null,
     nextTreatment: a.nextTreatment ?? null,
