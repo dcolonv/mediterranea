@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
-import { Button, Badge } from '@/components/ui';
-import { getAllReviews, setReviewStatus, deleteReview } from '@/actions/reviews';
+import { Button, Badge, Input, Select, Textarea } from '@/components/ui';
+import { getAllReviews, setReviewStatus, deleteReview, addReview } from '@/actions/reviews';
 import type { Review, ReviewStatus } from '@mediterranea/shared/types';
 
 const STATUS_VARIANT: Record<ReviewStatus, 'pending' | 'completed' | 'cancelled'> = {
@@ -18,10 +18,82 @@ const STATUS_LABEL: Record<ReviewStatus, string> = {
   hidden: 'Hidden',
 };
 
+/** When it was written on Google when known, otherwise when it was added here. */
 function reviewDate(r: Review): string {
+  if (r.reviewDate) return format(new Date(`${r.reviewDate}T00:00:00`), 'MMM d, yyyy');
   const ts = r.createdAt as unknown as { seconds?: number; _seconds?: number } | undefined;
   const secs = ts?.seconds ?? ts?._seconds;
   return secs ? format(new Date(secs * 1000), 'MMM d, yyyy') : '';
+}
+
+const EMPTY_DRAFT = { authorName: '', rating: '5', comment: '', serviceName: '', reviewDate: '' };
+
+/** Paste a review from Google; it's published straight away. */
+function AddReviewForm({ onAdded, onCancel }: { onAdded: () => void; onCancel: () => void }) {
+  const [draft, setDraft] = useState(EMPTY_DRAFT);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const set = (field: keyof typeof EMPTY_DRAFT) => (value: string) => setDraft((d) => ({ ...d, [field]: value }));
+
+  async function save() {
+    setSaving(true);
+    setError(null);
+    const res = await addReview({ ...draft, rating: Number(draft.rating) });
+    setSaving(false);
+    if (!res.success) {
+      setError(res.error);
+      return;
+    }
+    setDraft(EMPTY_DRAFT);
+    onAdded();
+  }
+
+  return (
+    <div className="mb-8 space-y-4 border border-white-10 bg-dark-800 p-6">
+      <h2 className="font-serif text-xl text-white">Add a review from Google</h2>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Input id="rv-name" label="Name" value={draft.authorName} onChange={(e) => set('authorName')(e.target.value)} />
+        <Select
+          id="rv-rating"
+          label="Stars"
+          value={draft.rating}
+          onChange={(e) => set('rating')(e.target.value)}
+          options={[5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: '★'.repeat(n) }))}
+        />
+        <Input
+          id="rv-date"
+          label="Date (optional)"
+          type="date"
+          value={draft.reviewDate}
+          onChange={(e) => set('reviewDate')(e.target.value)}
+        />
+      </div>
+      <Textarea
+        id="rv-comment"
+        label="Review"
+        value={draft.comment}
+        onChange={(e) => set('comment')(e.target.value)}
+        rows={4}
+        placeholder="Paste the review text"
+      />
+      <Input
+        id="rv-service"
+        label="Treatment (optional)"
+        value={draft.serviceName}
+        onChange={(e) => set('serviceName')(e.target.value)}
+        placeholder="e.g. 1.5 Hour Facial"
+      />
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      <div className="flex gap-3">
+        <Button variant="elegant" onClick={save} disabled={saving || !draft.authorName.trim()}>
+          {saving ? 'Adding…' : 'Add review'}
+        </Button>
+        <Button variant="ghost" onClick={onCancel} disabled={saving}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 export function BackofficeReviews() {
@@ -29,6 +101,7 @@ export function BackofficeReviews() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ReviewStatus | 'all'>('all');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -70,6 +143,22 @@ export function BackofficeReviews() {
 
   return (
     <div>
+      {adding ? (
+        <AddReviewForm
+          onAdded={() => {
+            setAdding(false);
+            void load();
+          }}
+          onCancel={() => setAdding(false)}
+        />
+      ) : (
+        <div className="mb-6">
+          <Button variant="elegant" onClick={() => setAdding(true)}>
+            + Add review
+          </Button>
+        </div>
+      )}
+
       {/* Filter tabs */}
       <div className="mb-6 flex flex-wrap gap-2">
         {(['all', 'pending', 'published', 'hidden'] as const).map((f) => (
@@ -101,9 +190,12 @@ export function BackofficeReviews() {
                       <span className="text-white-30">{'★'.repeat(5 - r.rating)}</span>
                     </span>
                     <Badge variant={STATUS_VARIANT[r.status]}>{STATUS_LABEL[r.status]}</Badge>
+                    {r.source === 'google' && (
+                      <span className="text-[11px] uppercase tracking-wider text-white-30">Google</span>
+                    )}
                   </div>
                   <p className="mt-1 text-sm text-white-50">
-                    {r.authorName} · {r.serviceName} · {reviewDate(r)}
+                    {[r.authorName, r.serviceName, reviewDate(r)].filter(Boolean).join(' · ')}
                   </p>
                 </div>
               </div>

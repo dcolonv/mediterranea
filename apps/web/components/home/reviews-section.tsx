@@ -42,6 +42,11 @@ export async function ReviewsSection() {
                 {r.authorName}
                 {r.serviceName && <span className="text-white-30"> · {r.serviceName}</span>}
               </div>
+              {r.source === 'google' && (
+                <div className="mt-1 text-[11px] uppercase tracking-wider text-white-30">
+                  {dict.reviews.fromGoogle}
+                </div>
+              )}
             </div>
           ))}
         </div>

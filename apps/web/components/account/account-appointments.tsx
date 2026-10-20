@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Button, Badge } from '@/components/ui';
-import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
+import { APPOINTMENT_STATUSES, CONTACT_INFO } from '@mediterranea/shared/constants';
 import {
   getMyAppointments,
   cancelMyAppointment,
@@ -12,25 +12,19 @@ import {
   type MyAppointment,
 } from '@/actions/account';
 import { useLang } from '@/components/i18n/language-provider';
-import { ReviewForm } from '@/components/account/review-form';
 
 interface Props {
   initialUpcoming: MyAppointment[];
   initialPast: MyAppointment[];
-  reviewedIds: string[];
 }
 
 const fmtDate = (d: string) => format(new Date(`${d}T00:00:00`), 'EEE, MMM d, yyyy');
 
-export function AccountAppointments({ initialUpcoming, initialPast, reviewedIds }: Props) {
+export function AccountAppointments({ initialUpcoming, initialPast }: Props) {
   const { dict } = useLang();
   const [upcoming, setUpcoming] = useState(initialUpcoming);
   const [past, setPast] = useState(initialPast);
   const [busyId, setBusyId] = useState<string | null>(null);
-
-  // Review state.
-  const [reviewed, setReviewed] = useState<Set<string>>(new Set(reviewedIds));
-  const [reviewingId, setReviewingId] = useState<string | null>(null);
 
   // Reschedule state (single active at a time).
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
@@ -199,7 +193,8 @@ export function AccountAppointments({ initialUpcoming, initialPast, reviewedIds 
         ) : (
           <div className="border border-white-10 bg-dark-800/50">
             {past.map((a) => {
-              const canReview = a.status === 'completed' && !reviewed.has(a.id);
+              // Reviews live on Google; offer the link after a completed visit.
+              const canReview = a.status === 'completed' && Boolean(CONTACT_INFO.googleReviewUrl);
               return (
                 <div key={a.id} className="border-b border-white-10 p-4 last:border-b-0">
                   <div className="flex items-center justify-between gap-4">
@@ -210,27 +205,16 @@ export function AccountAppointments({ initialUpcoming, initialPast, reviewedIds 
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      {a.status === 'completed' && reviewed.has(a.id) && (
-                        <span className="text-xs text-gold">★ {dict.reviews.reviewed}</span>
-                      )}
-                      {canReview && reviewingId !== a.id && (
-                        <Button variant="outline" size="sm" onClick={() => setReviewingId(a.id)}>
-                          {dict.reviews.leaveReview}
-                        </Button>
+                      {canReview && (
+                        <a href={CONTACT_INFO.googleReviewUrl} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm">
+                            {dict.reviews.leaveReview}
+                          </Button>
+                        </a>
                       )}
                       <Badge variant={a.status}>{APPOINTMENT_STATUSES[a.status].label}</Badge>
                     </div>
                   </div>
-                  {reviewingId === a.id && (
-                    <ReviewForm
-                      appointmentId={a.id}
-                      onDone={() => {
-                        setReviewed((prev) => new Set(prev).add(a.id));
-                        setReviewingId(null);
-                      }}
-                      onCancel={() => setReviewingId(null)}
-                    />
-                  )}
                 </div>
               );
             })}

@@ -153,6 +153,11 @@ export const CONTACT_INFO = {
   city: 'El Palo, Malaga, Spain',
   phone: '+34 602 643 543',
   email: 'info@mediterraneafacestudio.com',
+  /**
+   * Where clients leave a Google review (Business Profile → "Ask for reviews").
+   * Empty = no review button in the client's account.
+   */
+  googleReviewUrl: '',
 };
 
 /**

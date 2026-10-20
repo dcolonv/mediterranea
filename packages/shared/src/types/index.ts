@@ -278,9 +278,11 @@ export type ReviewStatus = 'pending' | 'published' | 'hidden';
 
 export interface Review {
   id: string;
-  customerId: string;
-  appointmentId: string;
-  /** Public display name (first name shown on the site). */
+  /** Copied in from Google by staff, or (older ones) left by a client in their account. */
+  source?: 'google' | 'client';
+  customerId?: string;
+  appointmentId?: string;
+  /** Display name, as on the original review. */
   authorName: string;
   serviceName: string;
   /** 1–5 stars. */
@@ -290,10 +292,13 @@ export interface Review {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
+  /** Treatment it's about; may be empty. */
 
 export type CampaignChannel = 'email' | 'sms';
 export type CampaignStatus = 'draft' | 'sent';
 export type CampaignSegment = 'all' | 'marketing' | 'tag' | 'inactive';
+  /** When the review was written (YYYY-MM-DD), for ones copied from Google. */
+  reviewDate?: string;
 
 export interface Campaign {
   id: string;

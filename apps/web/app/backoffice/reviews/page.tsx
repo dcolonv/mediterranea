@@ -14,7 +14,7 @@ export default function ReviewsPage() {
         </div>
         <h1 className="font-serif text-3xl text-white">Reviews</h1>
         <p className="mt-2 text-white-50">
-          Moderate client reviews. Only published reviews appear on the public site.
+          Add reviews from Google to show on the home page. Hide one to take it off the site.
         </p>
       </div>
 
