@@ -1,4 +1,4 @@
-import { formatPrice } from '@mediterranea/shared/utils';
+import { formatPrice, payablePrice } from '@mediterranea/shared/utils';
 import { cn } from '@/lib/utils';
 
 /**
@@ -22,7 +22,8 @@ export function PriceTag({
   firstLabel: string;
   className?: string;
 }) {
-  const hasIntro = firstPrice > 0 && firstPrice < price;
+  const payable = payablePrice({ price, firstVisitPrice: firstPrice });
+  const hasIntro = payable < price;
 
   return (
     <span className={cn('text-right leading-tight', className)}>
@@ -31,7 +32,7 @@ export function PriceTag({
         {hasIntro && (
           <span className="whitespace-nowrap text-white-30 line-through">{formatPrice(price)}</span>
         )}{' '}
-        <span className="whitespace-nowrap text-gold">{formatPrice(hasIntro ? firstPrice : price)}</span>
+        <span className="whitespace-nowrap text-gold">{formatPrice(payable)}</span>
       </span>
       {hasIntro && (
         <span className="mt-0.5 block text-[10px] uppercase tracking-wider text-gold/70">

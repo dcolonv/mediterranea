@@ -5,6 +5,16 @@ export function formatPrice(price: number): string {
   }).format(price);
 }
 
+/**
+ * What a booking of a treatment costs: its launch / first-visit price while one
+ * is set below the regular price, otherwise the regular price. The price tags
+ * on the site show the same rule.
+ */
+export function payablePrice(service: { price: number; firstVisitPrice?: number }): number {
+  const first = service.firstVisitPrice ?? 0;
+  return first > 0 && first < service.price ? first : service.price;
+}
+
 export function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);

@@ -141,9 +141,17 @@ export interface Appointment {
   status: AppointmentStatus;
   /** Set once loyalty points have been awarded for this appointment's completion. */
   loyaltyAwarded?: boolean;
+  /** Treatment record, written by the practitioner: what was applied this visit. */
+  appliedTreatment?: string;
+  /** Treatment record: what to do at the client's next visit. */
+  nextTreatment?: string;
   /** The pass this session is taken from, if any. */
   passId?: string;
-  /** What this appointment is worth when not the service's list price (a pass session: pass price ÷ sessions). */
+  /**
+   * The price agreed when booking (the treatment's payable price then, or a
+   * pack session's share), so later price changes don't rewrite it. Older
+   * appointments may lack it; they fall back to the service's list price.
+   */
   price?: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -278,14 +286,19 @@ export type ReviewStatus = 'pending' | 'published' | 'hidden';
 
 export interface Review {
   id: string;
-  customerId: string;
-  appointmentId: string;
-  /** Public display name (first name shown on the site). */
+  /** Copied in from Google by staff, or (older ones) left by a client in their account. */
+  source?: 'google' | 'client';
+  customerId?: string;
+  appointmentId?: string;
+  /** Display name, as on the original review. */
   authorName: string;
+  /** Treatment it's about; may be empty. */
   serviceName: string;
   /** 1–5 stars. */
   rating: number;
   comment: string;
+  /** When the review was written (YYYY-MM-DD), for ones copied from Google. */
+  reviewDate?: string;
   status: ReviewStatus;
   createdAt: Timestamp;
   updatedAt: Timestamp;

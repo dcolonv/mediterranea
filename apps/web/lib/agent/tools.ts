@@ -233,6 +233,11 @@ function appointment(a: Appointment) {
     date: a.appointmentDate,
     time: a.appointmentTime,
     durationMinutes: a.durationMinutes,
+    // The price agreed when booking, when recorded.
+    price: a.price ?? null,
+    // The practitioner's treatment record for the visit.
+    appliedTreatment: a.appliedTreatment ?? null,
+    nextTreatment: a.nextTreatment ?? null,
     status: a.status,
     notes: a.notes ?? '',
   };

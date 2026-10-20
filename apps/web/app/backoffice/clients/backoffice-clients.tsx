@@ -455,6 +455,19 @@ export function BackofficeClients() {
         {/* History */}
         <div className="mt-8">
           <h3 className="mb-4 font-serif text-lg text-white">Appointment history</h3>
+          {/* The plan from the latest visit that set one, for the next appointment. */}
+          {(() => {
+            const plan = history.find((a) => a.nextTreatment);
+            return plan ? (
+              <div className="mb-4 border border-gold/30 bg-gold/5 p-4 text-sm">
+                <span className="text-xs uppercase tracking-wider text-gold">Next time</span>
+                <p className="mt-1 whitespace-pre-wrap text-white-70">{plan.nextTreatment}</p>
+                <p className="mt-1 text-xs text-white-30">
+                  From {format(new Date(`${plan.appointmentDate}T00:00:00`), 'MMM d, yyyy')} · {plan.serviceName}
+                </p>
+              </div>
+            ) : null;
+          })()}
           {historyLoading ? (
             <div className="py-8 text-center text-white-50">Loading history…</div>
           ) : history.length === 0 ? (
@@ -464,17 +477,32 @@ export function BackofficeClients() {
           ) : (
             <div className="border border-white-10 bg-dark-800">
               {history.map((a) => (
-                <div
-                  key={a.id}
-                  className="flex items-center justify-between gap-4 border-b border-white-10 p-4 last:border-b-0"
-                >
-                  <div className="min-w-0">
-                    <div className="text-white">{a.serviceName}</div>
-                    <div className="text-sm text-white-50">
-                      {format(new Date(`${a.appointmentDate}T00:00:00`), 'MMM d, yyyy')} · {a.appointmentTime}
+                <div key={a.id} className="border-b border-white-10 p-4 last:border-b-0">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="text-white">{a.serviceName}</div>
+                      <div className="text-sm text-white-50">
+                        {format(new Date(`${a.appointmentDate}T00:00:00`), 'MMM d, yyyy')} · {a.appointmentTime}
+                      </div>
                     </div>
+                    <Badge variant={a.status}>{APPOINTMENT_STATUSES[a.status].label}</Badge>
                   </div>
-                  <Badge variant={a.status}>{APPOINTMENT_STATUSES[a.status].label}</Badge>
+                  {(a.appliedTreatment || a.nextTreatment) && (
+                    <div className="mt-2 space-y-1 text-sm">
+                      {a.appliedTreatment && (
+                        <p className="whitespace-pre-wrap text-white-70">
+                          <span className="text-white-30">Applied: </span>
+                          {a.appliedTreatment}
+                        </p>
+                      )}
+                      {a.nextTreatment && (
+                        <p className="whitespace-pre-wrap text-white-70">
+                          <span className="text-white-30">Next time: </span>
+                          {a.nextTreatment}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

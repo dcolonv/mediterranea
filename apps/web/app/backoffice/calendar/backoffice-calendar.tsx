@@ -20,6 +20,7 @@ import {
 import { Button, Badge, Select } from '@/components/ui';
 import { getSchedulingRefs, getCalendarAppointments, getCalendarBlocks } from '@/actions/scheduling';
 import { APPOINTMENT_STATUSES } from '@mediterranea/shared/constants';
+import { formatPrice } from '@mediterranea/shared/utils';
 import { AppointmentModal } from '@/components/appointments';
 import { WalkInBooking } from '@/components/scheduling/walk-in-booking';
 import { BlockTimeDialog } from '@/components/scheduling/block-time-dialog';
@@ -133,9 +134,9 @@ export function BackofficeCalendar() {
         </div>
         <p className="mt-1 text-sm text-white truncate">{apt.clientName}</p>
         <p className="text-xs text-white-50 truncate">{apt.serviceName}</p>
-        {(staffName(apt.staffId) || roomName(apt.roomId) || apt.passId) && (
+        {(staffName(apt.staffId) || roomName(apt.roomId) || apt.passId || apt.price !== undefined) && (
           <p className="mt-1 text-[11px] text-white-30 truncate">
-            {[staffName(apt.staffId), roomName(apt.roomId), apt.passId && 'Pack'].filter(Boolean).join(' · ')}
+            {[staffName(apt.staffId), roomName(apt.roomId), apt.passId && 'Pack', apt.price !== undefined && formatPrice(apt.price)].filter(Boolean).join(' · ')}
           </p>
         )}
       </button>

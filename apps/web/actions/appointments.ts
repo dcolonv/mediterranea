@@ -8,7 +8,8 @@ import { serializeDoc } from '@/lib/firebase/serialize';
 import { appointmentSchema, type AppointmentFormData } from '@mediterranea/shared/validations';
 import { SERVICES_SEED, BUSINESS_HOURS, TIME_SLOTS } from '@mediterranea/shared/constants';
 import { upsertCustomerForAppointment } from '@/actions/customers';
-import { getAppointment, deleteAppointment as deleteAppointmentRecord } from '@/lib/agent/data';
+import { getAppointment, getService, deleteAppointment as deleteAppointmentRecord } from '@/lib/agent/data';
+import { payablePrice } from '@mediterranea/shared/utils';
 import { notifyTeam } from '@/lib/notifications/team';
 import type { Appointment, AppointmentStatus } from '@mediterranea/shared/types';
 
@@ -108,10 +109,13 @@ export async function createAppointment(data: AppointmentFormData) {
     });
 
     const now = Timestamp.now();
+    const service = await getService(result.data.serviceId);
     const appointmentData = {
       ...result.data,
       notes: result.data.notes || '',
       ...(customerId && { customerId }),
+      // The price agreed now, so later price changes don't rewrite it.
+      ...(service && { price: payablePrice(service) }),
       status: 'pending' as AppointmentStatus,
       createdAt: now,
       updatedAt: now,
@@ -187,6 +191,23 @@ export async function updateAppointmentStatus(
   } catch (error) {
     console.error('Error updating appointment:', error);
     return { success: false, error: 'Failed to update appointment.' };
+  }
+}
+
+/** Correct the price agreed for an appointment, e.g. after a discount. */
+export async function saveAppointmentPrice(appointmentId: string, price: number) {
+  if (!Number.isFinite(price) || price < 0 || price > 100000) {
+    return { success: false, error: 'Enter a valid price.' };
+  }
+  try {
+    await getAdminDb().collection('appointments').doc(appointmentId).update({
+      price: Math.round(price * 100) / 100,
+      updatedAt: AdminTimestamp.now(),
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving appointment price:', error);
+    return { success: false, error: 'Failed to save the price.' };
   }
 }
 

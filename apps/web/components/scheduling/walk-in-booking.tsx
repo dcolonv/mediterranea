@@ -11,7 +11,7 @@ import { durationLabel } from '@/lib/i18n/duration';
 import { weekdayOf } from '@/lib/agent/availability';
 import { MonthCalendar, firstSelectableDate } from '@/components/booking/month-calendar';
 import { GroupCard } from '@/components/booking/group-card';
-import { treatmentCards } from '@/lib/booking/treatment-cards';
+import { treatmentCards, spanIfLoneLast } from '@/lib/booking/treatment-cards';
 import { SlotPicker, type BackofficeSlot } from '@/components/scheduling/slot-picker';
 import { getPublicPolicy } from '@/actions/public-booking';
 import { getBackofficeSlots, bookWalkIn, searchClients } from '@/actions/scheduling';
@@ -366,11 +366,13 @@ export function WalkInBooking({
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* Catalogue order; a group sits where its first treatment does. */}
-                {treatmentCards(services).map((card) => {
+                {treatmentCards(services).map((card, i, all) => {
+                  const wide = spanIfLoneLast(i, all.length);
                   if (card.kind === 'service') {
                     const s = card.service;
                     return (
                       <GroupCard
+                        className={wide}
                         key={s.id}
                         title={s.name}
                         hint={
@@ -391,6 +393,7 @@ export function WalkInBooking({
                     const s = card.services[0];
                     return (
                       <GroupCard
+                        className={wide}
                         key="custom"
                         title={s.name}
                         hint={copy.customDuration}
@@ -405,6 +408,7 @@ export function WalkInBooking({
                   const focus = card.group === 'focus';
                   return (
                     <GroupCard
+                      className={wide}
                       key={card.group}
                       title={focus ? copy.focusName : copy.indibaName}
                       hint={focus ? copy.focusDuration : copy.indibaDuration}
@@ -430,11 +434,11 @@ export function WalkInBooking({
               {group === 'focus' ? copy.focusName : copy.indibaName}
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
-              {(group === 'focus' ? focusServices : indibaServices).map((s) => (
+              {(group === 'focus' ? focusServices : indibaServices).map((s, i, all) => (
                 <button
                   key={s.id}
                   onClick={() => chooseService(s)}
-                  className="flex flex-col border border-white-10 p-5 text-left transition-colors hover:border-gold/40"
+                  className={`flex flex-col border border-white-10 p-5 text-left transition-colors hover:border-gold/40 ${spanIfLoneLast(i, all.length)}`}
                 >
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                     <span className="font-serif text-lg text-white">{s.name}</span>
