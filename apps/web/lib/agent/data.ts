@@ -74,6 +74,15 @@ async function tellTeam(event: TeamEvent, by?: string): Promise<void> {
   }
 }
 
+/**
+ * A cancelled or rejected appointment isn't charged: its price becomes 0. Spread
+ * into any update that sets a status. (A late-cancellation fee can still be set
+ * by hand afterwards.)
+ */
+export function chargeOnStatus(status: AppointmentStatus): { price?: 0 } {
+  return status === 'cancelled' || status === 'rejected' ? { price: 0 } : {};
+}
+
 /** Read studio settings, falling back to defaults when unset. */
 export async function getStudioSettings(): Promise<StudioSettings> {
   const snap = await getAdminDb().doc('settings/studio').get();
@@ -741,6 +750,7 @@ export async function updateAppointment(
         ...(newService && { price: payablePrice(newService) }),
         ...(newService && existing.passId && { passId: FieldValue.delete() }),
         status,
+        ...(status !== existing.status && chargeOnStatus(status)),
         ...(patch.notes !== undefined && { notes: patch.notes }),
         updatedAt: Timestamp.now(),
       });

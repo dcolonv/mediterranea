@@ -8,7 +8,12 @@ import { serializeDoc } from '@/lib/firebase/serialize';
 import { appointmentSchema, type AppointmentFormData } from '@mediterranea/shared/validations';
 import { SERVICES_SEED, BUSINESS_HOURS, TIME_SLOTS } from '@mediterranea/shared/constants';
 import { upsertCustomerForAppointment } from '@/actions/customers';
-import { getAppointment, getService, deleteAppointment as deleteAppointmentRecord } from '@/lib/agent/data';
+import {
+  getAppointment,
+  getService,
+  chargeOnStatus,
+  deleteAppointment as deleteAppointmentRecord,
+} from '@/lib/agent/data';
 import { payablePrice } from '@mediterranea/shared/utils';
 import { notifyTeam } from '@/lib/notifications/team';
 import type { Appointment, AppointmentStatus, PaymentMethod } from '@mediterranea/shared/types';
@@ -174,6 +179,7 @@ export async function updateAppointmentStatus(
     const before = await getAppointment(appointmentId);
     await getAdminDb().collection('appointments').doc(appointmentId).update({
       status,
+      ...chargeOnStatus(status),
       updatedAt: AdminTimestamp.now(),
     });
     if (before) await notifyTeam({ kind: 'updated', before, after: { ...before, status } });
@@ -195,12 +201,6 @@ export async function updateAppointmentStatus(
 }
 
 /** Correct the price agreed for an appointment, e.g. after a discount. */
-export async function saveAppointmentPrice(appointmentId: string, price: number) {
-  if (!Number.isFinite(price) || price < 0 || price > 100000) {
-    return { success: false, error: 'Enter a valid price.' };
-  }
-  try {
-    await getAdminDb().collection('appointments').doc(appointmentId).update({
 /** Record how the client paid (null clears it, e.g. after a mis-tap). */
 export async function saveAppointmentPayment(appointmentId: string, method: PaymentMethod | null) {
   if (method !== null && !['cash', 'card', 'bizum'].includes(method)) {
@@ -221,6 +221,12 @@ export async function saveAppointmentPayment(appointmentId: string, method: Paym
   }
 }
 
+export async function saveAppointmentPrice(appointmentId: string, price: number) {
+  if (!Number.isFinite(price) || price < 0 || price > 100000) {
+    return { success: false, error: 'Enter a valid price.' };
+  }
+  try {
+    await getAdminDb().collection('appointments').doc(appointmentId).update({
       price: Math.round(price * 100) / 100,
       updatedAt: AdminTimestamp.now(),
     });
