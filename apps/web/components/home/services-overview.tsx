@@ -1,54 +1,25 @@
-'use client';
-
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { ScrollReveal } from './scroll-reveal';
-import { useLang } from '@/components/i18n/language-provider';
+import {
+  TREATMENT_CARD_FRAME,
+  TreatmentCardBody,
+  treatmentCardContents,
+} from '@/components/treatments/treatment-card';
+import { getCatalogue } from '@/lib/booking/catalogue';
 import { localizePath } from '@/lib/i18n/config';
+import { getServerDictionary } from '@/lib/i18n/server';
 
-function FacialCard({
-  name,
-  duration,
-  description,
-  details,
-  detailsLabel,
-  delay,
-}: {
-  name: string;
-  duration: string;
-  description: string;
-  /** Where to read more about this format. */
-  details: string;
-  detailsLabel: string;
-  delay: number;
-}) {
-  return (
-    <ScrollReveal delay={delay} className="h-full">
-      <div className="group card-shine card-gold-line flex h-full flex-col border border-white-10 bg-dark-700/30 p-10 transition-all duration-500 hover:border-gold/30 hover:bg-dark-700/60">
-        <div className="mb-4 flex items-center text-xs uppercase tracking-wider text-white-30">
-          <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {duration}
-        </div>
-        <h4 className="mb-4 font-serif text-2xl text-white transition-colors duration-300 group-hover:text-gold">
-          {name}
-        </h4>
-        <p className="flex-1 text-sm font-light leading-relaxed text-white-50">{description}</p>
-        <Link
-          href={details}
-          className="mt-6 text-xs uppercase tracking-wider text-gold/70 transition-colors hover:text-gold"
-        >
-          {detailsLabel} →
-        </Link>
-      </div>
-    </ScrollReveal>
-  );
-}
-
-export function ServicesOverview() {
-  const { dict, locale } = useLang();
+export async function ServicesOverview() {
+  const [services, { locale, dict }] = await Promise.all([getCatalogue(), getServerDictionary()]);
   const s = dict.services;
+  // The treatments page's cards, minus passes: a pack is bought for a series
+  // of sessions, not chosen from the home page.
+  const cards = treatmentCardContents(
+    services.filter((sv) => !sv.bundleSessions),
+    locale,
+    dict
+  );
 
   return (
     <section id="services" className="relative bg-dark-800 py-32 grain-texture overflow-hidden">
@@ -73,33 +44,24 @@ export function ServicesOverview() {
           </div>
         </ScrollReveal>
 
-        {/* The three facial formats */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <FacialCard
-            name={s.customName}
-            duration={s.customDuration}
-            description={s.customDesc}
-            details={localizePath('/treatments/facial-personalizado', locale)}
-            detailsLabel={dict.treatments.details}
-            delay={0}
-          />
-          <FacialCard
-            name={s.indibaName}
-            duration={s.indibaDuration}
-            description={s.indibaDesc}
-            details={localizePath('/treatments/facial-indiba', locale)}
-            detailsLabel={dict.treatments.details}
-            delay={120}
-          />
-          {/* Six treatments share this format; the treatments page lists them. */}
-          <FacialCard
-            name={s.focusName}
-            duration={s.focusDuration}
-            description={s.focusDesc}
-            details={localizePath('/treatments', locale)}
-            detailsLabel={dict.treatments.details}
-            delay={240}
-          />
+        {/* Each card is one link: to the treatment's page when it has one,
+            otherwise to booking it. Three columns on desktop, two on tablets;
+            a short last row is centered, its cards the same width as above. */}
+        <div className="flex flex-wrap justify-center gap-6">
+          {cards.map((c, i) => (
+            <ScrollReveal
+              key={c.name}
+              delay={(i % 3) * 120}
+              className="w-full sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)]"
+            >
+              <Link
+                href={localizePath(c.details ?? c.href, locale)}
+                className={`${TREATMENT_CARD_FRAME} cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-gold`}
+              >
+                <TreatmentCardBody card={c} dict={dict} heading="h3" />
+              </Link>
+            </ScrollReveal>
+          ))}
         </div>
 
         {/* CTA */}

@@ -8,7 +8,7 @@ import {
 } from '@/components/home';
 import { ReviewsSection } from '@/components/home/reviews-section';
 import { JsonLd } from '@/components/json-ld';
-import { getBookingServices } from '@/actions/public-booking';
+import { getCatalogue } from '@/lib/booking/catalogue';
 import { getLocale } from '@/lib/i18n/server';
 import { localizedAlternates, studioJsonLd } from '@/lib/seo';
 
@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // Its own component, so its query runs alongside the reviews' instead of
 // holding up the whole page.
 async function StudioJsonLd() {
-  const [services, locale] = await Promise.all([getBookingServices(), getLocale()]);
+  const [services, locale] = await Promise.all([getCatalogue(), getLocale()]);
   return <JsonLd data={studioJsonLd(services, locale)} />;
 }
 

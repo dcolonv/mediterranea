@@ -19,9 +19,38 @@ const TREATMENT_PAGE_PATH = /^\/treatments\/[a-z0-9-]+$/;
 
 const EN_PREFIX = '/en';
 const QUERY_OR_HASH = /[?#]/;
+// Search engines, AI crawlers and link previews (WhatsApp, Facebook…).
+const CRAWLER = /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|preview|lighthouse/i;
 
 export function isLocale(value: string | undefined | null): value is Locale {
   return value === 'en' || value === 'es';
+}
+
+/**
+ * The site language a browser asks for in its Accept-Language header:
+ * whichever of English and Spanish it ranks higher ('de-DE,de;q=0.9,en;q=0.8'
+ * → English), or null when it names neither.
+ */
+export function preferredLocale(acceptLanguage: string | null | undefined): Locale | null {
+  let best: { locale: Locale; q: number } | null = null;
+  for (const part of acceptLanguage?.split(',') ?? []) {
+    const [tag, ...params] = part.split(';');
+    const lang = tag.trim().toLowerCase().split('-')[0];
+    if (!isLocale(lang)) continue;
+    const weight = params.map((p) => p.trim()).find((p) => p.startsWith('q='));
+    const q = weight ? Number(weight.slice(2)) : 1;
+    // Equal weights keep the browser's order, so only a higher one replaces.
+    if (q > 0 && (!best || q > best.q)) best = { locale: lang, q };
+  }
+  return best?.locale ?? null;
+}
+
+/**
+ * Crawlers and link previews always get the language of the URL: choosing for
+ * them by Accept-Language could keep the Spanish pages out of search.
+ */
+export function isCrawler(userAgent: string | null | undefined): boolean {
+  return CRAWLER.test(userAgent ?? '');
 }
 
 /** Whether a page (path without query or language prefix) has a URL per language. */

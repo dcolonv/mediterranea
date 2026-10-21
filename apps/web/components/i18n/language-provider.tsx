@@ -47,8 +47,10 @@ export function LanguageProvider({
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${LOCALE_COOKIE_MAX_AGE}; samesite=lax`;
     setChosen(next);
     if (urlLocale) {
-      // The same page at the other language's URL.
-      router.push(localizePath(path, next) + window.location.search + window.location.hash);
+      // The same page at the other language's URL, loaded in full: both URLs
+      // render the same route (the middleware rewrites /en), so a client-side
+      // navigation would keep the server-rendered parts in the old language.
+      window.location.assign(localizePath(path, next) + window.location.search + window.location.hash);
     } else {
       // Re-render server components (data pages, service content) in the new locale.
       router.refresh();

@@ -53,10 +53,10 @@ const en = {
   },
   services: {
     eyebrow: 'What We Offer',
-    title: 'Three ways to care for your skin',
+    title: 'Our ways to care for your skin',
     subtitle:
       'A fully personalized session, a single focused treatment, or a targeted INDIBA facial, at our studio in El Palo, East Málaga.',
-    // The treatments page also lists the seasonal facials, so it can't say "three".
+    // The treatments page's heading; `title` is the home page's.
     allTitle: 'Ways to care for your skin',
     allSubtitle:
       'A full personalized session, a single focused treatment, a targeted INDIBA facial — and a seasonal facial for what your skin needs this time of year.',
@@ -185,14 +185,22 @@ const en = {
     back: 'All treatments',
     book: 'Book this treatment',
     home: 'Home',
-    eyebrow: { custom: '1.5 Hour Facial', focus: '45 Minutes Facial', indiba: 'INDIBA Radiofrequency' },
-    options: 'Options and prices',
+    eyebrow: {
+      custom: '1.5 Hour Facial',
+      focus: '45 Minutes Facial',
+      focusList: '45 Minutes Facial',
+      indiba: 'INDIBA Radiofrequency',
+      seasonal: 'Seasonal Facial',
+    },
     aboutFocus: 'How it works',
     combine:
       'Want to work on several things at once? The 1.5 Hour Facial combines the treatments your skin needs in one session.',
     combineLink: 'See the 1.5 Hour Facial',
+    allFocus: 'See all the 45 Minutes Facials',
+    aboutSeasonal: 'A facial for the season',
+    seasonalNote:
+      'It’s our facial for this time of year: available for a limited time, for what your skin needs right now.',
     aboutCustom: 'What it can include',
-    aboutIndiba: 'The technology',
     where: 'Where',
     whereNote: 'At our studio in El Palo, East Málaga.',
     map: 'See on Google Maps',
@@ -201,6 +209,18 @@ const en = {
   // One page per treatment: its short name, its heading (also the search
   // result title) and its search result description.
   treatmentPages: {
+    'facial-focus': {
+      name: '45 Minutes Facial',
+      title: '45 Minutes Facial in Málaga',
+      description:
+        'Focused 45 minute facials in El Palo, Málaga, each for one need: hydration, purifying, brightening, even tone, lines and firmness, or peeling. Prices and online booking.',
+    },
+    'bright-season-facial': {
+      name: 'Bright Season Facial',
+      title: 'Bright Season Facial in Málaga',
+      description:
+        'Our seasonal facial in El Palo, Málaga: it leaves your skin brighter and refreshed, ready for the end of the year’s special occasions. Price and online booking.',
+    },
     'facial-personalizado': {
       name: 'Personalized Facial',
       title: 'Personalized Facial in Málaga',
@@ -308,7 +328,7 @@ const en = {
       {
         name: 'INDIBA',
         description:
-          'Spanish radiofrequency technology, backed by over 40 years of research, at the heart of our most advanced facials.',
+          'Radiofrequency technology, backed by over 40 years of research, at the heart of our most advanced facials.',
         url: 'https://indiba.com/es/',
       },
       {
@@ -515,7 +535,7 @@ const es: typeof en = {
   },
   services: {
     eyebrow: 'Lo Que Ofrecemos',
-    title: 'Tres formas de cuidar tu piel',
+    title: 'Nuestras formas de cuidar tu piel',
     subtitle:
       'Una sesión personalizada, un tratamiento único y focalizado, o un facial INDIBA específico, en nuestro estudio de El Palo, en Málaga Este.',
     allTitle: 'Formas de cuidar tu piel',
@@ -646,20 +666,40 @@ const es: typeof en = {
     back: 'Todos los tratamientos',
     book: 'Reservar este tratamiento',
     home: 'Inicio',
-    eyebrow: { custom: 'Facial de 1,5 Horas', focus: 'Facial de 45 Minutos', indiba: 'Radiofrecuencia INDIBA' },
-    options: 'Opciones y precios',
+    eyebrow: {
+      custom: 'Facial de 1,5 Horas',
+      focus: 'Facial de 45 Minutos',
+      focusList: 'Facial de 45 Minutos',
+      indiba: 'Radiofrecuencia INDIBA',
+      seasonal: 'Facial de Temporada',
+    },
     aboutFocus: 'Cómo funciona',
     combine:
       '¿Quieres trabajar varias cosas a la vez? El Facial de 1,5 Horas combina en una misma sesión los tratamientos que tu piel necesita.',
     combineLink: 'Ver el Facial de 1,5 Horas',
+    allFocus: 'Ver todos los faciales de 45 minutos',
+    aboutSeasonal: 'Un facial de temporada',
+    seasonalNote:
+      'Es nuestro facial para esta época del año: está disponible por tiempo limitado, para lo que tu piel necesita ahora.',
     aboutCustom: 'Qué puede incluir',
-    aboutIndiba: 'La tecnología',
     where: 'Dónde',
     whereNote: 'En nuestro estudio de El Palo, en Málaga Este.',
     map: 'Ver en Google Maps',
     related: 'Otros tratamientos',
   },
   treatmentPages: {
+    'facial-focus': {
+      name: 'Facial de 45 Minutos',
+      title: 'Facial de 45 minutos en Málaga',
+      description:
+        'Faciales focalizados de 45 minutos en El Palo, Málaga, cada uno para una necesidad: hidratación, purificante, iluminador, tono uniforme, líneas y firmeza o peeling. Precios y reserva online.',
+    },
+    'bright-season-facial': {
+      name: 'Facial Temporada Luminosa',
+      title: 'Facial Temporada Luminosa en Málaga',
+      description:
+        'Nuestro facial de temporada en El Palo, Málaga: deja tu piel más luminosa y descansada, lista para las ocasiones especiales del fin de año. Precio y reserva online.',
+    },
     'facial-personalizado': {
       name: 'Facial personalizado',
       title: 'Facial personalizado en Málaga',
@@ -767,7 +807,7 @@ const es: typeof en = {
       {
         name: 'INDIBA',
         description:
-          'Tecnología española de radiofrecuencia, con más de 40 años de investigación, en el corazón de nuestros faciales más avanzados.',
+          'Tecnología de radiofrecuencia, con más de 40 años de investigación, en el corazón de nuestros faciales más avanzados.',
         url: 'https://indiba.com/es/',
       },
       {

@@ -1,12 +1,15 @@
 import Link from 'next/link';
-import { Button, PriceTag } from '@/components/ui';
-import { getBookingServices, type PublicService } from '@/actions/public-booking';
-import { treatmentCards, spanIfLoneLast } from '@/lib/booking/treatment-cards';
+import { Button } from '@/components/ui';
+import {
+  TREATMENT_CARD_FRAME,
+  TreatmentCardBody,
+  treatmentCardContents,
+  type TreatmentCardContent,
+} from '@/components/treatments/treatment-card';
+import { getBookingServices } from '@/actions/public-booking';
+import { spanIfLoneLast } from '@/lib/booking/treatment-cards';
 import { getServerDictionary } from '@/lib/i18n/server';
-import { durationLabel } from '@/lib/i18n/duration';
-import { serviceName, serviceDescription } from '@/lib/i18n/service';
 import { localizePath } from '@/lib/i18n/config';
-import { treatmentPageForService } from '@/lib/booking/treatment-pages';
 import { localizedMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -20,108 +23,15 @@ export default async function TreatmentsPage() {
   ]);
   const s = dict.services;
   const ft = dict.facialTreatments;
-  const b = dict.booking;
   const t = dict.technology;
   const p = dict.products;
 
-  // A card's price: the lowest price (and intro price) among its treatments.
-  const pricingOf = (list: PublicService[]) => {
-    const prices = list.map((sv) => sv.price);
-    return {
-      regular: Math.min(...prices),
-      first: Math.min(...list.map((sv) => sv.firstVisitPrice || sv.price)),
-      // "from" only earns its place when the group spans more than one price.
-      varies: Math.min(...prices) !== Math.max(...prices),
-    };
-  };
-
-  interface Card {
-    name: string;
-    duration: string;
-    description: string;
-    pricing: { regular: number; first: number } | null;
-    from: boolean;
-    badge?: string;
-    href: string;
-    /** The treatment's own page, when it has one. */
-    details?: string;
-  }
-
-  const pageOf = (serviceSlug: string) => {
-    const page = treatmentPageForService(serviceSlug);
-    return page && `/treatments/${page.slug}`;
-  };
-
-  const formatCopy = {
-    custom: { name: s.customName, duration: s.customDuration, description: s.customDesc },
-    focus: { name: s.focusName, duration: s.focusDuration, description: s.focusDesc },
-    indiba: { name: s.indibaName, duration: s.indibaDuration, description: s.indibaDesc },
-  };
-
-  // Catalogue order, as on the booking page: a format (booking group) sits where
-  // its first treatment does, and a group with no active treatments has no card.
-  // Standalone treatments — seasonal facials, or ones taken out of a group —
-  // book directly.
-  const cards: Card[] = treatmentCards(services).map((c) => {
-    if (c.kind === 'service') {
-      const sv = c.service;
-      return {
-        name: serviceName(sv, locale),
-        duration: sv.bundleSessions
-          ? b.passHint(sv.bundleSessions, durationLabel(sv.durationMinutes, locale))
-          : durationLabel(sv.durationMinutes, locale),
-        description: serviceDescription(sv, locale),
-        pricing: { regular: sv.price, first: sv.firstVisitPrice || sv.price },
-        from: false,
-        badge: sv.temporary ? s.seasonal : undefined,
-        href: `/book?service=${sv.slug}`,
-        details: pageOf(sv.slug),
-      };
-    }
-    const pricing = pricingOf(c.services);
-    return {
-      ...formatCopy[c.group],
-      pricing,
-      from: pricing.varies,
-      href: `/book?group=${c.group}`,
-      // The 45 minute facials each have a page, linked from the list below.
-      details: c.group === 'focus' ? undefined : pageOf(c.services[0].slug),
-    };
-  });
+  const cards = treatmentCardContents(services, locale, dict);
   const hasSeasonal = services.some((sv) => !sv.bookingGroup && sv.temporary);
 
-  const card = (c: Card, i: number) => (
-    <div
-      key={c.name}
-      className={`group flex h-full min-w-0 flex-col border border-white-10 bg-dark-800/40 p-6 transition-all duration-500 hover:border-gold/30 hover:bg-dark-800/70 sm:p-8 ${spanIfLoneLast(i, cards.length)}`}
-    >
-      <div className="mb-4 flex flex-wrap items-center gap-y-2 text-xs uppercase tracking-wider text-white-30">
-        <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        {c.duration}
-        {c.badge && (
-          <span className="ml-auto border border-gold/40 px-2 py-0.5 text-[10px] tracking-wider text-gold">
-            {c.badge}
-          </span>
-        )}
-      </div>
-      <div className="mb-4 flex flex-col gap-2">
-        <h2 className="font-serif text-2xl leading-snug break-words text-white transition-colors duration-300 group-hover:text-gold">
-          {c.name}
-        </h2>
-        {c.pricing && (
-          <PriceTag
-            price={c.pricing.regular}
-            firstPrice={c.pricing.first}
-            from={c.from}
-            fromLabel={b.from}
-            firstLabel={s.firstVisit}
-            className="text-left"
-          />
-        )}
-      </div>
-      <p className="flex-1 text-sm font-light leading-relaxed text-white-50">{c.description}</p>
+  const card = (c: TreatmentCardContent, i: number) => (
+    <div key={c.name} className={`${TREATMENT_CARD_FRAME} ${spanIfLoneLast(i, cards.length)}`}>
+      <TreatmentCardBody card={c} dict={dict} />
       {c.details && (
         <Link
           href={localizePath(c.details, locale)}
