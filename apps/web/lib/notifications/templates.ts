@@ -306,3 +306,43 @@ export function appointmentReminder(ctx: NotificationContext): RenderedMessage {
     sms: `${STUDIO} reminder: ${summary}.`,
   };
 }
+
+/**
+ * After a completed visit: ask for a Google review. Neutral on purpose — every
+ * client is asked the same way, as Google's review policy requires.
+ */
+export function reviewRequest(ctx: NotificationContext, reviewUrl: string): RenderedMessage {
+  const btn =
+    'display:inline-block;padding:10px 18px;border:1px solid #9a7b3f;border-radius:2px;' +
+    'text-decoration:none;font-size:14px;background:#9a7b3f;color:#fff';
+
+  if (ctx.locale === 'es') {
+    return {
+      subject: `¿Qué tal tu visita a ${STUDIO}?`,
+      html: shell(
+        'Gracias por tu visita',
+        `<p>Hola ${ctx.clientName}:</p>
+         <p>Gracias por venir a ${STUDIO} para tu ${ctx.serviceName}.</p>
+         <p>Si tienes un minuto, ¿nos cuentas qué tal en Google? Tu opinión nos ayuda a mejorar y a que otras personas nos encuentren.</p>
+         <p style="margin-top:24px"><a href="${reviewUrl}" style="${btn}">Escribir una reseña</a></p>
+         <p style="font-size:11px;color:#8a8378">Si el botón no funciona, copia este enlace:<br/>${reviewUrl}</p>`
+      ),
+      text: `Gracias por tu visita a ${STUDIO}. Si tienes un minuto, ¿nos cuentas qué tal en Google? ${reviewUrl}`,
+      sms: `${STUDIO}: gracias por tu visita. Si tienes un minuto, ¿nos dejas tu opinión en Google? ${reviewUrl}`,
+    };
+  }
+
+  return {
+    subject: `How was your visit to ${STUDIO}?`,
+    html: shell(
+      'Thank you for your visit',
+      `<p>Hi ${ctx.clientName},</p>
+       <p>Thank you for coming to ${STUDIO} for your ${ctx.serviceName}.</p>
+       <p>If you have a minute, would you tell us how it went on Google? Your feedback helps us improve and helps others find us.</p>
+       <p style="margin-top:24px"><a href="${reviewUrl}" style="${btn}">Write a review</a></p>
+       <p style="font-size:11px;color:#8a8378">If the button doesn’t work, copy this link:<br/>${reviewUrl}</p>`
+    ),
+    text: `Thank you for your visit to ${STUDIO}. If you have a minute, would you tell us how it went on Google? ${reviewUrl}`,
+    sms: `${STUDIO}: thank you for your visit. If you have a minute, would you share your thoughts on Google? ${reviewUrl}`,
+  };
+}

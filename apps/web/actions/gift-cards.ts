@@ -6,6 +6,8 @@ import { getAdminDb } from '@/lib/firebase/admin';
 import { serializeDoc } from '@/lib/firebase/serialize';
 import { getStripe, stripeConfigured, toCents } from '@/lib/stripe/client';
 import { siteUrl } from '@/lib/site-url';
+import { localizePath } from '@/lib/i18n/config';
+import { getLocale } from '@/lib/i18n/server';
 import type { DocumentData } from 'firebase-admin/firestore';
 import { formatPrice } from '@mediterranea/shared/utils';
 import type { GiftCard, GiftCardStatus } from '@mediterranea/shared/types';
@@ -69,6 +71,7 @@ export async function createGiftCardCheckout(
   }
 
   try {
+    const locale = await getLocale();
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_email: input.purchaserEmail.trim(),
@@ -92,7 +95,8 @@ export async function createGiftCardCheckout(
         message: (input.message ?? '').trim().slice(0, 300),
       },
       success_url: `${siteUrl()}/gift-cards/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl()}/gift-cards`,
+      // Back to the gift-card page they came from, in their language.
+      cancel_url: `${siteUrl()}${localizePath('/gift-cards', locale)}`,
     });
     if (!session.url) return { success: false, error: 'Could not start checkout. Please try again.' };
     return { success: true, url: session.url };

@@ -2,13 +2,12 @@ import { BookingFlow } from '@/components/booking/booking-flow';
 import { getBookingServices, getPublicPolicy } from '@/actions/public-booking';
 import { getCurrentCustomer } from '@/lib/auth/customer';
 import { getServerDictionary } from '@/lib/i18n/server';
+import { localizedMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Book an Appointment | Mediterránea Face Studio',
-  description: 'Pre-book your treatment online — choose a service, practitioner, and time.',
-};
+// One indexable page per language, whatever treatment the link preselects.
+export const generateMetadata = () => localizedMetadata('/book', 'book');
 
 export default async function BookPage({
   searchParams,

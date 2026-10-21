@@ -31,7 +31,7 @@ describe('buildIcs', () => {
   });
 
   it('escapes commas in the location', () => {
-    expect(ics).toContain('LOCATION:Avenida Juan Sebastian Elcano\\, 143');
+    expect(ics).toContain('LOCATION:Avenida Juan Sebastián Elcano\\, 143');
   });
 
   it('keeps a newline in the treatment name from forging new properties', () => {

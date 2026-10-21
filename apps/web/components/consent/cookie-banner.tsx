@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { useLang } from '@/components/i18n/language-provider';
@@ -11,32 +11,41 @@ import { getConsent, setConsent, CONSENT_EVENT } from '@/lib/consent';
  * analytics stay off until "Accept" is chosen, and rejecting clears any GA
  * cookies from an earlier opt-in. Reopens via the footer "Cookie settings" link.
  */
+function subscribeToConsent(onChange: () => void) {
+  window.addEventListener(CONSENT_EVENT, onChange);
+  return () => window.removeEventListener(CONSENT_EVENT, onChange);
+}
+
 export function CookieBanner() {
   const { dict } = useLang();
   const c = dict.cookies;
-  // Start hidden: the choice lives in localStorage, which is client-only, so
-  // rendering nothing on the server avoids a hydration mismatch.
-  const [visible, setVisible] = useState(false);
+  // The choice lives in localStorage, which the server can't read, so the
+  // server renders the banner: it then paints with the page rather than after
+  // hydration. For visitors who already chose, CONSENT_PREPAINT_SCRIPT hides
+  // it until this reads the stored choice and removes it.
+  const consent = useSyncExternalStore(subscribeToConsent, getConsent, () => null);
+  const [reopened, setReopened] = useState(false);
 
   useEffect(() => {
-    if (getConsent() === null) setVisible(true);
-    // The footer link dispatches this to reopen the banner.
-    const onReopen = () => setVisible(true);
+    // The footer link dispatches this to reopen the banner; a choice closes it.
+    const onReopen = () => {
+      delete document.documentElement.dataset.consent;
+      setReopened(true);
+    };
+    const onChange = () => setReopened(false);
     window.addEventListener('cookie-consent-reopen', onReopen);
-    return () => window.removeEventListener('cookie-consent-reopen', onReopen);
-  }, []);
-
-  // Hide as soon as a choice is made anywhere in the app.
-  useEffect(() => {
-    const onChange = () => setVisible(false);
     window.addEventListener(CONSENT_EVENT, onChange);
-    return () => window.removeEventListener(CONSENT_EVENT, onChange);
+    return () => {
+      window.removeEventListener('cookie-consent-reopen', onReopen);
+      window.removeEventListener(CONSENT_EVENT, onChange);
+    };
   }, []);
 
-  if (!visible) return null;
+  if (consent !== null && !reopened) return null;
 
   return (
     <div
+      data-cookie-banner
       role="dialog"
       aria-label={c.title}
       className="fixed inset-x-0 bottom-0 z-[100] border-t border-white-10 bg-dark-800 shadow-lg"

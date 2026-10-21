@@ -5,10 +5,11 @@ import Image from 'next/image';
 import { CONTACT_INFO, BUSINESS_HOURS } from '@mediterranea/shared/constants';
 import { WhatsAppLink } from '@/components/whatsapp-link';
 import { useLang } from '@/components/i18n/language-provider';
+import { localizePath } from '@/lib/i18n/config';
 import { CookieSettingsLink } from '@/components/consent/cookie-banner';
 
 export function Footer() {
-  const { dict } = useLang();
+  const { dict, locale } = useLang();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -17,7 +18,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-16 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-1">
-            <Link href="/">
+            <Link href={localizePath('/', locale)}>
               <Image
                 src="/logo_light.png"
                 alt="Mediterránea Face Studio"
@@ -35,7 +36,7 @@ export function Footer() {
             <ul className="space-y-4">
               <li>
                 <Link
-                  href="/"
+                  href={localizePath('/', locale)}
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   {dict.footer.home}
@@ -43,7 +44,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/treatments"
+                  href={localizePath('/treatments', locale)}
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   {dict.footer.services}
@@ -51,7 +52,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/#about"
+                  href={localizePath('/#about', locale)}
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   {dict.footer.about}
@@ -59,7 +60,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/book"
+                  href={localizePath('/book', locale)}
                   className="text-sm text-white-50 hover:text-white transition-colors"
                 >
                   {dict.footer.book}
@@ -122,7 +123,7 @@ export function Footer() {
             </div>
             <div className="flex gap-6">
               <a
-                href="https://www.instagram.com/mediterranea_face_studio"
+                href={CONTACT_INFO.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white-30 hover:text-white transition-colors"

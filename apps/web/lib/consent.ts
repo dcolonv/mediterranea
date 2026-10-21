@@ -16,6 +16,13 @@ const STORAGE_KEY = 'cookie-consent';
 /** Fired on the window whenever the choice changes, so listeners can react. */
 export const CONSENT_EVENT = 'cookie-consent-change';
 
+/**
+ * Inline script for the page, run before first paint: flags <html data-consent>
+ * when a choice is stored, so the server-rendered banner stays hidden for
+ * visitors who already answered instead of flashing until hydration.
+ */
+export const CONSENT_PREPAINT_SCRIPT = `try{var v=localStorage.getItem(${JSON.stringify(STORAGE_KEY)});if(v==='accepted'||v==='rejected')document.documentElement.dataset.consent=''}catch(e){}`;
+
 export function getConsent(): ConsentChoice | null {
   if (typeof window === 'undefined') return null;
   try {

@@ -1,13 +1,11 @@
 import Link from 'next/link';
 import { getPublishedPosts } from '@/actions/blog';
 import { getServerDictionary } from '@/lib/i18n/server';
+import { localizedMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Journal | Mediterránea Face Studio',
-  description: 'Skincare tips, treatments, and studio news.',
-};
+export const generateMetadata = () => localizedMetadata('/blog', 'blog');
 
 function prettyDate(iso: string | null): string {
   if (!iso) return '';

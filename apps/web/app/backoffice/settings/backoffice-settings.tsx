@@ -35,7 +35,9 @@ export function BackofficeSettings() {
   const [confirmationEnabled, setConfirmationEnabled] = useState(true);
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [cancellationEnabled, setCancellationEnabled] = useState(true);
-  const [integrations, setIntegrations] = useState<Record<string, boolean> | null>(null);
+  const [integrations, setIntegrations] = useState<Awaited<ReturnType<typeof getIntegrationStatus>> | null>(
+    null
+  );
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -340,6 +342,19 @@ export function BackofficeSettings() {
                 </span>
               </div>
             ))}
+          {/* Set with REVIEW_REQUESTS: off, test (to REVIEW_REQUESTS_TEST_TO) or on. */}
+          {integrations && (
+            <div className="flex items-center justify-between border border-white-10 px-3 py-2 text-sm">
+              <span className="text-white-70">Google review requests</span>
+              <span
+                className={
+                  { on: 'text-green-400', test: 'text-yellow-400', off: 'text-white-30' }[integrations.reviewRequests]
+                }
+              >
+                {{ on: '● On', test: '◐ Test inbox only', off: '○ Off' }[integrations.reviewRequests]}
+              </span>
+            </div>
+          )}
         </div>
       </section>
 

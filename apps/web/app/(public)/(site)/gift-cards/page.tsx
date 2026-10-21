@@ -1,13 +1,11 @@
 import { GiftCardForm } from '@/components/gift-cards/gift-card-form';
 import { giftCardsAvailable } from '@/actions/gift-cards';
 import { getServerDictionary } from '@/lib/i18n/server';
+import { localizedMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Gift Cards | Mediterránea Face Studio',
-  description: 'Give the gift of a personalized facial treatment.',
-};
+export const generateMetadata = () => localizedMetadata('/gift-cards', 'giftCards');
 
 export default async function GiftCardsPage() {
   const [available, { dict }] = await Promise.all([giftCardsAvailable(), getServerDictionary()]);

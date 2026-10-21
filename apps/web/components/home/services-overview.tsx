@@ -4,16 +4,22 @@ import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { ScrollReveal } from './scroll-reveal';
 import { useLang } from '@/components/i18n/language-provider';
+import { localizePath } from '@/lib/i18n/config';
 
 function FacialCard({
   name,
   duration,
   description,
+  details,
+  detailsLabel,
   delay,
 }: {
   name: string;
   duration: string;
   description: string;
+  /** Where to read more about this format. */
+  details: string;
+  detailsLabel: string;
   delay: number;
 }) {
   return (
@@ -29,13 +35,19 @@ function FacialCard({
           {name}
         </h4>
         <p className="flex-1 text-sm font-light leading-relaxed text-white-50">{description}</p>
+        <Link
+          href={details}
+          className="mt-6 text-xs uppercase tracking-wider text-gold/70 transition-colors hover:text-gold"
+        >
+          {detailsLabel} →
+        </Link>
       </div>
     </ScrollReveal>
   );
 }
 
 export function ServicesOverview() {
-  const { dict } = useLang();
+  const { dict, locale } = useLang();
   const s = dict.services;
 
   return (
@@ -63,15 +75,37 @@ export function ServicesOverview() {
 
         {/* The three facial formats */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <FacialCard name={s.customName} duration={s.customDuration} description={s.customDesc} delay={0} />
-          <FacialCard name={s.indibaName} duration={s.indibaDuration} description={s.indibaDesc} delay={120} />
-          <FacialCard name={s.focusName} duration={s.focusDuration} description={s.focusDesc} delay={240} />
+          <FacialCard
+            name={s.customName}
+            duration={s.customDuration}
+            description={s.customDesc}
+            details={localizePath('/treatments/facial-personalizado', locale)}
+            detailsLabel={dict.treatments.details}
+            delay={0}
+          />
+          <FacialCard
+            name={s.indibaName}
+            duration={s.indibaDuration}
+            description={s.indibaDesc}
+            details={localizePath('/treatments/facial-indiba', locale)}
+            detailsLabel={dict.treatments.details}
+            delay={120}
+          />
+          {/* Six treatments share this format; the treatments page lists them. */}
+          <FacialCard
+            name={s.focusName}
+            duration={s.focusDuration}
+            description={s.focusDesc}
+            details={localizePath('/treatments', locale)}
+            detailsLabel={dict.treatments.details}
+            delay={240}
+          />
         </div>
 
         {/* CTA */}
         <ScrollReveal>
           <div className="mt-16 text-center">
-            <Link href="/book">
+            <Link href={localizePath('/book', locale)}>
               <Button variant="elegant" size="lg">
                 {s.cta}
               </Button>

@@ -42,18 +42,20 @@ const en = {
     preBookNote: 'Reserve your first visit from opening day.',
   },
   hero: {
-    eyebrow: 'Personalized Facial Treatments',
+    eyebrow: 'Facial Aesthetics in Málaga',
     headingLine1: 'Facial Care,',
     headingLine2: 'Made for You',
     description:
       'A studio dedicated to personalized facial treatments in East Málaga. Every session is tailored to your skin, with warm, attentive Mediterranean care.',
     book: 'Book Appointment',
     explore: 'Explore Facials',
+    imageAlt: 'Facial treatment room at Mediterránea Face Studio in El Palo, Málaga',
   },
   services: {
     eyebrow: 'What We Offer',
     title: 'Three ways to care for your skin',
-    subtitle: 'A fully personalized session, a single focused treatment, or a targeted INDIBA facial.',
+    subtitle:
+      'A fully personalized session, a single focused treatment, or a targeted INDIBA facial, at our studio in El Palo, East Málaga.',
     // The treatments page also lists the seasonal facials, so it can't say "three".
     allTitle: 'Ways to care for your skin',
     allSubtitle:
@@ -91,31 +93,37 @@ const en = {
     items: [
       {
         name: 'Hydration',
+        page: 'facial-hidratante',
         description:
           'Replenishes water and nutrients to relieve tightness and leave the skin soft, plump and comfortable.',
       },
       {
         name: 'Purifying',
+        page: 'facial-purificante',
         description:
           'Deeply cleanses and decongests pores to rebalance oily or congested skin.',
       },
       {
         name: 'Brightening',
+        page: 'facial-iluminador',
         description:
           'Revives dull skin, restoring luminosity and a fresh, radiant tone.',
       },
       {
         name: 'Even Tone',
+        page: 'tono-uniforme',
         description:
           'Softens spots and marks for a more uniform, luminous complexion.',
       },
       {
         name: 'Lines & Firmness',
+        page: 'lineas-y-firmeza',
         description:
           'Works on expression lines and laxity to redensify the skin for a firmer, smoother look.',
       },
       {
         name: 'Peeling',
+        page: 'peeling',
         description:
           'A gentle resurfacing that renews the skin’s surface, smoothing texture and reviving glow.',
       },
@@ -124,8 +132,9 @@ const en = {
   about: {
     storyEyebrow: 'Our Story',
     storyTitle: 'Meet Dr. Mariana',
+    founderAlt: 'Dr. Mariana, founder of Mediterránea Face Studio',
     storyP1:
-      'Hi, I’m Dr. Mariana, the founder of Mediterránea Face Studio. I hold a doctorate in pharmacy and have always been fascinated by the connection between skin health and overall well-being. Mediterránea was born from a desire to offer results-driven facial treatments, delivered with warmth, care, and presence.',
+      'Hi, I’m Dr. Mariana, the founder of Mediterránea Face Studio in El Palo, Málaga. I hold a doctorate in pharmacy and have always been fascinated by the connection between skin health and overall well-being. Mediterránea was born from a desire to offer results-driven facial treatments, delivered with warmth, care, and presence.',
     storyP2:
       'I believe beauty is not about covering up, but about uncovering your natural radiance through knowledge, balance, and gentle care. Each treatment at Mediterránea is customized to your skin’s unique needs, using carefully selected products and the latest in facial technology.',
     valuesEyebrow: 'Our Values',
@@ -151,7 +160,7 @@ const en = {
     eyebrow: 'Get In Touch',
     title: 'Contact Us',
     subtitle:
-      'We’d love to hear from you. Reach out to schedule a consultation or ask any questions.',
+      'We’re in El Palo, East Málaga, and we’d love to hear from you. Reach out to schedule a consultation or ask any questions.',
     locationTitle: 'Location',
     contactTitle: 'Contact',
     hoursTitle: 'Hours',
@@ -175,6 +184,71 @@ const en = {
   treatmentDetail: {
     back: 'All treatments',
     book: 'Book this treatment',
+    home: 'Home',
+    eyebrow: { custom: '1.5 Hour Facial', focus: '45 Minutes Facial', indiba: 'INDIBA Radiofrequency' },
+    options: 'Options and prices',
+    aboutFocus: 'How it works',
+    combine:
+      'Want to work on several things at once? The 1.5 Hour Facial combines the treatments your skin needs in one session.',
+    combineLink: 'See the 1.5 Hour Facial',
+    aboutCustom: 'What it can include',
+    aboutIndiba: 'The technology',
+    where: 'Where',
+    whereNote: 'At our studio in El Palo, East Málaga.',
+    map: 'See on Google Maps',
+    related: 'Other treatments',
+  },
+  // One page per treatment: its short name, its heading (also the search
+  // result title) and its search result description.
+  treatmentPages: {
+    'facial-personalizado': {
+      name: 'Personalized Facial',
+      title: 'Personalized Facial in Málaga',
+      description:
+        'A 1.5 hour facial in El Palo, Málaga: we assess your skin and combine the treatments it needs in one session. Book online.',
+    },
+    'facial-indiba': {
+      name: 'INDIBA Facial',
+      title: 'INDIBA Facial in Málaga',
+      description:
+        'INDIBA radiofrequency in El Palo, Málaga: a 45 minute session on the face and neck, or 1 h 15 min with LED light, and a 5-session pack. Prices and online booking.',
+    },
+    'facial-hidratante': {
+      name: 'Hydration',
+      title: 'Hydrating Facial in Málaga',
+      description:
+        'A 45 minute facial in El Palo, Málaga that replenishes water and nutrients for soft, plump, comfortable skin. Price and online booking.',
+    },
+    'facial-purificante': {
+      name: 'Purifying',
+      title: 'Purifying Facial in Málaga',
+      description:
+        'A 45 minute deep cleanse in El Palo, Málaga that decongests pores and rebalances oily or congested skin. Price and online booking.',
+    },
+    'facial-iluminador': {
+      name: 'Brightening',
+      title: 'Brightening Facial in Málaga',
+      description:
+        'A 45 minute facial in El Palo, Málaga that restores luminosity to dull skin for a fresh, radiant tone. Price and online booking.',
+    },
+    'tono-uniforme': {
+      name: 'Even Tone',
+      title: 'Facial for Dark Spots and Even Tone in Málaga',
+      description:
+        'A 45 minute facial in El Palo, Málaga that evens tone and fades spots and marks for more uniform skin. Price and online booking.',
+    },
+    'lineas-y-firmeza': {
+      name: 'Lines & Firmness',
+      title: 'Facial for Fine Lines and Firmness in Málaga',
+      description:
+        'A 45 minute facial in El Palo, Málaga that works on expression lines and laxity for a firmer, smoother look. Price and online booking.',
+    },
+    peeling: {
+      name: 'Peeling',
+      title: 'Facial Peel in Málaga',
+      description:
+        'A 45 minute peel in El Palo, Málaga that renews the skin’s surface, smooths texture and brings back a fresh glow. Price and online booking.',
+    },
   },
   technology: {
     eyebrow: 'What We Use',
@@ -365,6 +439,26 @@ const en = {
     readMore: 'Read more',
     back: 'All articles',
   },
+  // Search results and link previews. The localized pages have one per language.
+  meta: {
+    homeTitle: 'Facial Treatments in Málaga | Mediterránea Face Studio',
+    homeDescription:
+      'Facial studio in El Palo, East Málaga. Personalized facials, INDIBA and peels, tailored to your skin. Book your appointment online.',
+    treatmentsTitle: 'Treatments and Prices | Mediterránea Face Studio',
+    treatmentsDescription:
+      'The 1.5 Hour Facial, 45 Minutes Facial and INDIBA Facial in El Palo, Málaga: what each one does, how long it takes, the price and the technology we use.',
+    bookTitle: 'Book an Appointment | Mediterránea Face Studio',
+    bookDescription:
+      'Book your facial treatment in El Palo, Málaga online: choose the treatment, the day and the time.',
+    giftCardsTitle: 'Gift Cards | Mediterránea Face Studio',
+    giftCardsDescription: 'Give a personalized facial treatment at Mediterránea Face Studio, Málaga.',
+    blogTitle: 'Skincare Journal | Mediterránea Face Studio',
+    blogDescription: 'Skincare tips, treatments and news from the studio.',
+    // Structured data (schema.org) for the home page.
+    business:
+      'Facial studio in El Palo, East Málaga. Personalized facials after assessing your skin: the 1.5 Hour Facial, the 45 Minutes Facial and the INDIBA Facial.',
+    catalog: 'Facial treatments',
+  },
 };
 
 // Spanish translation — same shape as `en`.
@@ -410,18 +504,20 @@ const es: typeof en = {
     preBookNote: 'Reserva tu primera visita desde el día de apertura.',
   },
   hero: {
-    eyebrow: 'Tratamientos Faciales Personalizados',
+    eyebrow: 'Estética Facial en Málaga',
     headingLine1: 'Cuidado Facial,',
     headingLine2: 'Hecho para Ti',
     description:
       'Un estudio dedicado a los tratamientos faciales personalizados en Málaga Este. Cada sesión se adapta a tu piel, con el cálido y atento cuidado mediterráneo.',
     book: 'Reservar cita',
     explore: 'Ver faciales',
+    imageAlt: 'Cabina de tratamientos faciales de Mediterránea Face Studio en El Palo, Málaga',
   },
   services: {
     eyebrow: 'Lo Que Ofrecemos',
     title: 'Tres formas de cuidar tu piel',
-    subtitle: 'Una sesión personalizada, un tratamiento único y focalizado, o un facial INDIBA específico.',
+    subtitle:
+      'Una sesión personalizada, un tratamiento único y focalizado, o un facial INDIBA específico, en nuestro estudio de El Palo, en Málaga Este.',
     allTitle: 'Formas de cuidar tu piel',
     allSubtitle:
       'Una sesión completa y personalizada, un tratamiento único y focalizado, un facial INDIBA específico — y un facial de temporada para lo que tu piel necesita en esta época del año.',
@@ -458,31 +554,37 @@ const es: typeof en = {
     items: [
       {
         name: 'Hidratación',
+        page: 'facial-hidratante',
         description:
           'Repone agua y nutrientes para aliviar la tirantez y dejar la piel suave, jugosa y confortable.',
       },
       {
         name: 'Purificante',
+        page: 'facial-purificante',
         description:
           'Limpia en profundidad y descongestiona los poros para equilibrar la piel grasa o congestionada.',
       },
       {
         name: 'Iluminador',
+        page: 'facial-iluminador',
         description:
           'Revitaliza la piel apagada y devuelve luminosidad y un tono fresco y radiante.',
       },
       {
         name: 'Tono Uniforme',
+        page: 'tono-uniforme',
         description:
           'Atenúa manchas y marcas para un tono más homogéneo y luminoso.',
       },
       {
         name: 'Líneas & Firmeza',
+        page: 'lineas-y-firmeza',
         description:
           'Trabaja las líneas de expresión y la laxitud para redensificar la piel con un efecto más firme y liso.',
       },
       {
         name: 'Peeling',
+        page: 'peeling',
         description:
           'Una renovación suave que regenera la superficie de la piel, alisa la textura y devuelve la luminosidad.',
       },
@@ -491,8 +593,9 @@ const es: typeof en = {
   about: {
     storyEyebrow: 'Nuestra Historia',
     storyTitle: 'Conoce a la Dra. Mariana',
+    founderAlt: 'La Dra. Mariana, fundadora de Mediterránea Face Studio',
     storyP1:
-      'Hola, soy la Dra. Mariana, fundadora de Mediterránea Face Studio. Soy doctora en farmacia y siempre me ha fascinado la conexión entre la salud de la piel y el bienestar general. Mediterránea nació del deseo de ofrecer tratamientos faciales con resultados reales, brindados con calidez, cuidado y presencia.',
+      'Hola, soy la Dra. Mariana, fundadora de Mediterránea Face Studio, en El Palo (Málaga). Soy doctora en farmacia y siempre me ha fascinado la conexión entre la salud de la piel y el bienestar general. Mediterránea nació del deseo de ofrecer tratamientos faciales con resultados reales, brindados con calidez, cuidado y presencia.',
     storyP2:
       'Creo que la belleza no se trata de disimular, sino de revelar tu resplandor natural a través del conocimiento, el equilibrio y el cuidado delicado. Cada tratamiento en Mediterránea se personaliza según las necesidades únicas de tu piel, con productos cuidadosamente seleccionados y la última tecnología facial.',
     valuesEyebrow: 'Nuestros Valores',
@@ -518,7 +621,7 @@ const es: typeof en = {
     eyebrow: 'Contáctanos',
     title: 'Contacto',
     subtitle:
-      'Nos encantaría saber de ti. Escríbenos para agendar una consulta o resolver cualquier duda.',
+      'Estamos en El Palo, en Málaga Este, y nos encantaría saber de ti. Escríbenos para agendar una consulta o resolver cualquier duda.',
     locationTitle: 'Ubicación',
     contactTitle: 'Contacto',
     hoursTitle: 'Horario',
@@ -542,6 +645,69 @@ const es: typeof en = {
   treatmentDetail: {
     back: 'Todos los tratamientos',
     book: 'Reservar este tratamiento',
+    home: 'Inicio',
+    eyebrow: { custom: 'Facial de 1,5 Horas', focus: 'Facial de 45 Minutos', indiba: 'Radiofrecuencia INDIBA' },
+    options: 'Opciones y precios',
+    aboutFocus: 'Cómo funciona',
+    combine:
+      '¿Quieres trabajar varias cosas a la vez? El Facial de 1,5 Horas combina en una misma sesión los tratamientos que tu piel necesita.',
+    combineLink: 'Ver el Facial de 1,5 Horas',
+    aboutCustom: 'Qué puede incluir',
+    aboutIndiba: 'La tecnología',
+    where: 'Dónde',
+    whereNote: 'En nuestro estudio de El Palo, en Málaga Este.',
+    map: 'Ver en Google Maps',
+    related: 'Otros tratamientos',
+  },
+  treatmentPages: {
+    'facial-personalizado': {
+      name: 'Facial personalizado',
+      title: 'Facial personalizado en Málaga',
+      description:
+        'Facial de 1,5 horas en El Palo, Málaga: valoramos tu piel y combinamos en una misma sesión los tratamientos que necesita. Reserva online.',
+    },
+    'facial-indiba': {
+      name: 'Facial INDIBA',
+      title: 'Facial INDIBA en Málaga',
+      description:
+        'Radiofrecuencia INDIBA en El Palo, Málaga: sesión de 45 minutos en rostro y cuello, o de 1 h 15 min con luz LED, y pack de 5 sesiones. Precios y reserva online.',
+    },
+    'facial-hidratante': {
+      name: 'Hidratación',
+      title: 'Facial hidratante en Málaga',
+      description:
+        'Facial de 45 minutos en El Palo, Málaga, que repone agua y nutrientes para una piel suave, jugosa y confortable. Precio y reserva online.',
+    },
+    'facial-purificante': {
+      name: 'Purificante',
+      title: 'Facial purificante en Málaga',
+      description:
+        'Limpieza profunda en 45 minutos en El Palo, Málaga: descongestiona los poros y equilibra la piel grasa o congestionada. Precio y reserva online.',
+    },
+    'facial-iluminador': {
+      name: 'Iluminador',
+      title: 'Facial iluminador en Málaga',
+      description:
+        'Facial de 45 minutos en El Palo, Málaga, que devuelve luminosidad a la piel apagada y recupera un tono fresco. Precio y reserva online.',
+    },
+    'tono-uniforme': {
+      name: 'Tono Uniforme',
+      title: 'Facial para manchas y tono uniforme en Málaga',
+      description:
+        'Facial de 45 minutos en El Palo, Málaga, que unifica el tono y atenúa manchas y marcas para una piel más homogénea. Precio y reserva online.',
+    },
+    'lineas-y-firmeza': {
+      name: 'Líneas & Firmeza',
+      title: 'Facial para líneas de expresión y firmeza en Málaga',
+      description:
+        'Facial de 45 minutos en El Palo, Málaga, que trabaja las líneas de expresión y la laxitud para un efecto más firme y liso. Precio y reserva online.',
+    },
+    peeling: {
+      name: 'Peeling',
+      title: 'Peeling facial en Málaga',
+      description:
+        'Peeling de 45 minutos en El Palo, Málaga, que renueva la superficie de la piel, suaviza la textura y devuelve la luminosidad. Precio y reserva online.',
+    },
   },
   technology: {
     eyebrow: 'Lo Que Usamos',
@@ -731,6 +897,24 @@ const es: typeof en = {
     empty: 'Nuestras primeras historias llegarán pronto.',
     readMore: 'Leer más',
     back: 'Todos los artículos',
+  },
+  meta: {
+    homeTitle: 'Tratamientos faciales en Málaga | Mediterránea Face Studio',
+    homeDescription:
+      'Estudio de estética facial en El Palo, Málaga Este. Faciales personalizados, INDIBA y peeling, adaptados a tu piel. Reserva tu cita online.',
+    treatmentsTitle: 'Tratamientos y precios | Mediterránea Face Studio',
+    treatmentsDescription:
+      'Facial de 1,5 horas, facial de 45 minutos y facial INDIBA en El Palo, Málaga: qué hace cada uno, duración, precio y la tecnología que usamos.',
+    bookTitle: 'Reservar cita | Mediterránea Face Studio',
+    bookDescription:
+      'Reserva online tu tratamiento facial en El Palo, Málaga: elige el tratamiento, el día y la hora.',
+    giftCardsTitle: 'Tarjetas regalo | Mediterránea Face Studio',
+    giftCardsDescription: 'Regala un tratamiento facial personalizado en Mediterránea Face Studio, Málaga.',
+    blogTitle: 'Diario de Belleza | Mediterránea Face Studio',
+    blogDescription: 'Consejos de cuidado de la piel, tratamientos y novedades del estudio.',
+    business:
+      'Estudio de estética facial en El Palo, Málaga Este. Faciales personalizados tras valorar la piel: facial de 1,5 horas, facial de 45 minutos y facial INDIBA.',
+    catalog: 'Tratamientos faciales',
   },
 };
 

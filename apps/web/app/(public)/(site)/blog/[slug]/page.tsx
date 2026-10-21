@@ -8,10 +8,11 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPublishedPost(slug);
-  if (!post) return { title: 'Journal | Mediterránea Face Studio' };
+  if (!post) return { title: 'Diario de Belleza | Mediterránea Face Studio' };
   return {
     title: `${post.seoTitle || post.title} | Mediterránea Face Studio`,
     description: post.seoDescription || post.excerpt,
+    alternates: { canonical: `/blog/${slug}` },
   };
 }
 

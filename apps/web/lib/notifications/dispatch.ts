@@ -11,6 +11,7 @@ import {
   appointmentCancelled,
   appointmentRescheduled,
   appointmentReminder,
+  reviewRequest,
   type NotificationContext,
   type RenderedMessage,
 } from './templates';
@@ -19,7 +20,15 @@ import {
   linkExpiryFor,
   appointmentManageUrl,
 } from '@/lib/appointments/link-token';
+import {
+  claimReviewRequest,
+  clientAlreadyAsked,
+  reviewRequestMode,
+  reviewRequestTestRecipient,
+  testCopy,
+} from './review-requests';
 import { siteUrl } from '@/lib/site-url';
+import { CONTACT_INFO } from '@mediterranea/shared/constants';
 import type { Appointment } from '@mediterranea/shared/types';
 
 /**
@@ -155,5 +164,38 @@ export async function notifyAppointmentReminder(appt: Appointment): Promise<void
     await deliver(appt, appointmentReminder(await buildContext(appt)));
   } catch (error) {
     console.error('[notifications] notifyAppointmentReminder failed:', error);
+  }
+}
+
+/**
+ * A visit was completed: ask the client for a Google review, once per client.
+ * Sent, sent to the test inbox instead, or only logged, depending on
+ * REVIEW_REQUESTS (see review-requests.ts).
+ */
+export async function notifyReviewRequest(appointmentId: string): Promise<void> {
+  try {
+    const reviewUrl = CONTACT_INFO.googleReviewUrl;
+    const appt = await data.getAppointment(appointmentId);
+    if (!appt || appt.status !== 'completed' || !reviewUrl) return;
+    if (await clientAlreadyAsked(appt)) return;
+
+    const mode = reviewRequestMode();
+    if (mode === 'off') {
+      console.log(`[notifications] (review requests off) would ask ${appt.clientName} for a review`);
+      return;
+    }
+    const msg = reviewRequest(await buildContext(appt), reviewUrl);
+    if (mode === 'test') {
+      const to = reviewRequestTestRecipient();
+      if (!to) {
+        console.warn('[notifications] REVIEW_REQUESTS=test but REVIEW_REQUESTS_TEST_TO is unset');
+        return;
+      }
+      await sendEmail({ to, ...testCopy(appt, msg) });
+      return;
+    }
+    if (await claimReviewRequest(appt.id)) await deliver(appt, msg);
+  } catch (error) {
+    console.error('[notifications] notifyReviewRequest failed:', error);
   }
 }

@@ -190,7 +190,9 @@ export async function updateAppointmentStatus(
     }
     if (status === 'completed') {
       const { awardLoyaltyForCompletion } = await import('@/actions/loyalty');
+      const { notifyReviewRequest } = await import('@/lib/notifications/dispatch');
       await awardLoyaltyForCompletion(appointmentId);
+      await notifyReviewRequest(appointmentId);
     }
 
     return { success: true };

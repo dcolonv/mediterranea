@@ -5,10 +5,16 @@ import { WhatsAppLink } from '@/components/whatsapp-link';
 import { CountdownTimer } from '@/components/home/countdown-timer';
 import { LanguageToggle } from '@/components/i18n/language-toggle';
 import { Button } from '@/components/ui';
+import { localizePath } from '@/lib/i18n/config';
 import { getServerDictionary } from '@/lib/i18n/server';
 
+export const metadata = {
+  // The pre-opening page; the home page is the one to index now.
+  robots: { index: false },
+};
+
 export default async function ComingSoonPage() {
-  const { dict } = await getServerDictionary();
+  const { locale, dict } = await getServerDictionary();
   return (
     <section className="relative min-h-screen flex items-center justify-center grain-texture overflow-hidden">
       {/* Base background */}
@@ -71,7 +77,7 @@ export default async function ComingSoonPage() {
 
         {/* Pre-book CTA */}
         <div className="mt-6 md:mt-12">
-          <Link href="/book">
+          <Link href={localizePath('/book', locale)}>
             <Button variant="elegant" size="lg">
               {dict.comingSoon.preBook}
             </Button>

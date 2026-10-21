@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { LanguageToggle } from '@/components/i18n/language-toggle';
+import { localizePath } from '@/lib/i18n/config';
 import { getServerDictionary } from '@/lib/i18n/server';
 import { getCookiePolicy } from '@/lib/legal/cookie-policy';
 
 export const metadata = {
-  title: 'Cookie Policy | Mediterránea Face Studio',
-  description: 'How Mediterránea Face Studio uses cookies and similar technologies.',
+  title: 'Política de cookies | Mediterránea Face Studio',
+  description: 'Cómo usa Mediterránea Face Studio las cookies y tecnologías similares.',
+  alternates: { canonical: '/cookies' },
 };
 
 export default async function CookiePolicyPage() {
@@ -17,7 +19,7 @@ export default async function CookiePolicyPage() {
     <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-8 lg:px-8">
       {/* Standalone top bar — this page sits outside the /init header/footer. */}
       <div className="mx-auto mb-12 flex max-w-4xl items-center justify-between">
-        <Link href="/" aria-label="Mediterránea Face Studio">
+        <Link href={localizePath('/', locale)} aria-label="Mediterránea Face Studio">
           <Image src="/logo_light.png" alt="Mediterránea Face Studio" width={110} height={50} priority />
         </Link>
         <LanguageToggle />

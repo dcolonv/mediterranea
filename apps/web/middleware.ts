@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import {
+  LOCALE_COOKIE,
+  LOCALE_COOKIE_MAX_AGE,
+  LOCALE_HEADER,
+  isLocalizedPath,
+  localizePath,
+  splitLocalePath,
+  type Locale,
+} from '@/lib/i18n/config';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -26,9 +35,59 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Localized pages: /en/treatments serves the /treatments page in English.
+  const { path, locale } = splitLocalePath(pathname);
+  if (locale === 'en') {
+    const url = request.nextUrl.clone();
+    url.pathname = path;
+    // Only some pages have an English URL; the rest follow the cookie.
+    if (!isLocalizedPath(path)) return NextResponse.redirect(url);
+
+    const response = NextResponse.rewrite(url, { request: { headers: withLocale(request, 'en') } });
+    // Arriving in English (say, from a search result): remember it, so pages
+    // without a language in the URL — account, emails — follow.
+    if (!request.cookies.has(LOCALE_COOKIE)) {
+      response.cookies.set(LOCALE_COOKIE, 'en', {
+        path: '/',
+        maxAge: LOCALE_COOKIE_MAX_AGE,
+        sameSite: 'lax',
+      });
+    }
+    return response;
+  }
+  if (locale === 'es') {
+    // Someone who chose English gets the English URL. Crawlers send no
+    // cookie, so they always see the Spanish page here.
+    if (request.method === 'GET' && request.cookies.get(LOCALE_COOKIE)?.value === 'en') {
+      const url = request.nextUrl.clone();
+      url.pathname = localizePath(path, 'en');
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request: { headers: withLocale(request, 'es') } });
+  }
+
   return NextResponse.next();
 }
 
+/** The request's headers, telling the page which language its URL names. */
+function withLocale(request: NextRequest, locale: Locale): Headers {
+  const headers = new Headers(request.headers);
+  headers.set(LOCALE_HEADER, locale);
+  return headers;
+}
+
 export const config = {
-  matcher: ['/backoffice/:path*', '/account/:path*'],
+  // The localized pages (isLocalizedPath), which a matcher can't import.
+  matcher: [
+    '/backoffice/:path*',
+    '/account/:path*',
+    '/',
+    '/en',
+    '/en/:path*',
+    '/treatments',
+    '/treatments/:slug',
+    '/book',
+    '/gift-cards',
+    '/blog',
+  ],
 };

@@ -64,7 +64,7 @@ export function AboutSnippet() {
               <div className="relative overflow-hidden aspect-[3/4]">
                 <Image
                   src="/founder.jpg"
-                  alt="Dr. Mariana, founder of Mediterránea Face Studio"
+                  alt={dict.about.founderAlt}
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"

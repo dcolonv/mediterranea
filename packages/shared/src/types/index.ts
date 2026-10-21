@@ -144,6 +144,8 @@ export interface Appointment {
   status: AppointmentStatus;
   /** Set once loyalty points have been awarded for this appointment's completion. */
   loyaltyAwarded?: boolean;
+  /** When the client was asked for a Google review after this visit. */
+  reviewRequestedAt?: Timestamp;
   /** Treatment record, written by the practitioner: what was applied this visit. */
   appliedTreatment?: string;
   /** Treatment record: what to do at the client's next visit. */

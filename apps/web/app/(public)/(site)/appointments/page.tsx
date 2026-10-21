@@ -3,6 +3,8 @@ import { AppointmentForm } from '@/components/appointments';
 export const metadata = {
   title: 'Book an Appointment | Mediterránea Face Studio',
   description: 'Schedule your facial treatment appointment at Mediterránea Face Studio.',
+  // The older English-only form; /book is the booking page to index.
+  robots: { index: false },
 };
 
 export default function AppointmentsPage() {
