@@ -228,6 +228,33 @@ h1, h2, h3, h4, h5, h6 {
   animation: glow-drift 15s ease-in-out infinite;
 }
 
+/* Hero entrance. Plain CSS rather than JS state, so the hero paints with the
+   page instead of waiting for hydration — it's the first thing visitors see,
+   and what Google times as the page's main content (LCP). */
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translate(var(--hero-from-x, 0), var(--hero-from-y, 0));
+  }
+}
+
+.animate-hero-enter {
+  animation: hero-enter 1s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-enter {
+    animation: none;
+  }
+}
+
+/* The cookie banner is server-rendered so it paints with the page; for
+   visitors who already chose, a pre-paint script sets data-consent to keep it
+   hidden (see CONSENT_PREPAINT_SCRIPT). Reopening it clears the flag. */
+html[data-consent] [data-cookie-banner] {
+  display: none;
+}
+
 /* Card hover shine sweep */
 .card-shine {
   position: relative;

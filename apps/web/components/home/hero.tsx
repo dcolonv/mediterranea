@@ -2,19 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
 import { useLang } from '@/components/i18n/language-provider';
+import { localizePath } from '@/lib/i18n/config';
 
 export function Hero() {
-  const { dict } = useLang();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(timer);
-  }, []);
-
+  const { dict, locale } = useLang();
   return (
     <section id="hero" className="relative min-h-screen flex items-center overflow-hidden grain-texture">
       {/* Base background */}
@@ -36,62 +29,51 @@ export function Hero() {
       <div className="absolute top-[18%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/[0.07] to-transparent" />
 
       {/* Content */}
-      {/* The countdown banner above already clears the fixed header, so this
+      {/* The spacer above already clears the fixed header, so this
           only needs a little breathing room of its own. */}
       <div className="relative z-10 mx-auto max-w-7xl w-full px-6 lg:px-8 pt-10 pb-20 lg:pt-8 lg:pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left — Text content */}
           <div className="text-center lg:text-left">
-            {/* Tagline */}
-            <div
-              className={`mb-10 transition-all duration-1000 ease-out ${
-                mounted
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-5'
-              }`}
-            >
-              <div className="flex items-center justify-center lg:justify-start gap-6">
-                <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-                <span className="text-xs sm:text-sm tracking-[0.35em] text-gold uppercase font-semibold">
-                  {dict.hero.eyebrow}
+            {/* One h1 holds the tagline and the heading, so the words clients
+                search for («estética facial en Málaga») are in the page's
+                main title, not only in the copy around it. */}
+            <h1>
+              {/* Tagline */}
+              <span
+                className="mb-10 block animate-hero-enter [--hero-from-y:1.25rem]"
+              >
+                <span className="flex items-center justify-center lg:justify-start gap-6">
+                  <span className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
+                  <span className="font-sans text-xs sm:text-sm tracking-[0.35em] text-gold uppercase font-semibold">
+                    {dict.hero.eyebrow}
+                  </span>
+                  <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50 lg:hidden" />
                 </span>
-                <span className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50 lg:hidden" />
-              </div>
-            </div>
-
-            {/* Heading */}
-            <h1
-              className={`font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-wide text-white leading-[1.1] whitespace-normal sm:whitespace-nowrap transition-all duration-1000 delay-200 ease-out ${
-                mounted
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-              }`}
-            >
-              {dict.hero.headingLine1}
-              <br />
-              <span className="hero-gold-shimmer">{dict.hero.headingLine2}</span>
+              </span>{' '}
+              {/* Heading — the global h1 letter-spacing, sized to this text
+                  rather than inherited from the h1's own (body) font size. */}
+              <span
+                className="block font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl tracking-[0.05em] text-white leading-[1.1] whitespace-normal sm:whitespace-nowrap animate-hero-enter [--hero-from-y:2rem] [animation-delay:200ms]"
+              >
+                {dict.hero.headingLine1}
+                <br />
+                <span className="hero-gold-shimmer">{dict.hero.headingLine2}</span>
+              </span>
             </h1>
 
             {/* Description */}
             <p
-              className={`mt-8 text-lg sm:text-xl text-white-50 max-w-lg mx-auto lg:mx-0 leading-relaxed font-light transition-all duration-1000 delay-500 ease-out ${
-                mounted
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-6'
-              }`}
+              className="mt-8 text-lg sm:text-xl text-white-50 max-w-lg mx-auto lg:mx-0 leading-relaxed font-light animate-hero-enter [--hero-from-y:1.5rem] [animation-delay:500ms]"
             >
               {dict.hero.description}
             </p>
 
             {/* CTAs */}
             <div
-              className={`mt-12 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 transition-all duration-1000 delay-700 ease-out ${
-                mounted
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-6'
-              }`}
+              className="mt-12 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 animate-hero-enter [--hero-from-y:1.5rem] [animation-delay:700ms]"
             >
-              <Link href="/book">
+              <Link href={localizePath('/book', locale)}>
                 <Button variant="elegant" size="lg">
                   {dict.hero.book}
                 </Button>
@@ -107,11 +89,7 @@ export function Hero() {
 
           {/* Right — Hero image */}
           <div
-            className={`relative transition-all duration-1000 delay-300 ease-out ${
-              mounted
-                ? 'opacity-100 translate-x-0'
-                : 'opacity-0 translate-x-8'
-            }`}
+            className="relative animate-hero-enter [--hero-from-x:2rem] [animation-delay:300ms]"
           >
             {/* Gold accent corner frames */}
             <div className="absolute -top-3 -right-3 w-24 h-24 border-t border-r border-gold/30 z-20 pointer-events-none" />
@@ -121,7 +99,7 @@ export function Hero() {
             <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] overflow-hidden">
               <Image
                 src="/hero-studio-room.jpg"
-                alt="Mediterránea Face Studio — Treatment room"
+                alt={dict.hero.imageAlt}
                 fill
                 priority
                 className="object-cover"

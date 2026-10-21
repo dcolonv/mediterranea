@@ -647,6 +647,12 @@ export async function createAppointment(input: CreateAppointmentInput): Promise<
     try {
       const { awardLoyaltyForCompletion } = await import('@/actions/loyalty');
       await awardLoyaltyForCompletion(newRef.id);
+      // A visit recorded after the fact without notifications (notify: false)
+      // doesn't ask for a review either.
+      if (input.notify !== false) {
+        const { notifyReviewRequest } = await import('@/lib/notifications/dispatch');
+        await notifyReviewRequest(newRef.id);
+      }
     } catch {
       /* best-effort */
     }
@@ -785,7 +791,9 @@ export async function updateAppointment(
   if (status === 'completed' && existing.status !== 'completed') {
     try {
       const { awardLoyaltyForCompletion } = await import('@/actions/loyalty');
+      const { notifyReviewRequest } = await import('@/lib/notifications/dispatch');
       await awardLoyaltyForCompletion(id);
+      await notifyReviewRequest(id);
     } catch {
       /* best-effort */
     }

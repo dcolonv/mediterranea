@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { ScrollReveal } from './scroll-reveal';
 import { useLang } from '@/components/i18n/language-provider';
+import { localizePath } from '@/lib/i18n/config';
 
 export function CtaBanner() {
-  const { dict } = useLang();
+  const { dict, locale } = useLang();
   return (
     <section className="relative py-28 overflow-hidden">
       {/* Background */}
@@ -29,7 +30,7 @@ export function CtaBanner() {
             {dict.cta.body}
           </p>
           <div className="mt-12">
-            <Link href="/book">
+            <Link href={localizePath('/book', locale)}>
               <Button variant="elegant" size="lg">
                 {dict.cta.button}
               </Button>

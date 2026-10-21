@@ -5,14 +5,13 @@ import { treatmentCards, spanIfLoneLast } from '@/lib/booking/treatment-cards';
 import { getServerDictionary } from '@/lib/i18n/server';
 import { durationLabel } from '@/lib/i18n/duration';
 import { serviceName, serviceDescription } from '@/lib/i18n/service';
+import { localizePath } from '@/lib/i18n/config';
+import { treatmentPageForService } from '@/lib/booking/treatment-pages';
+import { localizedMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Treatments | Mediterránea Face Studio',
-  description:
-    'Our facial formats — 1.5 Hour, 45 Minutes and INDIBA — our seasonal facials, and the technology and products behind every treatment.',
-};
+export const generateMetadata = () => localizedMetadata('/treatments', 'treatments');
 
 export default async function TreatmentsPage() {
   const [services, { locale, dict }] = await Promise.all([
@@ -44,7 +43,14 @@ export default async function TreatmentsPage() {
     from: boolean;
     badge?: string;
     href: string;
+    /** The treatment's own page, when it has one. */
+    details?: string;
   }
+
+  const pageOf = (serviceSlug: string) => {
+    const page = treatmentPageForService(serviceSlug);
+    return page && `/treatments/${page.slug}`;
+  };
 
   const formatCopy = {
     custom: { name: s.customName, duration: s.customDuration, description: s.customDesc },
@@ -69,10 +75,18 @@ export default async function TreatmentsPage() {
         from: false,
         badge: sv.temporary ? s.seasonal : undefined,
         href: `/book?service=${sv.slug}`,
+        details: pageOf(sv.slug),
       };
     }
     const pricing = pricingOf(c.services);
-    return { ...formatCopy[c.group], pricing, from: pricing.varies, href: `/book?group=${c.group}` };
+    return {
+      ...formatCopy[c.group],
+      pricing,
+      from: pricing.varies,
+      href: `/book?group=${c.group}`,
+      // The 45 minute facials each have a page, linked from the list below.
+      details: c.group === 'focus' ? undefined : pageOf(c.services[0].slug),
+    };
   });
   const hasSeasonal = services.some((sv) => !sv.bookingGroup && sv.temporary);
 
@@ -108,7 +122,15 @@ export default async function TreatmentsPage() {
         )}
       </div>
       <p className="flex-1 text-sm font-light leading-relaxed text-white-50">{c.description}</p>
-      <Link href={c.href} className="mt-8">
+      {c.details && (
+        <Link
+          href={localizePath(c.details, locale)}
+          className="mt-6 text-xs uppercase tracking-wider text-gold/70 transition-colors hover:text-gold"
+        >
+          {dict.treatments.details} →
+        </Link>
+      )}
+      <Link href={localizePath(c.href, locale)} className="mt-8">
         <Button variant="elegant" size="sm" className="w-full">
           {dict.treatments.book}
         </Button>
@@ -159,7 +181,11 @@ export default async function TreatmentsPage() {
           <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
             {ft.items.map((item) => (
               <div key={item.name} className="min-w-0 border-l border-gold/30 pl-5">
-                <h3 className="font-serif text-lg text-white">{item.name}</h3>
+                <h3 className="font-serif text-lg text-white">
+                  <Link href={localizePath(`/treatments/${item.page}`, locale)} className="transition-colors hover:text-gold">
+                    {item.name}
+                  </Link>
+                </h3>
                 <p className="mt-2 text-sm font-light leading-relaxed text-white-50">
                   {item.description}
                 </p>
@@ -241,7 +267,7 @@ export default async function TreatmentsPage() {
         </div>
 
         <div className="mt-16 text-center">
-          <Link href="/book">
+          <Link href={localizePath('/book', locale)}>
             <Button variant="elegant" size="lg">
               {dict.services.cta}
             </Button>

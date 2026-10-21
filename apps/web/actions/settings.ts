@@ -5,6 +5,7 @@ import { getAdminDb } from '@/lib/firebase/admin';
 import { serializeDoc } from '@/lib/firebase/serialize';
 import { studioSettingsSchema, type StudioSettingsFormData } from '@mediterranea/shared/validations';
 import { DEFAULT_STUDIO_SETTINGS } from '@mediterranea/shared/constants';
+import { reviewRequestMode } from '@/lib/notifications/review-requests';
 import type { StudioSettings } from '@mediterranea/shared/types';
 
 const DOC = 'settings/studio';
@@ -41,6 +42,7 @@ export async function getIntegrationStatus() {
     openai: Boolean(process.env.OPENAI_API_KEY),
     s3: Boolean(process.env.AWS_S3_BUCKET),
     reminders: Boolean(process.env.CRON_SECRET),
+    reviewRequests: reviewRequestMode(),
   };
 }
 

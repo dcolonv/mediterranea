@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui';
+import { localizePath } from '@/lib/i18n/config';
 import { getServerDictionary } from '@/lib/i18n/server';
 
 export const metadata = {
   title: 'Thank you | Mediterránea Face Studio',
+  robots: { index: false, follow: false },
 };
 
 export default async function GiftCardSuccessPage() {
-  const { dict } = await getServerDictionary();
+  const { locale, dict } = await getServerDictionary();
   const g = dict.giftCards;
 
   return (
@@ -21,7 +23,7 @@ export default async function GiftCardSuccessPage() {
         <h1 className="font-serif text-3xl text-white">{g.successTitle}</h1>
         <p className="mt-4 text-white-70">{g.successBody}</p>
         <div className="mt-8">
-          <Link href="/">
+          <Link href={localizePath('/', locale)}>
             <Button variant="elegant">{g.backHome}</Button>
           </Link>
         </div>

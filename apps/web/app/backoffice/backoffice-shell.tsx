@@ -47,7 +47,8 @@ const NAV: { href: string; label: string; icon: IconType; cap?: Capability }[] =
   { href: '/backoffice/settings', label: 'Settings', icon: LuSettings, cap: 'settings' },
 ];
 
-export default function BackofficeLayout({ children }: { children: React.ReactNode }) {
+/** The backoffice chrome: sidebar navigation, admin gate and sign-out. */
+export function BackofficeShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading, signOut } = useAuth();

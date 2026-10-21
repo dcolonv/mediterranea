@@ -156,15 +156,23 @@ export const CONSENT_VERSION = '2026-08-v1';
 export const WHATSAPP_MESSAGE = 'Hello, I need an appointment';
 
 export const CONTACT_INFO = {
-  address: 'Avenida Juan Sebastian Elcano, 143',
-  city: 'El Palo, Malaga, Spain',
+  // Written as on the Google Business Profile: the same address in both
+  // places is one of the things local search checks.
+  address: 'Avenida Juan Sebastián Elcano, 143',
+  city: 'El Palo, 29017 Málaga',
+  postalCode: '29017',
+  /** The Business Profile's map pin. */
+  coordinates: { latitude: 36.7223559, longitude: -4.3653252 },
   phone: '+34 602 643 543',
   email: 'info@mediterraneafacestudio.com',
+  instagramUrl: 'https://www.instagram.com/mediterranea_face_studio',
+  /** The Google Business Profile on Maps, by its stable place id (CID). */
+  googleMapsUrl: 'https://maps.google.com/?cid=15991126730184386214',
   /**
    * Where clients leave a Google review (Business Profile → "Ask for reviews").
    * Empty = no review button in the client's account.
    */
-  googleReviewUrl: '',
+  googleReviewUrl: 'https://g.page/r/Cabm5FYJ5evdEBM/review',
 };
 
 /**

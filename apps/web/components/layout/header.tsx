@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { useLang } from '@/components/i18n/language-provider';
+import { localizePath, splitLocalePath } from '@/lib/i18n/config';
 import { LanguageToggle } from '@/components/i18n/language-toggle';
 
 const NAV_SECTIONS = [
@@ -21,7 +22,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const pathname = usePathname();
-  const { dict } = useLang();
+  const { dict, locale } = useLang();
+  const onHome = splitLocalePath(pathname).path === '/';
 
   // Track scroll position for header background
   useEffect(() => {
@@ -32,12 +34,10 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Track active section via Intersection Observer
+  // Track active section via Intersection Observer. Off the home page nothing
+  // is highlighted (see isActive), so there is nothing to observe.
   useEffect(() => {
-    if (pathname !== '/') {
-      setActiveSection('');
-      return;
-    }
+    if (!onHome) return;
 
     // All observed sections including hero (mapped to "home" nav item)
     const sectionIds = ['hero', 'services', 'about', 'contact'];
@@ -82,10 +82,10 @@ export function Header() {
     return () => {
       observers.forEach((obs) => obs.disconnect());
     };
-  }, [pathname]);
+  }, [pathname, onHome]);
 
   function isActive(sectionId: string) {
-    return activeSection === sectionId;
+    return onHome && activeSection === sectionId;
   }
 
   return (
@@ -97,7 +97,7 @@ export function Header() {
       <nav className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex h-24 items-center justify-between">
           {/* Logo */}
-          <Link href="/">
+          <Link href={localizePath('/', locale)}>
             <Image
               src="/logo_light.png"
               alt="Mediterránea Face Studio"
@@ -112,7 +112,7 @@ export function Header() {
             {NAV_SECTIONS.map((section) => (
               <Link
                 key={section.id}
-                href={section.href}
+                href={localizePath(section.href, locale)}
                 className={`elegant-underline whitespace-nowrap text-xs tracking-wider uppercase transition-colors xl:text-sm ${
                   isActive(section.id)
                     ? 'text-white elegant-underline-active'
@@ -123,7 +123,7 @@ export function Header() {
               </Link>
             ))}
             <LanguageToggle sizeClass="text-[1.5rem] xl:text-[1.875rem]" />
-            <Link href="/book">
+            <Link href={localizePath('/book', locale)}>
               <Button variant="elegant" size="sm">
                 {dict.nav.bookNow}
               </Button>
@@ -172,7 +172,7 @@ export function Header() {
               {NAV_SECTIONS.map((section) => (
                 <Link
                   key={section.id}
-                  href={section.href}
+                  href={localizePath(section.href, locale)}
                   className={`text-sm tracking-widest uppercase ${
                     isActive(section.id)
                       ? 'text-gold'
@@ -183,7 +183,7 @@ export function Header() {
                   {dict.nav[section.key]}
                 </Link>
               ))}
-              <Link href="/book" onClick={() => setMobileMenuOpen(false)}>
+              <Link href={localizePath('/book', locale)} onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="elegant" className="w-full">
                   {dict.nav.bookNow}
                 </Button>
