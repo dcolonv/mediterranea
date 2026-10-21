@@ -4,8 +4,11 @@ import {
   LOCALE_COOKIE,
   LOCALE_COOKIE_MAX_AGE,
   LOCALE_HEADER,
+  isCrawler,
+  isLocale,
   isLocalizedPath,
   localizePath,
+  preferredLocale,
   splitLocalePath,
   type Locale,
 } from '@/lib/i18n/config';
@@ -56,9 +59,7 @@ export function middleware(request: NextRequest) {
     return response;
   }
   if (locale === 'es') {
-    // Someone who chose English gets the English URL. Crawlers send no
-    // cookie, so they always see the Spanish page here.
-    if (request.method === 'GET' && request.cookies.get(LOCALE_COOKIE)?.value === 'en') {
+    if (request.method === 'GET' && wantsEnglish(request)) {
       const url = request.nextUrl.clone();
       url.pathname = localizePath(path, 'en');
       return NextResponse.redirect(url);
@@ -67,6 +68,18 @@ export function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
+}
+
+/**
+ * Whether to send this visitor from a Spanish URL to the English one: they
+ * chose English, or it's their first visit and their browser prefers English.
+ * Crawlers are never redirected, so search engines see the Spanish pages.
+ */
+function wantsEnglish(request: NextRequest): boolean {
+  const chosen = request.cookies.get(LOCALE_COOKIE)?.value;
+  if (isLocale(chosen)) return chosen === 'en';
+  if (isCrawler(request.headers.get('user-agent'))) return false;
+  return preferredLocale(request.headers.get('accept-language')) === 'en';
 }
 
 /** The request's headers, telling the page which language its URL names. */
