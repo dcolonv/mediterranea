@@ -3,8 +3,14 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { CONTACT_INFO } from '@mediterranea/shared/constants';
 import { Button, PriceTag } from '@/components/ui';
 import { JsonLd } from '@/components/json-ld';
+import {
+  TREATMENT_CARD_FRAME,
+  TreatmentCardBody,
+  serviceCardContent,
+} from '@/components/treatments/treatment-card';
 import { getBookingServices, type PublicService } from '@/actions/public-booking';
 import { TREATMENT_PAGES, treatmentPage, treatmentPageForService } from '@/lib/booking/treatment-pages';
+import { spanIfLoneLast } from '@/lib/booking/treatment-cards';
 import { localizePath } from '@/lib/i18n/config';
 import { durationLabel } from '@/lib/i18n/duration';
 import { getLocale, getServerDictionary } from '@/lib/i18n/server';
@@ -46,13 +52,15 @@ export default async function TreatmentPage({ params }: Props) {
   const copy = dict.treatmentPages[page.slug];
   const path = `/treatments/${page.slug}`;
   const href = (p: string) => localizePath(p, locale);
-  // Several options (INDIBA): the technology leads and each option describes itself.
+  // Several options (INDIBA): each describes itself, under a lead about the
+  // technology. The 45 minute format page leads with the format.
   const multiple = services.length > 1;
-  const indiba = dict.products.items.find((p) => p.name === 'INDIBA');
-  const led = dict.technology.items.find((t) => t.name.includes('LED'));
-  const lead = multiple
-    ? (dict.technology.items.find((t) => t.name === 'INDIBA')?.description ?? '')
-    : serviceDescription(services[0], locale);
+  const lead =
+    page.kind === 'indiba'
+      ? (dict.technology.items.find((t) => t.name === 'INDIBA')?.description ?? '')
+      : page.kind === 'focusList'
+        ? dict.services.focusDesc
+        : serviceDescription(services[0], locale);
 
   const duration = (sv: PublicService) =>
     sv.bundleSessions
@@ -61,6 +69,7 @@ export default async function TreatmentPage({ params }: Props) {
 
   const sectionTitle = 'mb-6 font-serif text-2xl tracking-wide text-white sm:text-3xl';
   const body = 'text-base font-light leading-relaxed text-white-70';
+  const link = 'text-gold underline underline-offset-2 hover:text-gold-light';
 
   return (
     <section className="relative min-h-screen bg-dark-900 px-6 pb-24 pt-36 lg:px-8">
@@ -68,7 +77,8 @@ export default async function TreatmentPage({ params }: Props) {
         data={treatmentJsonLd({ path, locale, name: copy.title, description: copy.description, services })}
       />
       <div className="mx-auto max-w-3xl">
-        <Link href={href('/treatments')} className="text-sm text-white-50 transition-colors hover:text-white">
+        {/* Back to the home page's "Our ways to care for your skin". */}
+        <Link href={href('/#services')} className="text-sm text-white-50 transition-colors hover:text-white">
           ‹ {d.back}
         </Link>
 
@@ -80,91 +90,107 @@ export default async function TreatmentPage({ params }: Props) {
           <p className="mt-8 text-lg font-light leading-relaxed text-white-70">{lead}</p>
         </div>
 
-        {/* The bookable options, with live prices and durations */}
-        <div className="mt-12">
-          {multiple && <h2 className={sectionTitle}>{d.options}</h2>}
-          <div className="space-y-4">
-            {services.map((sv) => {
-              const Name = multiple ? 'h3' : 'h2';
+        {page.kind === 'focusList' ? (
+          // One card per 45 minute facial, each leading to its own page.
+          <div className="mt-12 grid gap-6 sm:grid-cols-2">
+            {services.map((sv, i) => {
+              const card = serviceCardContent(sv, locale, dict);
               return (
-                <div key={sv.id} className="border border-white-10 bg-dark-800/40 p-6 sm:p-8">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <Name className="font-serif text-2xl leading-snug text-white">
-                        {serviceName(sv, locale)}
-                      </Name>
-                      <p className="mt-2 flex items-center text-xs uppercase tracking-wider text-white-30">
-                        <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {duration(sv)}
-                      </p>
-                    </div>
-                    <PriceTag
-                      price={sv.price}
-                      firstPrice={sv.firstVisitPrice}
-                      firstLabel={dict.services.firstVisit}
-                      className="text-right"
-                    />
-                  </div>
-                  {multiple && (
-                    <p className="mt-4 text-sm font-light leading-relaxed text-white-50">
-                      {serviceDescription(sv, locale)}
-                    </p>
-                  )}
-                  <Link href={href(`/book?service=${sv.slug}`)} className="mt-6 inline-block">
-                    <Button variant="elegant" size="sm">
-                      {d.book}
-                    </Button>
-                  </Link>
-                </div>
+                <Link
+                  key={sv.id}
+                  href={href(card.details ?? card.href)}
+                  className={`${TREATMENT_CARD_FRAME} cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-gold ${spanIfLoneLast(i, services.length)}`}
+                >
+                  <TreatmentCardBody card={card} dict={dict} />
+                </Link>
               );
             })}
           </div>
-        </div>
-
-        {/* How this format works, in the studio's own words */}
-        <div className="mt-16">
-          {page.kind === 'focus' && (
-            <>
-              <h2 className={sectionTitle}>{d.aboutFocus}</h2>
-              <p className={body}>{dict.services.focusDesc}</p>
-              <p className={`mt-4 ${body}`}>
-                {d.combine}{' '}
-                <Link href={href('/treatments/facial-personalizado')} className="text-gold underline underline-offset-2 hover:text-gold-light">
-                  {d.combineLink}
+        ) : (
+          // The bookable options, with live prices and durations.
+          <div className="mt-12 space-y-4">
+            {services.map((sv) => (
+              <div key={sv.id} className="border border-white-10 bg-dark-800/40 p-6 sm:p-8">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h2 className="font-serif text-2xl leading-snug text-white">
+                      {serviceName(sv, locale)}
+                    </h2>
+                    <p className="mt-2 flex items-center text-xs uppercase tracking-wider text-white-30">
+                      <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {duration(sv)}
+                    </p>
+                  </div>
+                  <PriceTag
+                    price={sv.price}
+                    firstPrice={sv.firstVisitPrice}
+                    firstLabel={dict.services.firstVisit}
+                    className="text-right"
+                  />
+                </div>
+                {multiple && (
+                  <p className="mt-4 text-sm font-light leading-relaxed text-white-50">
+                    {serviceDescription(sv, locale)}
+                  </p>
+                )}
+                <Link href={href(`/book?service=${sv.slug}`)} className="mt-6 inline-block">
+                  <Button variant="elegant" size="sm">
+                    {d.book}
+                  </Button>
                 </Link>
-              </p>
-            </>
-          )}
-          {page.kind === 'custom' && (
-            <>
-              <h2 className={sectionTitle}>{d.aboutCustom}</h2>
-              <p className={body}>{dict.services.customDesc}</p>
-              <ul className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2">
-                {dict.facialTreatments.items.map((item) => (
-                  <li key={item.page} className="border-l border-gold/30 pl-5">
-                    <Link href={href(`/treatments/${item.page}`)} className="font-serif text-lg text-white hover:text-gold">
-                      {item.name}
-                    </Link>
-                    <p className="mt-2 text-sm font-light leading-relaxed text-white-50">{item.description}</p>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          {page.kind === 'indiba' && (
-            <>
-              <h2 className={sectionTitle}>{d.aboutIndiba}</h2>
-              {indiba && <p className={body}>{indiba.description}</p>}
-              {led && (
-                <p className={`mt-4 ${body}`}>
-                  <strong className="font-medium text-white">{led.name}.</strong> {led.description}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* How this format works, in the studio's own words (INDIBA has no such section) */}
+        {page.kind !== 'indiba' && (
+          <div className="mt-16">
+            {(page.kind === 'focus' || page.kind === 'focusList') && (
+              <>
+                <h2 className={sectionTitle}>{d.aboutFocus}</h2>
+                {page.kind === 'focus' && <p className={`mb-4 ${body}`}>{dict.services.focusDesc}</p>}
+                <p className={body}>
+                  {d.combine}{' '}
+                  <Link href={href('/treatments/facial-personalizado')} className={link}>
+                    {d.combineLink}
+                  </Link>
                 </p>
-              )}
-            </>
-          )}
-        </div>
+                {page.kind === 'focus' && (
+                  <p className="mt-4">
+                    <Link href={href('/treatments/facial-focus')} className={link}>
+                      {d.allFocus}
+                    </Link>
+                  </p>
+                )}
+              </>
+            )}
+            {page.kind === 'seasonal' && (
+              <>
+                <h2 className={sectionTitle}>{d.aboutSeasonal}</h2>
+                <p className={body}>{d.seasonalNote}</p>
+              </>
+            )}
+            {page.kind === 'custom' && (
+              <>
+                <h2 className={sectionTitle}>{d.aboutCustom}</h2>
+                <p className={body}>{dict.services.customDesc}</p>
+                <ul className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2">
+                  {dict.facialTreatments.items.map((item) => (
+                    <li key={item.page} className="border-l border-gold/30 pl-5">
+                      <Link href={href(`/treatments/${item.page}`)} className="font-serif text-lg text-white hover:text-gold">
+                        {item.name}
+                      </Link>
+                      <p className="mt-2 text-sm font-light leading-relaxed text-white-50">{item.description}</p>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="mt-16">
           <h2 className={sectionTitle}>{d.where}</h2>
